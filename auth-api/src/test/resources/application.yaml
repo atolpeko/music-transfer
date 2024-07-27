@@ -1,0 +1,51 @@
+server:
+  port: 0
+h2:
+  console:
+    enabled: true
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+circuitBreaker:
+  minimumNumberOfCalls: 3
+  slidingWindowSize: 8
+  failureRateThreshold: 70.0
+service:
+  encryptionAlgName: AES
+  encryptionKeySize: 16
+  encryptionTransformation: AES/CBC/PKCS5Padding
+  uuidSecret: secretsecretsecretsecretsecretsecretsecret
+  jwtIssuer: auth-service
+  jwtSecret: secretsecretsecretsecretsecretsecretsecret
+  jwtExpirationSeconds: 600
+  uuidExpirationSeconds: 600
+  accessTokenExpirationSeconds: 600
+  spotify:
+    clientId: clientId
+    clientSecret: clientSecret
+    clientScope: clientScope
+    clientRedirectUrl: http://localhost:5980/api/auth/spotify/callback
+    backRedirectUrl: http://localhost:5980
+    grantType: authorization_code
+    urls:
+      auth: http://localhost:8089/api/mock/spotify/authorize
+      token: http://localhost:8089/api/mock/spotify/token
+logging:
+  level:
+    com.mf.auth: DEBUG
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+swagger:
+  url: /swagger-ui/index.html
+  title: Auth API [TEST PROFILE]
+  description: Authentication API
+  version: "1.0.0-SNAPSHOT"
+  controllersPackage: com.mf.auth.adapter.in.rest
