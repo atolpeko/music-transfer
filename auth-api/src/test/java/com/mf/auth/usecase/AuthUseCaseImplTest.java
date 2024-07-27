@@ -118,7 +118,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidValidationWhenObtainingUuid() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
 		var token = target.obtainUuid(UUID.getValue());
 
@@ -137,7 +137,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidObtainThrowsExceptionIfUuidIsNotPresent() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.empty());
 
 		assertThrows(AuthorizationException.class,
@@ -146,7 +146,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidPositiveValidation() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
 
 		var valid = target.isUuidValid(UUID.getValue());
@@ -155,7 +155,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidNegativeValidation() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.empty());
 		var valid = target.isUuidValid(UUID.getValue());
 		assertFalse(valid);
@@ -164,14 +164,14 @@ class AuthUseCaseImplTest {
 	@Test
 	void testUuidValidationThrowsExceptionIfDbUnavailable() {
 		doThrow(RepositoryAccessException.class)
-			.when(uuidRepository).findByValue(UUID.getValue());
+			.when(uuidRepository).findValidByValue(UUID.getValue());
 		assertThrows(RepositoryAccessException.class,
 			() -> target.isUuidValid(UUID.getValue()));
 	}
 
 	@Test
 	void testAuth() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
 		when(jwtService.isValid(JWT)).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_1);
@@ -186,9 +186,9 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testAuthWithUpdateJwt() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByValue(JWT.getValue()))
+		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(JWT));
 		when(jwtService.isValid(JWT)).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_2);
@@ -205,16 +205,16 @@ class AuthUseCaseImplTest {
 	@Test
 	void testAuthThrowsExceptionIfDbUnavailable() {
 		doThrow(RepositoryAccessException.class)
-			.when(uuidRepository).findByValue(UUID.getValue());
+			.when(uuidRepository).findValidByValue(UUID.getValue());
 		assertThrows(RepositoryAccessException.class,
 			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));
 	}
 
 	@Test
 	void testAuthThrowsExceptionIfJwtIsNotPresent() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByValue(JWT.getValue()))
+		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.empty());
 
 		assertThrows(AuthorizationException.class,
@@ -223,9 +223,9 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testAuthThrowsExceptionIfJwtIsExpired() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByValue(JWT.getValue()))
+		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(EXPIRED_JWT));
 
 		assertThrows(AuthorizationException.class,
@@ -234,9 +234,9 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testAuthThrowsExceptionIfJwtIsNotValid() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByValue(JWT.getValue()))
+		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(JWT));
 		when(jwtService.isValid(JWT)).thenReturn(false);
 

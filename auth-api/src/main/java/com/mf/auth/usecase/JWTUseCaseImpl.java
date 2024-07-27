@@ -30,12 +30,12 @@ public class JWTUseCaseImpl implements JWTUseCase {
     public JWT obtain(String requestUuid, String accessToken) {
         try {
             var uuid = breaker.executeCallable(
-                () -> uuidRepository.findByValue(requestUuid));
+                () -> uuidRepository.findValidByValue(requestUuid));
             if (uuid.isEmpty() || !uuid.get().isValid()) {
                 throw new AuthorizationException("Invalid UUID provided");
             }
 
-            var jwt = jwtRepository.findByAccessToken(accessToken);
+            var jwt = jwtRepository.findValidByAccessToken(accessToken);
             return jwt.orElseThrow(() ->
                 new AuthorizationException("Invalid access token provided"));
         } catch (UseCaseException e) {

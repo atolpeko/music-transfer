@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UUIDRepositoryPort {
 
     /**
-     * Find a UUID by its value.
+     * Find a valid UUID by its value.
      *
      * @param value  UUID value
      *
@@ -20,7 +20,7 @@ public interface UUIDRepositoryPort {
      *
      * @throws DataAccessException in repository is unavailable
      */
-    Optional<Token> findByValue(String value);
+    Optional<Token> findValidByValue(String value);
 
     /**
      * Save the specified UUID.

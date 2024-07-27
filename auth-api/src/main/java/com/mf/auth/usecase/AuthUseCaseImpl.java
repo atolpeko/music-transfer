@@ -52,7 +52,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 				return generated;
 			}
 
-			var found = breaker.executeCallable(() -> uuidRepository.findByValue(uuid));
+			var found = breaker.executeCallable(() -> uuidRepository.findValidByValue(uuid));
 			if (found.isPresent() && found.get().isValid()) {
 				return found.get();
 			} else {
@@ -77,7 +77,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 	private Optional<Token> findValidUuid(String uuidValue) {
 		try {
 			var uuid = breaker.executeCallable(
-				() -> uuidRepository.findByValue(uuidValue)
+				() -> uuidRepository.findValidByValue(uuidValue)
 			);
 			if (uuid.isPresent() && uuid.get().isValid()) {
 				return uuid;
@@ -141,7 +141,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 				.orElseThrow(() -> new AuthorizationException("UUID is invalid"));
 
 			log.debug("Looking for an existing JWT");
-			Callable<Optional<JWT>> find = () -> jwtRepository.findByValue(jwt);
+			Callable<Optional<JWT>> find = () -> jwtRepository.findValidByValue(jwt);
 			var oldJwt = breaker.executeCallable(find)
 				.orElseThrow(() -> new AuthorizationException("No such JWT " + jwt));
 			if (!oldJwt.isValid()) {

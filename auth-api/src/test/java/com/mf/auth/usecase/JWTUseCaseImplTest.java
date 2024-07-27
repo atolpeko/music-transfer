@@ -67,9 +67,9 @@ class JWTUseCaseImplTest {
 
 	@Test
 	void testObtainJwt() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByAccessToken(ACCESS_TOKEN.getValue()))
+		when(jwtRepository.findValidByAccessToken(ACCESS_TOKEN.getValue()))
 			.thenReturn(Optional.of(JWT));
 
 		var jwt = target.obtain(UUID.getValue(), ACCESS_TOKEN.getValue());
@@ -79,7 +79,7 @@ class JWTUseCaseImplTest {
 
 	@Test
 	void testObtainJwtThrowsExceptionWhenUuidIsInvalid() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.empty());
 		assertThrows(AuthorizationException.class,
 			() -> target.obtain(UUID.getValue(), ACCESS_TOKEN.getValue()));
@@ -87,9 +87,9 @@ class JWTUseCaseImplTest {
 
 	@Test
 	void testObtainJwtThrowsExceptionWhenAccessTokenIsNotPresent() {
-		when(uuidRepository.findByValue(UUID.getValue()))
+		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtRepository.findByAccessToken(ACCESS_TOKEN.getValue()))
+		when(jwtRepository.findValidByAccessToken(ACCESS_TOKEN.getValue()))
 			.thenReturn(Optional.empty());
 
 		assertThrows(AuthorizationException.class,

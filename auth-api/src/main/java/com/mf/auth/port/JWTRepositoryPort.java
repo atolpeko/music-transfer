@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface JWTRepositoryPort {
 
     /**
-     * Find a JWT by its value.
+     * Find a valid JWT by its value.
      *
      * @param value  JWT value
      *
@@ -20,10 +20,10 @@ public interface JWTRepositoryPort {
      *
      * @throws DataAccessException in repository is unavailable
      */
-    Optional<JWT> findByValue(String value);
+    Optional<JWT> findValidByValue(String value);
 
     /**
-     * Find a JWT by its access token.
+     * Find a valid JWT by its access token.
      *
      * @param token  access token
      *
@@ -31,7 +31,7 @@ public interface JWTRepositoryPort {
      *
      * @throws DataAccessException in repository is unavailable
      */
-    Optional<JWT> findByAccessToken(String token);
+    Optional<JWT> findValidByAccessToken(String token);
 
     /**
      * Save the specified JWT.
