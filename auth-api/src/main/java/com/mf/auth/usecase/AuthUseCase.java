@@ -7,29 +7,15 @@ import com.mf.auth.usecase.exception.RepositoryAccessException;
 public interface AuthUseCase {
 
     /**
-     * Obtain UUID code. Validates provided UUID.
-     * Generates a new UUID if none uuid passed.
+     * Generate a new UUID.
      *
-     * @param uuid  optional UUID
      *
      * @return UUID
      *
-     * @throws AuthorizationException     if provided UUID is invalid
      * @throws RepositoryAccessException  if fails to save generated UUID
      *                                    because of some repository error
      */
-    Token obtainUuid(String uuid);
-
-    /**
-     * Check if a UUID is valid.
-     *
-     * @param uuidValue  UUID to check
-     *
-     * @return true if the UUID is valid, false otherwise
-     *
-     * @throws RepositoryAccessException  if some repository error occurs
-     */
-    boolean isUuidValid(String uuidValue);
+    Token generateUuid();
 
     /**
      * Encrypt a string using a secret.
@@ -80,7 +66,6 @@ public interface AuthUseCase {
      * @throws AuthorizationException  if OAuth2 authorization fails
      * @throws AuthorizationException  if the provided UUID is invalid
      * @throws AuthorizationException  if the provided JWT is invalid
-     * @throws AuthorizationException  if such a JWT doesn't exist
      */
     Token auth(String uuid, String jwt, String service, String authCode);
 }

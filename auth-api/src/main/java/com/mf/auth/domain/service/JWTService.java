@@ -39,5 +39,5 @@ public interface JWTService {
 	 *
 	 * @return true if this JWT is valid, false otherwise
 	 */
-	boolean isValid(JWT jwt);
+	boolean isValid(String jwt);
 }

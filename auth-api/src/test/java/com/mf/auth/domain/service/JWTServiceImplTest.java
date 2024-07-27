@@ -56,14 +56,14 @@ class JWTServiceImplTest {
 	@Test
 	void testGeneration() {
 		var token = target.generate(UUID, TOKEN_MAP);
-		assertTrue(target.isValid(token));
+		assertTrue(target.isValid(token.getValue()));
 	}
 
 	@Test
 	void testUpdate() {
 		var token = target.generate(UUID, TOKEN_MAP);
 		var updated = target.update(UUID, token, NEW_TOKEN_MAP);
-		assertTrue(target.isValid(updated));
+		assertTrue(target.isValid(updated.getValue()));
 	}
 
 	@Test

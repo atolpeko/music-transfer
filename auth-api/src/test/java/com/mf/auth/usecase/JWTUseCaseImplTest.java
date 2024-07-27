@@ -2,21 +2,18 @@ package com.mf.auth.usecase;
 
 import static com.mf.auth.fixture.JWTUseCaseFixture.ACCESS_TOKEN;
 import static com.mf.auth.fixture.JWTUseCaseFixture.JWT;
-import static com.mf.auth.fixture.JWTUseCaseFixture.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-
 
 import com.mf.auth.config.UnitTest;
 import com.mf.auth.domain.entity.Token;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.port.JWTRepositoryPort;
-import com.mf.auth.port.UUIDRepositoryPort;
 import com.mf.auth.usecase.exception.AuthorizationException;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -39,9 +36,6 @@ class JWTUseCaseImplTest {
 
 	@Mock
 	JWTService jwtService;
-
-	@Mock
-	UUIDRepositoryPort uuidRepository;
 
 	@Mock
 	JWTRepositoryPort jwtRepository;
@@ -67,32 +61,18 @@ class JWTUseCaseImplTest {
 
 	@Test
 	void testObtainJwt() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.of(UUID));
 		when(jwtRepository.findValidByAccessToken(ACCESS_TOKEN.getValue()))
 			.thenReturn(Optional.of(JWT));
 
-		var jwt = target.obtain(UUID.getValue(), ACCESS_TOKEN.getValue());
-
+		var jwt = target.obtain(ACCESS_TOKEN.getValue());
 		assertEquals(JWT, jwt);
 	}
 
 	@Test
-	void testObtainJwtThrowsExceptionWhenUuidIsInvalid() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.empty());
-		assertThrows(AuthorizationException.class,
-			() -> target.obtain(UUID.getValue(), ACCESS_TOKEN.getValue()));
-	}
-
-	@Test
 	void testObtainJwtThrowsExceptionWhenAccessTokenIsNotPresent() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.of(UUID));
 		when(jwtRepository.findValidByAccessToken(ACCESS_TOKEN.getValue()))
 			.thenReturn(Optional.empty());
-
 		assertThrows(AuthorizationException.class,
-			() -> target.obtain(UUID.getValue(), ACCESS_TOKEN.getValue()));
+			() -> target.obtain(ACCESS_TOKEN.getValue()));
 	}
 }

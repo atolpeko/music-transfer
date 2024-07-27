@@ -15,7 +15,6 @@ import static com.mf.auth.fixture.AuthUseCaseFixture.TOKEN_MAP;
 import static com.mf.auth.fixture.AuthUseCaseFixture.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -107,23 +106,13 @@ class AuthUseCaseImplTest {
 	}
 
 	@Test
-	void testUuidGenerationWhenObtainingUuid() {
+	void testUuidGeneration() {
 		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(UUID);
 
-		var token = target.obtainUuid(null);
+		var token = target.generateUuid();
 
 		assertTrue(token.isValid());
 		verify(uuidRepository, times(1)).save(UUID);
-	}
-
-	@Test
-	void testUuidValidationWhenObtainingUuid() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.of(UUID));
-		var token = target.obtainUuid(UUID.getValue());
-
-		assertTrue(token.isValid());
-		verify(uuidRepository, times(0)).save(UUID);
 	}
 
 	@Test
@@ -132,48 +121,14 @@ class AuthUseCaseImplTest {
 		doThrow(RepositoryAccessException.class)
 			.when(uuidRepository).save(UUID);
 
-		assertThrows(RepositoryAccessException.class, () -> target.obtainUuid(null));
-	}
-
-	@Test
-	void testUuidObtainThrowsExceptionIfUuidIsNotPresent() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.empty());
-
-		assertThrows(AuthorizationException.class,
-			() -> target.obtainUuid(UUID.getValue()));
-	}
-
-	@Test
-	void testUuidPositiveValidation() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.of(UUID));
-
-		var valid = target.isUuidValid(UUID.getValue());
-		assertTrue(valid);
-	}
-
-	@Test
-	void testUuidNegativeValidation() {
-		when(uuidRepository.findValidByValue(UUID.getValue()))
-			.thenReturn(Optional.empty());
-		var valid = target.isUuidValid(UUID.getValue());
-		assertFalse(valid);
-	}
-
-	@Test
-	void testUuidValidationThrowsExceptionIfDbUnavailable() {
-		doThrow(RepositoryAccessException.class)
-			.when(uuidRepository).findValidByValue(UUID.getValue());
-		assertThrows(RepositoryAccessException.class,
-			() -> target.isUuidValid(UUID.getValue()));
+		assertThrows(RepositoryAccessException.class, () -> target.generateUuid());
 	}
 
 	@Test
 	void testAuth() {
 		when(uuidRepository.findValidByValue(UUID.getValue()))
 			.thenReturn(Optional.of(UUID));
-		when(jwtService.isValid(JWT)).thenReturn(true);
+		when(jwtService.isValid(JWT.getValue())).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_1);
 		when(jwtService.generate(UUID, TOKEN_MAP)).thenReturn(JWT);
 		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(ACCESS_TOKEN);
@@ -190,7 +145,7 @@ class AuthUseCaseImplTest {
 			.thenReturn(Optional.of(UUID));
 		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(JWT));
-		when(jwtService.isValid(JWT)).thenReturn(true);
+		when(jwtService.isValid(JWT.getValue())).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_2);
 		when(jwtService.update(UUID, JWT, NEW_TOKEN_MAP)).thenReturn(NEW_JWT);
 		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(ACCESS_TOKEN);
@@ -207,6 +162,14 @@ class AuthUseCaseImplTest {
 		doThrow(RepositoryAccessException.class)
 			.when(uuidRepository).findValidByValue(UUID.getValue());
 		assertThrows(RepositoryAccessException.class,
+			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));
+	}
+
+	@Test
+	void testAuthThrowsExceptionIfUuidIsInvalid() {
+		when(uuidRepository.findValidByValue(UUID.getValue()))
+			.thenReturn(Optional.empty());
+		assertThrows(AuthorizationException.class,
 			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));
 	}
 
@@ -238,7 +201,7 @@ class AuthUseCaseImplTest {
 			.thenReturn(Optional.of(UUID));
 		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(JWT));
-		when(jwtService.isValid(JWT)).thenReturn(false);
+		when(jwtService.isValid(JWT.getValue())).thenReturn(false);
 
 		assertThrows(AuthorizationException.class,
 			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));

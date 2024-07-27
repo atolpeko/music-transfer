@@ -3,7 +3,6 @@ package com.mf.auth.usecase;
 import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.port.JWTRepositoryPort;
-import com.mf.auth.port.UUIDRepositoryPort;
 
 import com.mf.auth.port.exception.DataAccessException;
 import com.mf.auth.usecase.exception.AuthorizationException;
@@ -22,22 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class JWTUseCaseImpl implements JWTUseCase {
     private final JWTService jwtService;
-    private final UUIDRepositoryPort uuidRepository;
     private final JWTRepositoryPort jwtRepository;
     private final CircuitBreaker breaker;
 
     @Override
-    public JWT obtain(String requestUuid, String accessToken) {
+    public JWT obtain(String accessToken) {
         try {
-            var uuid = breaker.executeCallable(
-                () -> uuidRepository.findValidByValue(requestUuid));
-            if (uuid.isEmpty() || !uuid.get().isValid()) {
-                throw new AuthorizationException("Invalid UUID provided");
-            }
-
-            var jwt = jwtRepository.findValidByAccessToken(accessToken);
+            var jwt = breaker.executeCallable(() ->
+                jwtRepository.findValidByAccessToken(accessToken));
             return jwt.orElseThrow(() ->
-                new AuthorizationException("Invalid access token provided"));
+                new AuthorizationException("Invalid access token provided")
+            );
         } catch (UseCaseException e) {
             throw e;
         } catch (DataAccessException e) {
@@ -48,7 +42,7 @@ public class JWTUseCaseImpl implements JWTUseCase {
     }
 
     @Override
-    public boolean isValid(JWT jwt) {
+    public boolean isValid(String jwt) {
         return jwtService.isValid(jwt);
     }
 }

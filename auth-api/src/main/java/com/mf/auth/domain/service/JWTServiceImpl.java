@@ -112,9 +112,9 @@ public class JWTServiceImpl implements JWTService {
 	}
 
 	@Override
-	public boolean isValid(JWT jwt) {
+	public boolean isValid(String jwt) {
 		try {
-			var claims = decrypt(jwt.getValue());
+			var claims = decrypt(jwt);
 			return isValid(claims);
 		} catch (Exception e) {
 			return false;
