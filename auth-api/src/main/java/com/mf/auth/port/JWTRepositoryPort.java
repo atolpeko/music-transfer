@@ -23,6 +23,17 @@ public interface JWTRepositoryPort {
     Optional<JWT> findByValue(String value);
 
     /**
+     * Find a JWT by its access token.
+     *
+     * @param token  access token
+     *
+     * @return found JWT or Optional.empty() if none found
+     *
+     * @throws DataAccessException in repository is unavailable
+     */
+    Optional<JWT> findByAccessToken(String token);
+
+    /**
      * Save the specified JWT.
      *
      * @param jwt  JWT to save
