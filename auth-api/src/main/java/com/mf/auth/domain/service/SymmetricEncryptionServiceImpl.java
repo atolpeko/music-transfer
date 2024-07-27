@@ -39,9 +39,9 @@ public class SymmetricEncryptionServiceImpl implements SymmetricEncryptionServic
 	}
 
 	private SecretKeySpec getKeyFromPassword(String password) {
-		var passBytes = password.getBytes();
-		var key = new byte[passBytes.length];
-		System.arraycopy(passBytes, 0, key, 0, passBytes.length);
+		byte[] key = new byte[properties.encryptionKeySize()];
+		byte[] passButes = password.getBytes();
+		System.arraycopy(passButes, 0, key, 0, Math.min(passButes.length, key.length));
 		return new SecretKeySpec(key, properties.encryptionAlgName());
 	}
 

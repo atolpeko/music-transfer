@@ -2,6 +2,7 @@ package com.mf.auth.domain.service;
 
 import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.ALG_NAME;
 import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.KEY;
+import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.KEY_SIZE;
 import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.TRANSFORMATION;
 import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.VALUE;
 
@@ -33,6 +34,7 @@ class SymmetricEncryptionServiceImplTest {
 	void setUp() {
 		MockitoAnnotations.initMocks(this);
 		when(properties.encryptionAlgName()).thenReturn(ALG_NAME);
+		when(properties.encryptionKeySize()).thenReturn(KEY_SIZE);
 		when(properties.encryptionTransformation()).thenReturn(TRANSFORMATION);
 	}
 

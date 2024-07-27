@@ -6,5 +6,6 @@ public interface ServiceProperties {
 	String jwtSecret();
 	int jwtExpirationSeconds();
 	String encryptionAlgName();
+	int encryptionKeySize();
 	String encryptionTransformation();
 }
