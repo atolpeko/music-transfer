@@ -67,18 +67,13 @@ public interface SpotifyAuthAPI {
             response = String.class
         ),
         @ApiResponse(
-            code = 400,
+            code = 401,
             message = "Invalid UUID or JWT provided",
             response = ErrorResponse.class
         ),
         @ApiResponse(
-            code = 401,
-            message = "User didn't give permission to access his Spotify account",
-            response = ErrorResponse.class
-        ),
-        @ApiResponse(
             code = 403,
-            message = "Forbidden. This endpoint should be only called by Spotify",
+            message = "User didn't give permission to access his Spotify account",
             response = ErrorResponse.class
         ),
         @ApiResponse(
@@ -88,8 +83,8 @@ public interface SpotifyAuthAPI {
         )
     })
     String callback(
-        @RequestParam
-        @ApiParam(value = "OAuth2 access code issued by Spotify", required = true)
+        @RequestParam(required = false)
+        @ApiParam("OAuth2 access code issued by Spotify")
         String code,
 
         @RequestParam(required = false)
