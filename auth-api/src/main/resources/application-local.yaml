@@ -1,0 +1,47 @@
+server:
+  port: 5980
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tokens?createDatabaseIfNotExist=true
+    username: root
+    password: docker
+  sql:
+    init:
+      mode: always
+circuitBreaker:
+  minimumNumberOfCalls: 3
+  slidingWindowSize: 8
+  failureRateThreshold: 70.0
+service:
+  encryptionAlgName: AES
+  encryptionKeySize: 16
+  encryptionTransformation: AES/CBC/PKCS5Padding
+  uuidSecret: secretsecretsecretsecretsecretsecretsecret
+  jwtIssuer: auth-service
+  jwtSecret: secretsecretsecretsecretsecretsecretsecret
+  jwtExpirationSeconds: 600
+  uuidExpirationSeconds: 600
+  accessTokenExpirationSeconds: 600
+  spotify:
+    clientScope: 'user-library-read user-library-modify playlist-read-private
+      playlist-modify-public playlist-modify-private'
+    grantType: authorization_code
+    clientRedirectUrl: http://localhost:5980/api/auth/spotify/callback
+    backRedirectUrl: http://localhost:5980
+    urls:
+      auth: https://accounts.spotify.com/authorize
+      token: https://accounts.spotify.com/api/token
+logging:
+  level:
+    com.mf.auth: INFO
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+swagger:
+  url: /swagger-ui/index.html
+  title: Auth API [LOCAL PROFILE]
+  description: Authentication API
+  version: "1.0.0-SNAPSHOT"
+  controllersPackage: com.mf.auth.adapter.in.rest
