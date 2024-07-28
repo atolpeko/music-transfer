@@ -1,3 +1,9 @@
+# Dev properties with DEBUG logging info.
+#
+# Set service.spotify.clientId and service.spotify.clientSecret as app params
+# or SERVICE_SPOTIFY_CLIENTID and SERVICE_SPOTIFY_CLIENTSECRET as
+# environment variables.
+
 server:
   port: 5980
 spring:
