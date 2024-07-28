@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS access_token
 (
     id                SERIAL              PRIMARY KEY,
     token             VARCHAR(500)        NOT NULL,
+    is_used           BIT                 NOT NULL,
     expires_at        TIMESTAMP           NOT NULL
 );
 

@@ -1,5 +1,6 @@
 package com.mf.auth.usecase;
 
+import com.mf.auth.domain.entity.AccessToken;
 import com.mf.auth.domain.entity.Token;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
@@ -50,7 +51,7 @@ public interface AuthUseCase {
      * @throws AuthorizationException  if OAuth2 authorization fails
      * @throws AuthorizationException  if the provided UUID is invalid
      */
-    Token auth(String uuid, String service, String authCode);
+    AccessToken auth(String uuid, String service, String authCode);
 
     /**
      * Obtain OAuth2 token using authorization code and return
@@ -67,5 +68,5 @@ public interface AuthUseCase {
      * @throws AuthorizationException  if the provided UUID is invalid
      * @throws AuthorizationException  if the provided JWT is invalid
      */
-    Token auth(String uuid, String jwt, String service, String authCode);
+    AccessToken auth(String uuid, String jwt, String service, String authCode);
 }

@@ -44,6 +44,17 @@ public interface JWTRepositoryPort {
     void save(JWT jwt);
 
     /**
+     * Update the access token.
+     *
+     * @param id      JWT ID
+     * @param isUsed  Has the access token been used?
+     *
+     * @throws DataModificationException  if a token cannot be updated
+     * @throws DataAccessException        in repository is unavailable
+     */
+    void updateAccessTokenByJwtId(String id, boolean isUsed);
+
+    /**
      * Delete a JWT bt its ID.
      *
      * @param id  JWT ID

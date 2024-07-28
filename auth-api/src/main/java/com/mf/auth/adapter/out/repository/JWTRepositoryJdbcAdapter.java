@@ -1,7 +1,7 @@
 package com.mf.auth.adapter.out.repository;
 
+import com.mf.auth.domain.entity.AccessToken;
 import com.mf.auth.domain.entity.JWT;
-import com.mf.auth.domain.entity.Token;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.port.exception.DataAccessException;
 import com.mf.auth.port.exception.DataModificationException;
@@ -20,27 +20,41 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 @RequiredArgsConstructor
 public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
+
+    private static final String SELECT_BY_ID =
+        "SELECT j.id AS jwt_id, j.token AS jwt_value, "
+            + "j.expires_at AS jwt_expires_at, at.id AS at_id, at.token AS at_value, "
+            + "at.is_used AS at_is_used, at.expires_at AS at_expires_at "
+            + "FROM jwt j "
+            + "INNER JOIN access_token at ON at.id = j.access_token_id "
+            + "WHERE j.id = ? AND j.expires_at > CURRENT_TIMESTAMP";
+
     private static final String SELECT_BY_VALUE =
         "SELECT j.id AS jwt_id, j.token AS jwt_value, "
-            + "j.expires_at AS jwt_expires_at, at.token AS at_value, "
-            + "at.expires_at AS at_expires_at "
+            + "j.expires_at AS jwt_expires_at, at.id AS at_id, at.token AS at_value, "
+            + "at.is_used AS at_is_used, at.expires_at AS at_expires_at "
             + "FROM jwt j "
             + "INNER JOIN access_token at ON at.id = j.access_token_id "
             + "WHERE j.token = ? AND j.expires_at > CURRENT_TIMESTAMP";
 
     private static final String SELECT_BY_ACCESS_TOKEN =
         "SELECT j.id AS jwt_id, j.token AS jwt_value, "
-            + "j.expires_at AS jwt_expires_at, at.token AS at_value, "
-            + "at.expires_at AS at_expires_at "
+            + "j.expires_at AS jwt_expires_at, at.id AS at_id, at.token AS at_value, "
+            + "at.is_used AS at_is_used, at.expires_at AS at_expires_at "
             + "FROM access_token at "
             + "INNER JOIN jwt j ON at.id = j.access_token_id "
-            + "WHERE at.token = ? AND at.expires_at > CURRENT_TIMESTAMP";
+            + "WHERE at.token = ? "
+            + "AND at.is_used = 0 "
+            + "AND at.expires_at > CURRENT_TIMESTAMP ";
 
     private static final String INSERT_INTO_JWT =
         "INSERT INTO jwt(token, expires_at, access_token_id) VALUES (?, ?, ?)";
 
     private static final String INSERT_INTO_ACCESS_TOKEN =
-        "INSERT INTO access_token(token, expires_at) VALUES (?, ?)";
+        "INSERT INTO access_token(token, expires_at, is_used) VALUES (?, ?, ?)";
+
+    private static final String UPDATE_ACCESS_TOKEN =
+        "UPDATE access_token SET is_used = ? WHERE id = ?";
 
     private static final String DELETE = "DELETE FROM jwt WHERE id = ?";
 
@@ -51,9 +65,11 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             resultSet.getString("jwt_id"),
             resultSet.getString("jwt_value"),
             DateTimeUtils.fromString(resultSet.getString("jwt_expires_at")),
-            new Token(
+            new AccessToken(
+                resultSet.getString("at_id"),
                 resultSet.getString("at_value"),
-                DateTimeUtils.fromString(resultSet.getString("at_expires_at"))
+                DateTimeUtils.fromString(resultSet.getString("at_expires_at")),
+                resultSet.getBoolean("at_is_used")
             )
         );
 
@@ -85,7 +101,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
         saveJwt(jwt, id);
     }
 
-    private int saveAccessToken(Token token) {
+    private int saveAccessToken(AccessToken token) {
         try {
             var keyHolder = new GeneratedKeyHolder();
             jdbc.update(connection -> {
@@ -95,6 +111,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
                 );
                 ps.setString(1, token.getValue());
                 ps.setTimestamp(2, Timestamp.valueOf(token.getExpiresAt()));
+                ps.setInt(3, (token.isUsed()) ? 1 : 0);
                 return ps;
             }, keyHolder);
 
@@ -119,6 +136,24 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             throw new DataAccessException(msg, e);
         } catch (Exception e) {
             var msg = "Failed to save JWT: " + e.getMessage();
+            throw new DataModificationException(msg, e);
+        }
+    }
+
+    @Override
+    public void updateAccessTokenByJwtId(String id, boolean isUsed) {
+        try {
+            var jwt = findBy(SELECT_BY_ID, id)
+                .orElseThrow(() -> new DataModificationException("No JWT found"));
+            var tokenId = jwt.getAccessToken().getId();
+            jdbc.update(UPDATE_ACCESS_TOKEN, isUsed, tokenId);
+        } catch (DataModificationException e) {
+            throw e;
+        } catch (DataAccessResourceFailureException e) {
+            var msg = "Failed to access DB: " + e.getMessage();
+            throw new DataAccessException(msg, e);
+        } catch (Exception e) {
+            var msg = "Failed to update JWT: " + e.getMessage();
             throw new DataModificationException(msg, e);
         }
     }

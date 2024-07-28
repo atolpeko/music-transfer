@@ -2,7 +2,6 @@ package com.mf.auth.usecase;
 
 import static com.mf.auth.fixture.AuthUseCaseFixture.ACCESS_TOKEN;
 import static com.mf.auth.fixture.AuthUseCaseFixture.AUTH_CODE;
-import static com.mf.auth.fixture.AuthUseCaseFixture.EXPIRATION_SECONDS;
 import static com.mf.auth.fixture.AuthUseCaseFixture.EXPIRED_JWT;
 import static com.mf.auth.fixture.AuthUseCaseFixture.JWT;
 import static com.mf.auth.fixture.AuthUseCaseFixture.NEW_JWT;
@@ -35,7 +34,6 @@ import com.mf.auth.port.MusicServicePort;
 import com.mf.auth.port.UUIDRepositoryPort;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
-import com.mf.auth.usecase.properties.UseCaseProperties;
 import com.mf.auth.usecase.valueobject.ServiceMap;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -72,9 +70,6 @@ class AuthUseCaseImplTest {
 	JWTRepositoryPort jwtRepository;
 
 	@Mock
-	UseCaseProperties properties;
-
-	@Mock
 	ServiceMap serviceMap;
 
 	@Mock
@@ -90,9 +85,6 @@ class AuthUseCaseImplTest {
 		when(serviceMap.get(SERVICE_1)).thenReturn(musicService);
 		when(serviceMap.get(SERVICE_2)).thenReturn(musicService);
 
-		when(properties.uuidExpirationSeconds()).thenReturn(EXPIRATION_SECONDS);
-		when(properties.accessTokenExpirationSeconds()).thenReturn(EXPIRATION_SECONDS);
-
 		doAnswer(invocation -> {
 			Callable<Optional<Token>> task = invocation.getArgument(0);
 			return task.call();
@@ -107,7 +99,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidGeneration() {
-		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(UUID);
+		when(tokenService.generateUuid()).thenReturn(UUID);
 
 		var token = target.generateUuid();
 
@@ -117,7 +109,7 @@ class AuthUseCaseImplTest {
 
 	@Test
 	void testUuidGenerationThrowsExceptionIfDbUnavailable() {
-		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(UUID);
+		when(tokenService.generateUuid()).thenReturn(UUID);
 		doThrow(RepositoryAccessException.class)
 			.when(uuidRepository).save(UUID);
 
@@ -131,7 +123,7 @@ class AuthUseCaseImplTest {
 		when(jwtService.isValid(JWT.getValue())).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_1);
 		when(jwtService.generate(UUID, TOKEN_MAP)).thenReturn(JWT);
-		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(ACCESS_TOKEN);
+		when(tokenService.generateAccessToken()).thenReturn(ACCESS_TOKEN);
 
 		var token = target.auth(UUID.getValue(), SERVICE_1, AUTH_CODE);
 
@@ -148,7 +140,7 @@ class AuthUseCaseImplTest {
 		when(jwtService.isValid(JWT.getValue())).thenReturn(true);
 		when(musicService.oauth2ExchangeCode(AUTH_CODE)).thenReturn(OAUTH_2_TOKEN_2);
 		when(jwtService.update(UUID, JWT, NEW_TOKEN_MAP)).thenReturn(NEW_JWT);
-		when(tokenService.generate(EXPIRATION_SECONDS)).thenReturn(ACCESS_TOKEN);
+		when(tokenService.generateAccessToken()).thenReturn(ACCESS_TOKEN);
 
 		var token = target.auth(UUID.getValue(), JWT.getValue(), SERVICE_2, AUTH_CODE);
 

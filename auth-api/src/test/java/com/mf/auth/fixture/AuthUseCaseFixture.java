@@ -1,5 +1,6 @@
 package com.mf.auth.fixture;
 
+import com.mf.auth.domain.entity.AccessToken;
 import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.entity.OAuth2Token;
 import com.mf.auth.domain.entity.Token;
@@ -27,7 +28,8 @@ public class AuthUseCaseFixture {
 		SERVICE_2, OAUTH_2_TOKEN_2
 	);
 
-	public static final Token ACCESS_TOKEN = new Token("rofkdfk", EXPIRATION_SECONDS);
+	public static final AccessToken
+		ACCESS_TOKEN = new AccessToken("rofkdfk", EXPIRATION_SECONDS);
 
 	public static JWT JWT = new JWT("fggrdfsfsgr", EXPIRATION_SECONDS, ACCESS_TOKEN);
 	public static JWT NEW_JWT = new JWT("ldfmdf", EXPIRATION_SECONDS, ACCESS_TOKEN);

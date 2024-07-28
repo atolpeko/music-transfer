@@ -3,7 +3,6 @@ package com.mf.auth.usecase;
 import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.port.JWTRepositoryPort;
-
 import com.mf.auth.port.exception.DataAccessException;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
@@ -27,11 +26,18 @@ public class JWTUseCaseImpl implements JWTUseCase {
     @Override
     public JWT obtain(String accessToken) {
         try {
-            var jwt = breaker.executeCallable(() ->
-                jwtRepository.findValidByAccessToken(accessToken));
-            return jwt.orElseThrow(() ->
-                new AuthorizationException("Invalid access token provided")
+            var jwt = breaker.executeCallable(
+                () -> jwtRepository.findValidByAccessToken(accessToken)
+            ).orElseThrow(
+                () -> new AuthorizationException("Invalid access token provided")
             );
+
+            jwt.revokeAccess();
+            breaker.executeRunnable(
+                () -> jwtRepository.updateAccessTokenByJwtId(jwt.getId(), true)
+            );
+
+            return jwt;
         } catch (UseCaseException e) {
             throw e;
         } catch (DataAccessException e) {
@@ -43,6 +49,13 @@ public class JWTUseCaseImpl implements JWTUseCase {
 
     @Override
     public boolean isValid(String jwt) {
-        return jwtService.isValid(jwt);
+        try {
+            var token = breaker.executeCallable(() -> jwtRepository.findValidByValue(jwt));
+            return token
+                .map(t -> t.isValid() && jwtService.isValid(t.getValue()))
+                .orElse(false);
+        } catch (Exception e) {
+            throw new RepositoryAccessException("Failed to access DB", e);
+        }
     }
 }

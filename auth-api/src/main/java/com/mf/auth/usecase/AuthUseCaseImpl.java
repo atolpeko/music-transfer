@@ -1,5 +1,6 @@
 package com.mf.auth.usecase;
 
+import com.mf.auth.domain.entity.AccessToken;
 import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.entity.Token;
 import com.mf.auth.domain.service.JWTService;
@@ -12,7 +13,6 @@ import com.mf.auth.port.exception.DataModificationException;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
 import com.mf.auth.usecase.exception.UseCaseException;
-import com.mf.auth.usecase.properties.UseCaseProperties;
 import com.mf.auth.usecase.valueobject.ServiceMap;
 import com.mf.auth.domain.entity.OAuth2Token;
 
@@ -39,13 +39,12 @@ public class AuthUseCaseImpl implements AuthUseCase {
 	private final JWTRepositoryPort jwtRepository;
 
 	private final CircuitBreaker breaker;
-	private final UseCaseProperties properties;
 	private final ServiceMap serviceMap;
 
 	@Override
 	public Token generateUuid() {
 		try {
-			var uuid = tokenService.generate(properties.uuidExpirationSeconds());
+			var uuid = tokenService.generateUuid();
 			breaker.executeRunnable(() -> uuidRepository.save(uuid));
 			log.debug("Generated UUID for a new user");
 			return uuid;
@@ -69,15 +68,14 @@ public class AuthUseCaseImpl implements AuthUseCase {
 	}
 
 	@Override
-	public Token auth(String uuidValue, String service, String authCode) {
+	public AccessToken auth(String uuidValue, String service, String authCode) {
 		try {
 			var uuid = findValidUuid(uuidValue);
 			var token = exchangeOAuth2Code(service, authCode);
 
 			log.debug("Generating JWT with {} OAuth2 token", service);
 			var jwt = jwtService.generate(uuid, Map.of(service, token));
-			var accessToken = tokenService.generate(
-				properties.accessTokenExpirationSeconds());
+			var accessToken = tokenService.generateAccessToken();
 			jwt.setAccessToken(accessToken);
 
 			breaker.executeRunnable(() -> jwtRepository.save(jwt));
@@ -115,7 +113,12 @@ public class AuthUseCaseImpl implements AuthUseCase {
 	}
 
 	@Override
-	public Token auth(String uuidValue, String jwt, String service, String authCode) {
+	public AccessToken auth(
+		String uuidValue,
+		String jwt,
+		String service,
+		String authCode
+	) {
 		try {
 			var uuid = findValidUuid(uuidValue);
 
@@ -133,8 +136,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
 			log.debug("Updating JWT adding {} OAuth2 token", service);
 			var newJwt = jwtService.update(uuid, oldJwt, Map.of(service, token));
-			var accessToken = tokenService.generate(
-				properties.accessTokenExpirationSeconds());
+			var accessToken = tokenService.generateAccessToken();
 			newJwt.setAccessToken(accessToken);
 
 			breaker.executeRunnable(() -> jwtRepository.deleteById(oldJwt.getId()));

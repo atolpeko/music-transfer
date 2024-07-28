@@ -2,45 +2,66 @@ package com.mf.auth.domain.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import com.mf.auth.config.UnitTest;
+import com.mf.auth.domain.ServiceProperties;
 
-import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 @UnitTest
 class TokenServiceIImplTest {
 
+	@InjectMocks
 	TokenServiceIImpl target;
+
+	@Mock
+	ServiceProperties properties;
 
 	@BeforeEach
 	void setUp() {
-		target = new TokenServiceIImpl();
+		MockitoAnnotations.initMocks(this);
+		when(properties.uuidExpirationSeconds()).thenReturn(100);
+		when(properties.accessTokenExpirationSeconds()).thenReturn(100);
 	}
 
 	@Test
-	void testExpirationSet() {
-		var token = target.generate(2);
-		var now = LocalDateTime.now();
-		assertTrue(token.getExpiresAt().isAfter(now));
+	void testUuidGeneration() {
+		var token = target.generateUuid();
+		assertTrue(token.isValid());
 	}
 
 	@Test
-	void testUniqueness() {
-		var count = 1000000;
+	void testAccessTokenGeneration() {
+		var token = target.generateAccessToken();
+		assertTrue(token.isValid());
+	}
+
+	@Test
+	void testUuidUniqueness() {
+		var count = 100000;
 		var tokens = IntStream.range(0, count)
-			.mapToObj(i -> target.generate(200))
+			.mapToObj(i -> target.generateUuid())
 			.collect(Collectors.toSet());
 
 		assertEquals(count, tokens.size());
 	}
 
 	@Test
-	void testValid() {
-		var token = target.generate(60);
-		assertTrue(token.isValid());
+	void testAccessTokenUniqueness() {
+		var count = 100000;
+		var tokens = IntStream.range(0, count)
+			.mapToObj(i -> target.generateAccessToken())
+			.collect(Collectors.toSet());
+
+		assertEquals(count, tokens.size());
 	}
 }

@@ -28,6 +28,12 @@ public class SpringServiceProperties implements ServiceProperties {
 	@Value("${service.encryptionTransformation}")
 	private String encryptionTransformation;
 
+	@Value("${service.uuidExpirationSeconds}")
+	private int uuidExpiration;
+
+	@Value("${service.accessTokenExpirationSeconds}")
+	private int accessTokenExpiration;
+
 	@PostConstruct
 	public void assertSecretLength() {
 		if (jwtSecret.length() < 35) {
@@ -64,5 +70,15 @@ public class SpringServiceProperties implements ServiceProperties {
 	@Override
 	public String encryptionTransformation() {
 		return encryptionTransformation;
+	}
+
+	@Override
+	public int uuidExpirationSeconds() {
+		return uuidExpiration;
+	}
+
+	@Override
+	public int accessTokenExpirationSeconds() {
+		return accessTokenExpiration;
 	}
 }

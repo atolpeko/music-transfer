@@ -9,7 +9,6 @@ import com.mf.auth.usecase.AuthUseCase;
 import com.mf.auth.usecase.AuthUseCaseImpl;
 import com.mf.auth.usecase.JWTUseCase;
 import com.mf.auth.usecase.JWTUseCaseImpl;
-import com.mf.auth.usecase.properties.UseCaseProperties;
 import com.mf.auth.usecase.valueobject.ServiceMap;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -28,7 +27,6 @@ public class UseCaseConfig {
         UUIDRepositoryPort uuidRepository,
         JWTRepositoryPort jwtRepository,
         CircuitBreaker breaker,
-        UseCaseProperties properties,
         ServiceMap serviceMap
     ) {
         return new AuthUseCaseImpl(
@@ -38,7 +36,6 @@ public class UseCaseConfig {
             uuidRepository,
             jwtRepository,
             breaker,
-            properties,
             serviceMap
         );
     }

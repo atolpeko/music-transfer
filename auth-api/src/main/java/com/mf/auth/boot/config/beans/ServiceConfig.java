@@ -19,8 +19,8 @@ import org.springframework.context.annotation.Configuration;
 public class ServiceConfig {
 
 	@Bean
-	public TokenService tokenService() {
-		return new TokenServiceIImpl();
+	public TokenService tokenService(ServiceProperties properties) {
+		return new TokenServiceIImpl(properties);
 	}
 
 	@Bean

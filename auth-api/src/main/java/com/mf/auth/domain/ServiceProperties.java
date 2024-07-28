@@ -8,4 +8,6 @@ public interface ServiceProperties {
 	String encryptionAlgName();
 	int encryptionKeySize();
 	String encryptionTransformation();
+	int uuidExpirationSeconds();
+	int accessTokenExpirationSeconds();
 }

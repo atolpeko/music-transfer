@@ -45,6 +45,18 @@ public class TokenTest {
 	}
 
 	@Test
+	void testObtainTokenOnlyOnce() throws Exception {
+		var uuid = authUseCase.generateUuid().getValue();
+		var token = authUseCase.auth(uuid, MusicService.SPOTIFY.name(), SPOTIFY_CODE);
+		jwtUseCase.obtain(token.getValue());
+
+		mvc.perform(get(GET_JWT_URL)
+				.param("accessToken", token.getValue()))
+			.andDo(print())
+			.andExpect(status().is(401));
+	}
+
+	@Test
 	void testReturn401WhenAccessCodeIsInvalid() throws Exception {
 		mvc.perform(get(GET_JWT_URL)
 				.param("accessToken", "343434"))

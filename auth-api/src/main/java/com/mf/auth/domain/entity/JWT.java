@@ -13,26 +13,30 @@ import lombok.Setter;
 @EqualsAndHashCode(callSuper = true)
 public class JWT extends Token {
 	private String id;
-	private Token accessToken;
+	private AccessToken accessToken;
+
+	@Default
+	public JWT(String id, String value, LocalDateTime expiresAt, AccessToken accessToken) {
+		super(value, expiresAt);
+		this.id = id;
+		this.accessToken = accessToken;
+	}
 
 	public JWT(String value, int expiresInSeconds) {
 		super(value, expiresInSeconds);
 	}
 
-	public JWT(String value, LocalDateTime expiresAt, Token accessToken) {
+	public JWT(String value, LocalDateTime expiresAt, AccessToken accessToken) {
 		super(value, expiresAt);
 		this.accessToken = accessToken;
 	}
 
-	public JWT(String value, int expiresInSeconds, Token accessToken) {
+	public JWT(String value, int expiresInSeconds, AccessToken accessToken) {
 		super(value, expiresInSeconds);
 		this.accessToken = accessToken;
 	}
 
-	@Default
-	public JWT(String id, String value, LocalDateTime expiresAt, Token accessToken) {
-		super(value, expiresAt);
-		this.id = id;
-		this.accessToken = accessToken;
+	public void revokeAccess() {
+		accessToken.setUsed(true);
 	}
 }
