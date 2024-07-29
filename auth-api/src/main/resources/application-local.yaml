@@ -8,7 +8,7 @@ server:
   port: 5980
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tokens?createDatabaseIfNotExist=true
+    url: jdbc:postgresql://localhost:5432/mf?createDatabaseIfNotExist=true
     username: root
     password: docker
   sql:
