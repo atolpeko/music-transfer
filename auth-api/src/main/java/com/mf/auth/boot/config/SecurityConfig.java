@@ -1,4 +1,4 @@
-package com.mf.auth.boot.config.security;
+package com.mf.auth.boot.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +13,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.authorizeRequests()
-			.anyRequest().permitAll();
+				.anyRequest().permitAll()
+			.and()
+			.sessionManagement()
+				.disable()
+			.formLogin()
+				.disable();
 	}
 }
