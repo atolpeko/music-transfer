@@ -111,7 +111,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
                 );
                 ps.setString(1, token.getValue());
                 ps.setTimestamp(2, Timestamp.valueOf(token.getExpiresAt()));
-                ps.setInt(3, (token.isUsed()) ? 1 : 0);
+                ps.setBoolean(3, token.isUsed());
                 return ps;
             }, keyHolder);
 
