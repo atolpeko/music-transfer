@@ -5,6 +5,8 @@ import com.mf.auth.domain.entity.OAuth2Token;
 import com.mf.auth.port.MusicServicePort;
 import com.mf.auth.port.exception.MusicServiceException;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @RequiredArgsConstructor
-public abstract class BaseMusicService implements MusicServicePort {
-	private final MusicServiceProperties properties;
+public abstract class StandardOauth2MusicService implements MusicServicePort {
+	protected final MusicServiceProperties properties;
 	private final RestTemplate restTemplate;
+	private final CircuitBreaker breaker;
 
 	@Override
 	public OAuth2Token oauth2ExchangeCode(String authCode) {
@@ -36,7 +39,9 @@ public abstract class BaseMusicService implements MusicServicePort {
 
 			var url = properties.tokenUrl();
 			var request = new HttpEntity<>(params, headers);
-			var response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
+			var response = breaker.executeCallable(
+				() -> restTemplate.exchange(url, HttpMethod.POST, request, Map.class)
+			);
 
 			var body = response.getBody();
 			return new OAuth2Token(

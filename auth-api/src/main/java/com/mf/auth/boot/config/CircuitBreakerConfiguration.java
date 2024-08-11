@@ -1,8 +1,12 @@
 package com.mf.auth.boot.config;
 
-import com.mf.auth.boot.config.properties.CircuitBreakerProperties;
+import com.mf.auth.boot.config.properties.SpringCircuitBreakerProperties;
+import com.mf.auth.port.exception.MusicServiceException;
+import com.mf.auth.port.exception.RepositoryException;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import org.springframework.context.annotation.Bean;
@@ -12,9 +16,10 @@ import org.springframework.context.annotation.Configuration;
 public class CircuitBreakerConfiguration {
 
 	@Bean
-	public CircuitBreaker circuitBreaker(CircuitBreakerProperties properties) {
+	public CircuitBreaker circuitBreaker(SpringCircuitBreakerProperties properties) {
 		var config = CircuitBreakerConfig.custom()
-			.slidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED)
+			.slidingWindowType(SlidingWindowType.TIME_BASED)
+			.ignoreExceptions(MusicServiceException.class, RepositoryException.class)
 			.minimumNumberOfCalls(properties.getMinimumNumberOfCalls())
 			.slidingWindowSize(properties.getSlidingWindowSize())
 			.failureRateThreshold(properties.getFailureRateThreshold())
