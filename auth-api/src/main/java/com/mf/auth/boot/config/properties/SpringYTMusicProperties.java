@@ -7,32 +7,37 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-@Qualifier("spotifyProperties")
-public class SpotifyProperties implements MusicServiceProperties {
+@Qualifier("ytMusicProperties")
+public class SpringYTMusicProperties implements MusicServiceProperties {
 
-    @Value("${service.spotify.clientId}")
+    @Value("${service.ytmusic.name}")
+    private String name;
+
+    @Value("${service.ytmusic.clientId}")
     private String clientId;
 
-    @Value("${service.spotify.clientSecret}")
+    @Value("${service.ytmusic.clientSecret}")
     private String clientSecret;
 
-    @Value("${service.spotify.clientScope}")
+    @Value("${service.ytmusic.clientScope}")
     private String clientScope;
 
-    @Value("${service.spotify.grantType}")
+    @Value("${service.ytmusic.grantType}")
     private String grantType;
 
-    @Value("${service.spotify.clientRedirectUrl}")
+    @Value("${service.ytmusic.clientRedirectUrl}")
     private String redirectUrl;
 
-    @Value("${service.spotify.backRedirectUrl}")
-    private String backRedirectUrl;
-
-    @Value("${service.spotify.urls.auth}")
+    @Value("${service.ytmusic.urls.auth}")
     private String authUrl;
 
-    @Value("${service.spotify.urls.token}")
+    @Value("${service.ytmusic.urls.token}")
     private String tokenUrl;
+
+    @Override
+    public String name() {
+        return name;
+    }
 
     @Override
     public String clientId() {
@@ -67,10 +72,5 @@ public class SpotifyProperties implements MusicServiceProperties {
     @Override
     public String redirectUrl() {
         return redirectUrl;
-    }
-
-    @Override
-    public String backRedirectUrl() {
-        return backRedirectUrl;
     }
 }

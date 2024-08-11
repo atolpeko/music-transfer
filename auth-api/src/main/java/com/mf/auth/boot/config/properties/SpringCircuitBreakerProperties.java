@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Component
-public class CircuitBreakerProperties {
+public class SpringCircuitBreakerProperties {
 
     @Value("${circuitBreaker.minimumNumberOfCalls}")
     private int minimumNumberOfCalls;
