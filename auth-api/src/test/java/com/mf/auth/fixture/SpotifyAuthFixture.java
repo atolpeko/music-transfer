@@ -5,6 +5,7 @@ public class SpotifyAuthFixture {
 
     public static final String AUTH_URL = "/api/auth/spotify/redirect";
     public static final String CALLBACK_URL = "/api/auth/spotify/callback";
+    public static final String REDIRECT_URL = "http://localhost:5980/";
     public static final String TOKEN_VALUE = "mfknklmkvnkl";
 
     public static String spotifyAuthCodeJson() {

@@ -17,8 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.mf.auth.fixture.SpotifyAuthFixture.AUTH_URL;
 import static com.mf.auth.fixture.SpotifyAuthFixture.CALLBACK_URL;
+import static com.mf.auth.fixture.SpotifyAuthFixture.REDIRECT_URL;
 import static com.mf.auth.fixture.SpotifyAuthFixture.SPOTIFY_CODE;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,11 +62,12 @@ class SpotifyAuthTest {
 		assertTrue(redirect.startsWith(properties.authUrl()));
 		assertNotNull(state);
 		assertNotNull(state.getUuid());
-		assertNotNull(state.getRedirectUrl());
+		assertEquals(REDIRECT_URL, state.getRedirectUrl());
 	}
 
 	private String performAuthRedirect() throws Exception {
-		return mvc.perform(get(AUTH_URL))
+		return mvc.perform(get(AUTH_URL)
+				.param("redirectUrl", REDIRECT_URL))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
 			.andReturn()
@@ -79,6 +82,7 @@ class SpotifyAuthTest {
 		var prevJwt = jwtUseCase.obtain(prevToken.getValue()).getValue();
 
 		var redirect = mvc.perform(get(AUTH_URL)
+				.param("redirectUrl", REDIRECT_URL)
 				.param("jwt", prevJwt))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
@@ -95,12 +99,20 @@ class SpotifyAuthTest {
 		assertTrue(redirect.startsWith(properties.authUrl()));
 		assertNotNull(state);
 		assertNotNull(jwt);
-		assertNotNull(state.getRedirectUrl());
+		assertEquals(REDIRECT_URL, state.getRedirectUrl());
+	}
+
+	@Test
+	void testReturn400IfNoRedirectUrlProvided() throws Exception {
+		mvc.perform(get(AUTH_URL))
+			.andDo(print())
+			.andExpect(status().is(400));
 	}
 
 	@Test
 	void testReturn401IfInvalidJwtProvided() throws Exception {
 		mvc.perform(get(AUTH_URL)
+				.param("redirectUrl", REDIRECT_URL)
 				.param("jwt", "335336"))
 			.andDo(print())
 			.andExpect(status().is(401));

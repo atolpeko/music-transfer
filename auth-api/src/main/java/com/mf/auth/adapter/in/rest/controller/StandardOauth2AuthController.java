@@ -13,9 +13,11 @@ import com.mf.auth.usecase.AuthUseCase;
 import com.mf.auth.usecase.JWTUseCase;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
 
+@Log4j2
 @RequiredArgsConstructor
 abstract class StandardOauth2AuthController {
 	private final MusicService service;
@@ -25,12 +27,13 @@ abstract class StandardOauth2AuthController {
 	private final MusicServiceProperties musicProperties;
 	private final RestProperties properties;
 
-	public String redirectToAuth(String jwt) throws Exception {
+	public String redirectToAuth(String redirectUrl, String jwt) throws Exception {
 		var uuid = authUseCase.generateUuid().getValue();
 		var encryptedJwt = encryptJwt(jwt, uuid);
 		var encryptedUuid = authUseCase.encryptWithSecret(uuid, properties.uuidSecret());
-		var url = buildAuthUrl(encryptedUuid, encryptedJwt,
-			musicProperties.backRedirectUrl());
+		var url = buildAuthUrl(encryptedUuid, encryptedJwt, redirectUrl);
+
+		log.debug("Redirecting to {} login page", service.name());
 		return "redirect:" + url;
 	}
 
