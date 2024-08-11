@@ -12,11 +12,11 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class AccessToken extends Token {
-	private String id;
+	private int id;
 	private boolean isUsed;
 
 	@Default
-	public AccessToken(String id, String value, LocalDateTime expiresAt, boolean isUsed) {
+	public AccessToken(int id, String value, LocalDateTime expiresAt, boolean isUsed) {
 		super(value, expiresAt);
 		this.id = id;
 		this.isUsed = isUsed;
