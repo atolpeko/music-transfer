@@ -1,4 +1,4 @@
-package com.mf.auth.domain.exception;
+package com.mf.api.domain.service.exception;
 
 public class InvalidJWTException extends RuntimeException {
 
