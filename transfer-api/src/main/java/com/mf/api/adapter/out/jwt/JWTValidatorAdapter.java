@@ -1,9 +1,9 @@
 package com.mf.api.adapter.out.jwt;
 
 import com.mf.api.port.JWTValidatorPort;
-import com.mf.api.util.Param;
-import com.mf.api.util.RestRequest;
-import com.mf.api.util.RestClient;
+import com.mf.api.util.restclient.Param;
+import com.mf.api.util.restclient.RestRequest;
+import com.mf.api.util.restclient.RestClient;
 
 import java.util.List;
 
