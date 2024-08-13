@@ -1,4 +1,4 @@
-package com.mf.api.util;
+package com.mf.api.util.restclient;
 
 import com.mf.api.domain.entity.OAuth2Token;
 

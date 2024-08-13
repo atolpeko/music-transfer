@@ -1,5 +1,8 @@
-package com.mf.api.util;
+package com.mf.api.util.restclient;
 
+import com.mf.api.usecase.exception.AuthorizationException;
+import com.mf.api.util.restclient.exception.ClientErrorException;
+import com.mf.api.util.restclient.exception.ServerErrorException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
@@ -38,11 +41,10 @@ public class RestClient {
 			var items = mapper.apply(body);
 
 			var hasNext = items.size() == request.getLimit();
-			return new PageableRestResponse<>(
-				items.subList(0, items.size() - 1),
-				request.getOffset(),
-				hasNext
-			);
+			items = (items.size() == request.getLimit())
+				? items.subList(0, items.size() - 1)
+				: items;
+			return new PageableRestResponse<>(items, request.getOffset(), hasNext);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -66,11 +68,10 @@ public class RestClient {
 		Callable<ResponseEntity<T>> req = () -> breaker.executeCallable(
 			() -> restTemplate.exchange(url, request.getMethod(), entity, clazz)
 		);
-		if (request.isRetryIfFails()) {
-			return retry.executeCallable(req);
-		} else {
-			return req.call();
-		}
+
+		return (request.isRetryIfFails())
+			? checkResponse(retry.executeCallable(req))
+			: checkResponse(req.call());
 	}
 
 	private String getUrl(RestRequest request) {
@@ -118,6 +119,19 @@ public class RestClient {
 		return request.getJson() != null
 			? new HttpEntity<>(request.getJson(), headers)
 			: new HttpEntity<>(headers);
+	}
+
+	private <T> ResponseEntity<T> checkResponse(ResponseEntity<T> response) {
+		var status = response.getStatusCode();
+		if (status.is2xxSuccessful() || status.is3xxRedirection()) {
+			return response;
+		} else if (status.value() == 401 || status.value() == 403) {
+			throw new AuthorizationException();
+		} else if (status.is4xxClientError()) {
+			throw new ClientErrorException();
+		} else {
+			throw new ServerErrorException();
+		}
 	}
 
 	public <T> T request(

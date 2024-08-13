@@ -1,4 +1,4 @@
-package com.mf.api.util;
+package com.mf.api.util.restclient;
 
 import lombok.Data;
 
