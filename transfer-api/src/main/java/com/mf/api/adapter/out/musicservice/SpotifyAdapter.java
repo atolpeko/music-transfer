@@ -121,6 +121,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			}
 
 			return Optional.of(response.get(0));
+		} catch (IllegalArgumentException e) {
+			throw e;
 		} catch (AuthException e) {
 			throw new AccessException("Authorization with Spotify failed", e);
 		} catch (Exception e) {
@@ -130,9 +132,12 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
 	private String buildSearchQuery(TrackSearchCriteria criteria) {
 		var builder = new StringBuilder();
-		if (!criteria.getTrackName().isBlank()) {
+		if (criteria.getTrackName().isBlank()) {
+			throw new IllegalArgumentException("At least track name should be set");
+		} else {
 			builder.append(criteria.getTrackName());
 		}
+
 		if (!criteria.getAlbumName().isBlank()) {
 			builder.append(" album:").append((criteria.getAlbumName()));
 		}

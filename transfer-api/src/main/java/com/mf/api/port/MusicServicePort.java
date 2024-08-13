@@ -63,9 +63,10 @@ public interface MusicServicePort {
 	 *
 	 * @return a track if exists of Optional.empty()
 	 *
-	 * @throws AccessException         if OAuth2 authorization fails
-	 * @throws MusicServiceException   if any other music service related error occurs
-	 * @throws NotSupportedException   may throw if this operation is not implemented
+	 * @throws AccessException           if OAuth2 authorization fails
+	 * @throws IllegalArgumentException  if invalid criteria provided
+	 * @throws MusicServiceException     if any other music service related error occurs
+	 * @throws NotSupportedException     may throw if this operation is not implemented
 	 */
 	Optional<Track> searchTracks(OAuth2Token token, TrackSearchCriteria criteria);
 
