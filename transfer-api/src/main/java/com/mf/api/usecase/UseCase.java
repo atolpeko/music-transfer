@@ -4,7 +4,7 @@ import com.mf.api.usecase.exception.AuthorizationException;
 import com.mf.api.usecase.exception.UseCaseException;
 import com.mf.api.usecase.exception.InvalidRequestException;
 import com.mf.api.usecase.exception.InvalidStateException;
-import com.mf.api.usecase.valueobject.Result;
+import com.mf.api.usecase.entity.TransferResult;
 import com.mf.api.usecase.entity.TransferRequest;
 
 public interface UseCase {
@@ -21,5 +21,5 @@ public interface UseCase {
      * @throws InvalidStateException    if there are no tracks in source
      * @throws UseCaseException         in case of any other error
      */
-    Result transfer(TransferRequest request);
+    TransferResult transfer(TransferRequest request);
 }
