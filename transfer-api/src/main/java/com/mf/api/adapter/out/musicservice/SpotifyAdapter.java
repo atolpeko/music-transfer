@@ -145,7 +145,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			builder.append(" artist:").append(criteria.getArtists().get(0));
 		}
 
-		return builder.toString().replaceAll(" ", "%20");
+		return builder.toString();
 	}
 
 	@Override
