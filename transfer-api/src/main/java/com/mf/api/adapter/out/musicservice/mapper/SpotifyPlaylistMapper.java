@@ -15,7 +15,7 @@ public class SpotifyPlaylistMapper {
 	}
 
 	public List<Playlist> mapList(LinkedHashMap<Object, Object> restResponse) {
-		var playlists = (List<LinkedHashMap>) restResponse.get("items");
+		var playlists = (List<LinkedHashMap<Object, Object>>) restResponse.get("items");
 		return playlists.stream()
 			.map(this::map)
 			.toList();

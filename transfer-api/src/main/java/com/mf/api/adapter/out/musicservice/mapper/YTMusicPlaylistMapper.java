@@ -8,7 +8,7 @@ import java.util.List;
 public class YTMusicPlaylistMapper {
 
 	public Playlist map(LinkedHashMap<Object, Object> restResponse) {
-		var data = (LinkedHashMap<?, ?>) restResponse.get("snippet");
+		var data = (LinkedHashMap<Object, Object>) restResponse.get("snippet");
 		return Playlist.builder()
 			.id((String) restResponse.get("id"))
 			.name((String) data.get("title"))
@@ -16,7 +16,7 @@ public class YTMusicPlaylistMapper {
 	}
 
 	public List<Playlist> mapList(LinkedHashMap<Object, Object> restResponse) {
-		var playlists = (List<LinkedHashMap>) restResponse.get("items");
+		var playlists = (List<LinkedHashMap<Object, Object>>) restResponse.get("items");
 		return playlists.stream()
 			.map(this::map)
 			.toList();

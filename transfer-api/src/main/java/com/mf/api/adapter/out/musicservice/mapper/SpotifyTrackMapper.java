@@ -9,22 +9,28 @@ import java.util.List;
 public class SpotifyTrackMapper  {
 
 	public Track map(LinkedHashMap<Object, Object> restResponse) {
-		var data = (LinkedHashMap<?, ?>) restResponse.get("track");
+		var data = (LinkedHashMap<Object, Object>) restResponse.get("track");
 		if (data == null) {
 			data = restResponse;
 		}
 
-		var albumName = ((LinkedHashMap<?, ?>) data.get("album")).get("name");
-		var artists = ((List<LinkedHashMap>) data.get("artists")).stream()
-			.map(artist -> (String) artist.get("name"))
-			.toList();
-
 		return Track.builder()
 			.id((String) data.get("id"))
 			.name((String) data.get("name"))
-			.albumName((String) albumName)
-			.artists(artists)
+			.albumName(extractAlbum(data))
+			.artists(extractArtists(data))
 			.build();
+	}
+
+	private String extractAlbum(LinkedHashMap<Object, Object> data) {
+		var album = (LinkedHashMap<Object, Object>) data.get("album");
+		return (String) album.get("name");
+	}
+
+	private List<String> extractArtists(LinkedHashMap<Object, Object> data) {
+		return ((List<LinkedHashMap<Object, Object>>) data.get("artists")).stream()
+			.map(artist -> (String) artist.get("name"))
+			.toList();
 	}
 
 	public List<Track> mapList(LinkedHashMap<Object, Object> restResponse) {

@@ -2,6 +2,7 @@ package com.mf.api.adapter.out.musicservice.mapper;
 
 import com.mf.api.domain.entity.Track;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,10 @@ public class YTMusicTrackMapper {
 
 	public List<Track> mapList(LinkedHashMap<Object, Object> restResponse) {
 		var tracks = (List<LinkedHashMap<Object, Object>>) restResponse.get("items");
+		if (tracks == null || tracks.isEmpty()) {
+			return Collections.emptyList();
+		}
+
 		return tracks.stream()
 			.map(this::map)
 			.toList();
