@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.springframework.http.HttpMethod;
 
 public class SpotifyAdapter extends BaseMusicServiceAdapter {
+
 	protected final SpotifyProperties properties;
 	protected final SpotifyTrackMapper trackMapper;
 	protected final SpotifyPlaylistMapper playlistMapper;

@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.springframework.http.HttpMethod;
 
 public class YTMusicAdapter extends BaseMusicServiceAdapter {
+
 	protected final DefaultMusicServiceProperties properties;
 	protected final YTMusicTrackMapper trackMapper;
 	protected final YTMusicPlaylistMapper playlistMapper;

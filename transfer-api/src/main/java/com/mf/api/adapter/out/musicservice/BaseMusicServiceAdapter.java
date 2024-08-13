@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class BaseMusicServiceAdapter implements MusicServicePort {
+
 	protected final RestClient restClient;
 
 	protected <T> List<T> fetchAllPages(
