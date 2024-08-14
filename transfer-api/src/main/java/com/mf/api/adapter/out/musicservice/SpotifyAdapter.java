@@ -50,6 +50,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 				.method(HttpMethod.GET)
 				.token(token)
 				.limit(properties.pageSize())
+				.offset(0)
 				.retryIfFails(true)
 				.build();
 
@@ -171,6 +172,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			.method(HttpMethod.GET)
 			.token(token)
 			.limit(properties.pageSize())
+			.offset(0)
 			.retryIfFails(true)
 			.build();
 
@@ -184,6 +186,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			.method(HttpMethod.GET)
 			.token(token)
 			.limit(properties.pageSize())
+			.offset(0)
 			.retryIfFails(true)
 			.build();
 

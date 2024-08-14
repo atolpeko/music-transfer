@@ -52,7 +52,8 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 					Param.of("myRating", "like"),
 					Param.of("part", "snippet, contentDetails")))
 				.token(token)
-				.limit(properties.pageSize())
+				.limit("maxResults", properties.pageSize())
+				.offset(0)
 				.retryIfFails(true)
 				.build();
 
@@ -90,7 +91,8 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 				Param.of("mine", "true")
 			))
 			.token(token)
-			.limit(properties.pageSize())
+			.limit("maxResults", properties.pageSize())
+			.offset(0)
 			.retryIfFails(true)
 			.build();
 
@@ -106,7 +108,8 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 				Param.of("playlistId", playlistId)
 			))
 			.token(token)
-			.limit(properties.pageSize())
+			.limit("maxResults", properties.pageSize())
+			.offset(0)
 			.retryIfFails(true)
 			.build();
 

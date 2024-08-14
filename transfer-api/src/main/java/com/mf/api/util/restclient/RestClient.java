@@ -3,6 +3,7 @@ package com.mf.api.util.restclient;
 import com.mf.api.usecase.exception.AuthorizationException;
 import com.mf.api.util.restclient.exception.ClientErrorException;
 import com.mf.api.util.restclient.exception.ServerErrorException;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
@@ -50,6 +51,21 @@ public class RestClient {
 		}
 	}
 
+	private void validate(RestRequest request, boolean paginationRequired) {
+		if (request.getUrl() == null || request.getMethod() == null) {
+			var msg = "Invalid request: specify URL and method";
+			throw new RuntimeException(msg);
+		} else if (paginationRequired
+			&& (request.getOffset() == null || request.getLimit() == null)) {
+			var msg = "Invalid request: set offset and limit";
+			throw new RuntimeException(msg);
+		} else if ((request.getLimit() != null && request.getOffset() == null)
+			|| (request.getOffset() != null && request.getLimit() == null)) {
+			var msg = "Invalid request: specify both offset and limit";
+			throw new RuntimeException(msg);
+		}
+	}
+
 	private <T> ResponseEntity<T> call(
 		RestRequest request,
 		Class<T> clazz
@@ -87,24 +103,14 @@ public class RestClient {
 		}
 
 		builder.append((params.isPresent()) ? "&" : "?");
-		return builder.append("offset").append("=").append(request.getOffset())
+		return builder.append(request.getOffsetName())
+			.append("=")
+			.append(request.getOffset())
 			.append("&")
-			.append("limit").append("=").append(request.getLimit()).toString();
-	}
-
-	private void validate(RestRequest request, boolean paginationRequired) {
-		if (request.getUrl() == null || request.getMethod() == null) {
-			var msg = "Invalid request: specify URL and method";
-			throw new RuntimeException(msg);
-		} else if (paginationRequired
-			&& (request.getOffset() == null || request.getLimit() == null)) {
-			var msg = "Invalid request: set offset and limit";
-			throw new RuntimeException(msg);
-		} else if ((request.getLimit() != null && request.getOffset() == null)
-			|| (request.getOffset() != null && request.getLimit() == null)) {
-			var msg = "Invalid request: specify both offset and limit";
-			throw new RuntimeException(msg);
-		}
+			.append(request.getLimitName())
+			.append("=")
+			.append(request.getLimit())
+			.toString();
 	}
 
 	private HttpEntity getHttpEntity(RestRequest request) {

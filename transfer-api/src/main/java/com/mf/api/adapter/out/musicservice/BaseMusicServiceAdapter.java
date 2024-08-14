@@ -29,8 +29,8 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 				.url(request.getUrl())
 				.method(request.getMethod())
 				.params(request.getParams())
-				.offset(nextOffset)
-				.limit(request.getLimit())
+				.offset(request.getOffsetName(), nextOffset)
+				.limit(request.getLimitName(), request.getLimit())
 				.token(request.getToken())
 				.retryIfFails(request.isRetryIfFails())
 				.build();
