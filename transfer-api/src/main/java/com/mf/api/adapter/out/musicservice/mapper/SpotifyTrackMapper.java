@@ -15,7 +15,7 @@ public class SpotifyTrackMapper  {
 		}
 
 		return Track.builder()
-			.id((String) data.get("id"))
+			.serviceId((String) data.get("id"))
 			.name((String) data.get("name"))
 			.albumName(extractAlbum(data))
 			.artists(extractArtists(data))
@@ -52,12 +52,12 @@ public class SpotifyTrackMapper  {
 	}
 
 	public String idsToJson(Track track) {
-		return "{ \"ids\": [ \"%s\" ] }".formatted(track.getId());
+		return "{ \"ids\": [ \"%s\" ] }".formatted(track.getServiceId());
 	}
 
 	public String idsToJson(List<Track> tracks) {
 		var list = tracks.stream()
-			.map(track -> "\"%s\"".formatted(track.getId()))
+			.map(track -> "\"%s\"".formatted(track.getServiceId()))
 			.reduce((s1, s2) -> String.join(", ", s1, s2))
 			.orElseThrow(() -> new RuntimeException("No tracks provided"));
 
@@ -66,7 +66,7 @@ public class SpotifyTrackMapper  {
 
 	public String urisToJson(List<Track> tracks) {
 		var list = tracks.stream()
-			.map(track -> "spotify:track:" + track.getId())
+			.map(track -> "spotify:track:" + track.getServiceId())
 			.map("\"%s\""::formatted)
 			.reduce((s1, s2) -> String.join(", ", s1, s2))
 			.orElseThrow(() -> new RuntimeException("No tracks provided"));

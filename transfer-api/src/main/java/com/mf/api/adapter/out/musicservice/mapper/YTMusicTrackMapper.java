@@ -14,7 +14,7 @@ public class YTMusicTrackMapper {
 		var title = (String) data.get("title");
 		var	artist = extractArtist(data);
 		return Track.builder()
-			.id((String) restResponse.get("id"))
+			.serviceId((String) restResponse.get("id"))
 			.name((String) data.get("title"))
 			.albumName(extractAlbum(data, artist, title))
 			.artists(List.of(artist))
