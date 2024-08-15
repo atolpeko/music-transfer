@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @Builder
+@EqualsAndHashCode
 public class TrackSearchCriteria {
 
 	@Builder.Default
