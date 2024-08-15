@@ -7,15 +7,15 @@ import java.util.List;
 
 public class SpotifyPlaylistMapper {
 
-	public Playlist map(LinkedHashMap<Object, Object> restResponse) {
+	public Playlist map(LinkedHashMap restResponse) {
 		return Playlist.builder()
 			.id((String) restResponse.get("id"))
 			.name((String) restResponse.get("name"))
 			.build();
 	}
 
-	public List<Playlist> mapList(LinkedHashMap<Object, Object> restResponse) {
-		var playlists = (List<LinkedHashMap<Object, Object>>) restResponse.get("items");
+	public List<Playlist> mapList(LinkedHashMap restResponse) {
+		var playlists = (List<LinkedHashMap>) restResponse.get("items");
 		return playlists.stream()
 			.map(this::map)
 			.toList();

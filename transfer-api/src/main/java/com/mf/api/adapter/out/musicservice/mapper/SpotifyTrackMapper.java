@@ -8,8 +8,8 @@ import java.util.List;
 
 public class SpotifyTrackMapper  {
 
-	public Track map(LinkedHashMap<Object, Object> restResponse) {
-		var data = (LinkedHashMap<Object, Object>) restResponse.get("track");
+	public Track map(LinkedHashMap restResponse) {
+		var data = (LinkedHashMap) restResponse.get("track");
 		if (data == null) {
 			data = restResponse;
 		}
@@ -22,18 +22,18 @@ public class SpotifyTrackMapper  {
 			.build();
 	}
 
-	private String extractAlbum(LinkedHashMap<Object, Object> data) {
-		var album = (LinkedHashMap<Object, Object>) data.get("album");
+	private String extractAlbum(LinkedHashMap data) {
+		var album = (LinkedHashMap) data.get("album");
 		return (String) album.get("name");
 	}
 
-	private List<String> extractArtists(LinkedHashMap<Object, Object> data) {
-		return ((List<LinkedHashMap<Object, Object>>) data.get("artists")).stream()
+	private List<String> extractArtists(LinkedHashMap data) {
+		return ((List<LinkedHashMap>) data.get("artists")).stream()
 			.map(artist -> (String) artist.get("name"))
 			.toList();
 	}
 
-	public List<Track> mapList(LinkedHashMap<Object, Object> restResponse) {
+	public List<Track> mapList(LinkedHashMap restResponse) {
 		var container = (LinkedHashMap) restResponse.get("tracks");
 		List<LinkedHashMap> tracks;
 		if (container != null) {
@@ -42,7 +42,7 @@ public class SpotifyTrackMapper  {
 			tracks = (List<LinkedHashMap>) restResponse.get("items");
 		}
 
-		if (tracks == null) {
+		if (tracks == null || tracks.isEmpty()) {
 			return Collections.emptyList();
 		}
 
