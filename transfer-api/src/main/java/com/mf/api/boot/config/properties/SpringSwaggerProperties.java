@@ -29,4 +29,9 @@ public class SpringSwaggerProperties implements RestProperties {
     @Getter
     @Value("${swagger.controllersPackage}")
     private String controllersPackage;
+
+    @Override
+    public String swaggerUrl() {
+        return swaggerUrl;
+    }
 }
