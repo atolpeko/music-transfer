@@ -7,17 +7,19 @@ import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.domain.entity.Playlist;
 import com.mf.api.domain.entity.Track;
 import com.mf.api.domain.valueobject.TrackSearchCriteria;
-import com.mf.api.port.exception.AccessException;
 import com.mf.api.port.exception.MusicServiceException;
-import com.mf.api.util.restclient.RestClient;
-import com.mf.api.util.restclient.RestRequest;
-import com.mf.api.util.restclient.Param;
-import com.mf.api.util.restclient.exception.AuthException;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.retry.Retry;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 
 public class YTMusicAdapter extends BaseMusicServiceAdapter {
 
@@ -26,12 +28,14 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	protected final YTMusicPlaylistMapper playlistMapper;
 
 	public YTMusicAdapter(
-		RestClient restClient,
+		RestTemplate restTemplate,
+		CircuitBreaker circuitBreaker,
+		Retry retry,
 		DefaultMusicServiceProperties properties,
 		YTMusicTrackMapper trackMapper,
 		YTMusicPlaylistMapper playlistMapper
 	) {
-		super(restClient);
+		super(restTemplate, circuitBreaker, retry);
 		this.properties = properties;
 		this.trackMapper = trackMapper;
 		this.playlistMapper = playlistMapper;
@@ -45,21 +49,30 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	@Override
 	public List<Track> likedTracks(OAuth2Token token) {
 		try {
-			var request = RestRequest.builder()
-				.url(properties.likedTracksUrl())
-				.method(HttpMethod.GET)
-				.params(List.of(
-					Param.of("myRating", "like"),
-					Param.of("part", "snippet, contentDetails")))
-				.token(token)
-				.limit("maxResults", properties.pageSize())
-				.offset(0)
-				.retryIfFails(true)
-				.build();
+			var tracks = new LinkedList<Track>();
+			var templateUrl = "%s?myRating=like&part=snippet,contentDetails&maxResults=%s{token}"
+				.formatted(
+					properties.likedTracksUrl(),
+					properties.pageSize()
+				);
 
-			return fetchAllPages(request, trackMapper::mapList);
-		} catch (AuthException e) {
-			throw new AccessException("Authorization with YouTube Music failed", e);
+			String nextToken = null;
+			do {
+				var tokenArg = (nextToken != null)
+					? "&pageToken=" + nextToken
+					: "";
+				var url = templateUrl.replace("{token}", tokenArg);
+
+				var response = execRequest(url, HttpMethod.GET, token, LinkedHashMap.class);
+				var body = Objects.requireNonNull(response.getBody());
+				tracks.addAll(trackMapper.mapList(body));
+
+				nextToken = (String) body.get("nextPageToken");
+			} while (nextToken != null);
+
+			return tracks;
+		} catch (MusicServiceException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new MusicServiceException(e.getMessage(), e.getCause());
 		}
@@ -69,51 +82,63 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	public List<Playlist> playlists(OAuth2Token token) {
 		try {
 			var playlists = fetchPlaylists(token);
-			playlists.forEach(playlist -> {
+			for (var playlist: playlists) {
 				var tracks = fetchPlaylistTracks(playlist.getId(), token);
 				playlist.setTracks(tracks);
-			});
+			}
 
 			return playlists;
-		} catch (AuthException e) {
-			throw new AccessException("Authorization with YouTube Music failed", e);
+		} catch (MusicServiceException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new MusicServiceException(e.getMessage(), e.getCause());
 		}
 	}
 
-	private List<Playlist> fetchPlaylists(OAuth2Token token) {
-		var request = RestRequest.builder()
-			.url(properties.playlistsUrl())
-			.method(HttpMethod.GET)
-			.params(List.of(
-				Param.of("part", "snippet, status"),
-				Param.of("mine", "true")
-			))
-			.token(token)
-			.limit("maxResults", properties.pageSize())
-			.offset(0)
-			.retryIfFails(true)
-			.build();
+	private List<Playlist> fetchPlaylists(OAuth2Token token) throws Exception {
+		var playlists = new LinkedList<Playlist>();
+		var url = "%s?mine=true&part=snippet,status&maxResults=%s{token}".formatted(
+			properties.playlistsUrl(),
+			properties.pageSize()
+		);
 
-		return fetchAllPages(request, playlistMapper::mapList);
+		String nextToken = null;
+		do {
+			var tokenArg = (nextToken != null)
+				? "&pageToken=" + nextToken
+				: "";
+			url = url.replace("{token}", tokenArg);
+
+			var response = execRequest(url, HttpMethod.GET, token, LinkedHashMap.class);
+			var body = Objects.requireNonNull(response.getBody());
+			playlists.addAll(playlistMapper.mapList(body));
+
+			nextToken = (String) body.get("nextPageToken");
+			url += "&pageToken=" + nextToken;
+		} while (nextToken != null);
+
+		return playlists;
 	}
 
-	private List<Track> fetchPlaylistTracks(String playlistId, OAuth2Token token) {
-		var request = RestRequest.builder()
-			.url(properties.playlistTracksUrl())
-			.method(HttpMethod.GET)
-			.params(List.of(
-				Param.of("part", "snippet, status"),
-				Param.of("playlistId", playlistId)
-			))
-			.token(token)
-			.limit("maxResults", properties.pageSize())
-			.offset(0)
-			.retryIfFails(true)
-			.build();
+	private List<Track> fetchPlaylistTracks(String playlistId, OAuth2Token token) throws Exception {
+		var url = "%s?&part=snippet,status&playlistId=%s&maxResults=%s".formatted(
+			properties.playlistTracksUrl(),
+			playlistId,
+			properties.pageSize()
+		);
+		var tracks = new LinkedList<Track>();
+		var nextToken = "";
 
-		return fetchAllPages(request, trackMapper::mapList);
+		do {
+			var response = execRequest(url, HttpMethod.GET, token, LinkedHashMap.class);
+			var body = Objects.requireNonNull(response.getBody());
+			tracks.addAll(trackMapper.mapList(body));
+
+			nextToken = (String) body.get("nextPageToken");
+			url += "&pageToken=" + nextToken;
+		} while (nextToken != null);
+
+		return tracks;
 	}
 
 	@Override
