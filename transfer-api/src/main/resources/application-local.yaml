@@ -1,0 +1,48 @@
+# Dev properties with INFO logging level.
+
+server:
+  port: 5990
+service:
+  jwtValidationUrl: http://localhost:5980/api/auth/token/validate
+  jwtSecret: secretsecretsecretsecretsecretsecretsecret
+  tokenPrefix: msvc_
+  spotify:
+    name: SPOTIFY
+    pageSize: 50
+    urls:
+      likedTracks: https://api.spotify.com/v1/me/tracks
+      likeTrack: https://api.spotify.com/v1/me/tracks
+      searchTrack: https://api.spotify.com/v1/search
+      playlists: https://api.spotify.com/v1/me/playlists
+      playlistTracks: https://api.spotify.com/v1/playlists/{id}/tracks
+      user: https://api.spotify.com/v1/users
+      me: https://api.spotify.com/v1/me
+      createPlaylist: https://api.spotify.com/v1/users/{user-id}/playlists
+  ytmusic:
+    name: YT_MUSIC
+    pageSize: 50
+    urls:
+      likedTracks: https://www.googleapis.com/youtube/v3/videos
+      playlists: https://www.googleapis.com/youtube/v3/playlists
+      playlistTracks: https://www.googleapis.com/youtube/v3/playlistItems
+circuitBreaker:
+  minimumNumberOfCalls: 3
+  slidingWindowSize: 80
+  failureRateThreshold: 70.0
+retry:
+  attempts: 4
+  windowSeconds: 2
+logging:
+  level:
+    com.mf.api: DEBUG
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+swagger:
+  url: /swagger-ui/index.html
+  title: Music Transfer API [LOCAL PROFILE]
+  description: Music Transfer API
+  version: "1.0.0-SNAPSHOT"
+  controllersPackage: com.mf.api.adapter.in.rest
