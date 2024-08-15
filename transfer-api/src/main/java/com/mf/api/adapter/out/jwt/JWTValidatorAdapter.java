@@ -1,36 +1,33 @@
 package com.mf.api.adapter.out.jwt;
 
 import com.mf.api.port.JWTValidatorPort;
-import com.mf.api.util.restclient.Param;
-import com.mf.api.util.restclient.RestRequest;
-import com.mf.api.util.restclient.RestClient;
 
-import java.util.List;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 
 @Log4j2
 @RequiredArgsConstructor
 public class JWTValidatorAdapter implements JWTValidatorPort {
 
-	private final RestClient restClient;
+	private final RestTemplate restTemplate;
+	private final CircuitBreaker breaker;
 	private final JwtValidatorProperties properties;
 
 	@Override
 	public boolean isValid(String jwt) {
 		try {
-			var request = RestRequest.builder()
-				.url(properties.jwtValidationUrl())
-				.method(HttpMethod.GET)
-				.params(List.of(Param.of("jwt", jwt)))
-				.build();
-			restClient.request(request);
-			return true;
+			var url = properties.jwtValidationUrl() + "?jwt=" + jwt;
+			log.debug("Executing HTTP GET to {}", url);
+			var response = breaker.executeCallable(
+				() -> restTemplate.getForEntity(url, Void.class)
+			);
+
+			return response.getStatusCode().is2xxSuccessful();
 		} catch (Exception e) {
-			log.debug("JWT validation failed: {}", e.getMessage());
 			return false;
 		}
 	}
