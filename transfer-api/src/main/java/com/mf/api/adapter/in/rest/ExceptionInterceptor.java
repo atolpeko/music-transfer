@@ -2,6 +2,8 @@ package com.mf.api.adapter.in.rest;
 
 import com.mf.api.adapter.in.rest.entity.ErrorResponse;
 import com.mf.api.usecase.exception.AuthorizationException;
+import com.mf.api.usecase.exception.InvalidRequestException;
+import com.mf.api.usecase.exception.InvalidStateException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +18,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,11 +59,15 @@ public class ExceptionInterceptor {
         return ResponseEntity.status(status.value()).body(error);
     }
 
-    @ExceptionHandler({ HttpMessageNotReadableException.class,
+    @ExceptionHandler({
+        InvalidRequestException.class,
+        InvalidStateException.class,
+        HttpMessageNotReadableException.class,
         HttpMediaTypeNotSupportedException.class,
         UnsatisfiedServletRequestParameterException.class,
         MissingServletRequestParameterException.class,
-        MethodArgumentTypeMismatchException.class})
+        MethodArgumentTypeMismatchException.class,
+        MissingRequestHeaderException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleBadRequestException(
         Exception e,

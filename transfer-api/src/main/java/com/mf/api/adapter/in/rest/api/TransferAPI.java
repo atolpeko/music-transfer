@@ -52,6 +52,7 @@ public interface TransferAPI {
         )
     })
     TransferResult transfer(
+
         @RequestParam
         @ApiParam(value = "Source music service", required = true)
         MusicService source,
