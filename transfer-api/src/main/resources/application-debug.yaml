@@ -15,7 +15,6 @@ service:
       searchTrack: https://api.spotify.com/v1/search
       playlists: https://api.spotify.com/v1/me/playlists
       playlistTracks: https://api.spotify.com/v1/playlists/{id}/tracks
-      user: https://api.spotify.com/v1/users
       me: https://api.spotify.com/v1/me
       createPlaylist: https://api.spotify.com/v1/users/{user-id}/playlists
   ytmusic:
