@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 @Log4j2
 @Component
 public class InRequestLoggingInterceptor implements HandlerInterceptor {
+
     private static final ThreadLocal<Long> startTimeHolder = new ThreadLocal<>();
 
     @Override

@@ -3,7 +3,7 @@ package com.mf.auth.domain.service;
 import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.entity.OAuth2Token;
 import com.mf.auth.domain.entity.Token;
-import com.mf.auth.domain.exception.InvalidJWTException;
+import com.mf.auth.domain.service.exception.InvalidJWTException;
 
 import java.util.Map;
 

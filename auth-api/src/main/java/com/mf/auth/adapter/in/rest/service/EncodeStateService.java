@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class EncodeStateService {
+
 	private final ObjectMapper mapper;
 
 	public String encode(AuthState state) throws JsonProcessingException {

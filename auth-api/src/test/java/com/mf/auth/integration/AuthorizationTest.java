@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
 import com.mf.auth.config.IntegrationTest;

@@ -1,6 +1,6 @@
 package com.mf.auth.adapter.in.rest.controller;
 
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +14,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping("/")
 @RequiredArgsConstructor
 public class SwaggerController {
+
     private final RestProperties properties;
 
     @GetMapping

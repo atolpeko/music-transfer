@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class OAuth2Token extends Token {
+
 	private final String refreshToken;
 
 	@Default

@@ -1,6 +1,6 @@
 package com.mf.auth.boot.config.properties;
 
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 
 import lombok.Getter;
 

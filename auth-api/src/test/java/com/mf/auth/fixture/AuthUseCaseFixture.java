@@ -8,6 +8,7 @@ import com.mf.auth.domain.entity.Token;
 import java.util.Map;
 
 public class AuthUseCaseFixture {
+
 	public static final String SERVICE_1 = "SERVICE_service_1";
 	public static final String SERVICE_2 = "SERVICE_service_2";
 	public static final String AUTH_CODE = "code";

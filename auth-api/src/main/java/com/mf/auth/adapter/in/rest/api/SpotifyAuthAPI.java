@@ -48,6 +48,7 @@ public interface SpotifyAuthAPI {
         )
     })
     String redirectToAuth(
+
         @RequestParam
         @ApiParam(value = "Used to redirect back to client"
             + " application after successfully login", required = true)
@@ -88,6 +89,7 @@ public interface SpotifyAuthAPI {
         )
     })
     String callback(
+
         @RequestParam(required = false)
         @ApiParam("OAuth2 access code issued by Spotify")
         String code,

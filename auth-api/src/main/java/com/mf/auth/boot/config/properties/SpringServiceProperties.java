@@ -1,6 +1,6 @@
 package com.mf.auth.boot.config.properties;
 
-import com.mf.auth.domain.ServiceProperties;
+import com.mf.auth.domain.service.properties.ServiceProperties;
 
 import javax.annotation.PostConstruct;
 

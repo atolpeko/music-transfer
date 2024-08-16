@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 public class ServiceMap {
+
 	private final Map<String, MusicServicePort> nameToService;
 
 	public MusicServicePort get(String name) {
