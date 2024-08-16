@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class AccessToken extends Token {
+
 	private int id;
 	private boolean isUsed;
 

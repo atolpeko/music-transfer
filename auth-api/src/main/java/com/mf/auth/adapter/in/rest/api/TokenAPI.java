@@ -45,6 +45,7 @@ public interface TokenAPI {
         )
     })
     JWTRestEntity getJwt(
+
         @RequestParam
         @ApiParam(value = "JWT access token", required = true)
         String accessToken
@@ -68,6 +69,7 @@ public interface TokenAPI {
         )
     })
     ResponseEntity<String> validateJwt(
+
         @RequestParam
         @ApiParam(value = "JWT", required = true)
         String jwt

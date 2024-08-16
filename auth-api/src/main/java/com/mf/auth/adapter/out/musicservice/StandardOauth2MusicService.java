@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RequiredArgsConstructor
 public abstract class StandardOauth2MusicService implements MusicServicePort {
+
 	protected final MusicServiceProperties properties;
 	private final RestTemplate restTemplate;
 	private final CircuitBreaker breaker;

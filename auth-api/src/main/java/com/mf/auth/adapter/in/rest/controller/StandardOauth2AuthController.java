@@ -3,7 +3,7 @@ package com.mf.auth.adapter.in.rest.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.mf.auth.adapter.in.rest.exception.AuthorizationException;
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.AuthState;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 @Log4j2
 @RequiredArgsConstructor
 abstract class StandardOauth2AuthController {
+
 	private final MusicService service;
 	private final AuthUseCase authUseCase;
 	private final JWTUseCase jwtUseCase;

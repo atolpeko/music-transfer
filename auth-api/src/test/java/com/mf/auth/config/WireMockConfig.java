@@ -30,11 +30,11 @@ public class WireMockConfig {
         var server = new WireMockServer(WireMockConfiguration.wireMockConfig().port(8089));
         mockSpotifyApi(server);
         mockYTMusicApi(server);
-
         return server;
     }
 
     private void mockSpotifyApi(WireMockServer server) {
+
         // Authentication code URL
         var authUrl = getUrl(spotifyProperties.authUrl());
         server.stubFor(WireMock.post(WireMock.urlEqualTo(authUrl))
@@ -51,6 +51,7 @@ public class WireMockConfig {
     }
 
     private void mockYTMusicApi(WireMockServer server) {
+
         // Authentication code URL
         var authUrl = getUrl(ytMusicProperties.authUrl());
         server.stubFor(WireMock.post(WireMock.urlEqualTo(authUrl))

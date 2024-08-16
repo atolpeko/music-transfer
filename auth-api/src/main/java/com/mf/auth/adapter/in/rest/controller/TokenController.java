@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class TokenController implements TokenAPI {
+
 	private final JWTUseCase useCase;
 	private final JWTMapper jwtMapper;
 

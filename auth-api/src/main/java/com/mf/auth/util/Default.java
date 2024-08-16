@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark default constructor.
+ * Mark default constructor for Mapstruct.
  */
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.CLASS)

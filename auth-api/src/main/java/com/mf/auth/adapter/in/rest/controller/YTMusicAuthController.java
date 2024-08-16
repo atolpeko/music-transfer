@@ -1,6 +1,6 @@
 package com.mf.auth.adapter.in.rest.controller;
 
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.api.YTMusicAuthAPI;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;

@@ -1,6 +1,7 @@
 package com.mf.auth.fixture;
 
 public class AuthorizationFixture {
+
     public static final String SPOTIFY_AUTH_URL = "/api/auth/spotify/redirect";
     public static final String SPOTIFY_CALLBACK_URL = "/api/auth/spotify/callback";
     public static final String SPOTIFY_LOGIN_REDIRECT = "http://localhost:8089/api/mock/spotify/authorize";

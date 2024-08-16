@@ -1,7 +1,7 @@
 package com.mf.auth.adapter.in.rest.controller;
 
 import com.mf.auth.adapter.in.rest.api.SpotifyAuthAPI;
-import com.mf.auth.adapter.in.rest.RestProperties;
+import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
 import com.mf.auth.adapter.properties.MusicServiceProperties;
 import com.mf.auth.usecase.AuthUseCase;

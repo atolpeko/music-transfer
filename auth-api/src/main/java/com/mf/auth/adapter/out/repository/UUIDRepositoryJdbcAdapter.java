@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 @RequiredArgsConstructor
 public class UUIDRepositoryJdbcAdapter implements UUIDRepositoryPort {
+
     private static final String SELECT_BY_ID =
         "SELECT u.token as value, u.expires_at "
             + "FROM uuid u "
