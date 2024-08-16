@@ -186,7 +186,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 		var url = "%s?limit=%s".formatted(
 			properties.playlistTracksUrl(),
 			properties.pageSize()
-		).replace("{id}", playlistId);;
+		).replace("{id}", playlistId);
 		var tracks = new LinkedList<Track>();
 
 		do {
