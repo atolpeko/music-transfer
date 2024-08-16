@@ -32,6 +32,7 @@ public class JWTUseCaseImpl implements JWTUseCase {
                 () -> new AuthorizationException("Invalid access token provided")
             );
 
+            log.debug("Revoking JWT access token");
             jwt.revokeAccess();
             breaker.executeRunnable(
                 () -> jwtRepository.updateAccessTokenByJwtId(jwt.getId(), true)

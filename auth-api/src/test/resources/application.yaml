@@ -26,15 +26,25 @@ service:
   uuidExpirationSeconds: 600
   accessTokenExpirationSeconds: 600
   spotify:
+    name: SPOTIFY
     clientId: clientId
     clientSecret: clientSecret
     clientScope: clientScope
     clientRedirectUrl: http://localhost:5980/api/auth/spotify/callback
-    backRedirectUrl: http://localhost:5980
     grantType: authorization_code
     urls:
       auth: http://localhost:8089/api/mock/spotify/authorize
       token: http://localhost:8089/api/mock/spotify/token
+  ytmusic:
+    name: YT_MUSIC
+    clientId: clientId
+    clientSecret: clientSecret
+    clientScope: clientScope
+    clientRedirectUrl: http://localhost:5980/api/auth/ytmusic/callback
+    grantType: authorization_code
+    urls:
+      auth: http://localhost:8089/api/mock/ytmusic/authorize
+      token: http://localhost:8089/api/mock/ytmusic/token
 logging:
   level:
     com.mf.auth: DEBUG

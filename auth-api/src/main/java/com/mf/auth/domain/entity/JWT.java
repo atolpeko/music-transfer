@@ -12,11 +12,11 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class JWT extends Token {
-	private String id;
+	private int id;
 	private AccessToken accessToken;
 
 	@Default
-	public JWT(String id, String value, LocalDateTime expiresAt, AccessToken accessToken) {
+	public JWT(int id, String value, LocalDateTime expiresAt, AccessToken accessToken) {
 		super(value, expiresAt);
 		this.id = id;
 		this.accessToken = accessToken;

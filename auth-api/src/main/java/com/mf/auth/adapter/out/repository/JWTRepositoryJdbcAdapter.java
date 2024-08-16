@@ -44,7 +44,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             + "FROM access_token at "
             + "INNER JOIN jwt j ON at.id = j.access_token_id "
             + "WHERE at.token = ? "
-            + "AND at.is_used = 0 "
+            + "AND at.is_used = FALSE "
             + "AND at.expires_at > CURRENT_TIMESTAMP ";
 
     private static final String INSERT_INTO_JWT =
@@ -62,11 +62,11 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
 
     private final RowMapper<JWT> mapper = (resultSet, rowNum) ->
         new JWT(
-            resultSet.getString("jwt_id"),
+            resultSet.getInt("jwt_id"),
             resultSet.getString("jwt_value"),
             DateTimeUtils.fromString(resultSet.getString("jwt_expires_at")),
             new AccessToken(
-                resultSet.getString("at_id"),
+                resultSet.getInt("at_id"),
                 resultSet.getString("at_value"),
                 DateTimeUtils.fromString(resultSet.getString("at_expires_at")),
                 resultSet.getBoolean("at_is_used")
@@ -78,7 +78,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
         return findBy(SELECT_BY_VALUE, value);
     }
 
-    public Optional<JWT> findBy(String query, String param) {
+    public Optional<JWT> findBy(String query, Object param) {
         try {
             var jwt = jdbc.queryForObject(query, mapper, param);
             return Optional.ofNullable(jwt);
@@ -141,7 +141,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
     }
 
     @Override
-    public void updateAccessTokenByJwtId(String id, boolean isUsed) {
+    public void updateAccessTokenByJwtId(int id, boolean isUsed) {
         try {
             var jwt = findBy(SELECT_BY_ID, id)
                 .orElseThrow(() -> new DataModificationException("No JWT found"));
@@ -159,7 +159,7 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
     }
 
     @Override
-    public void deleteById(String id) {
+    public void deleteById(int id) {
         try {
             jdbc.update(DELETE, id);
         } catch (DataAccessResourceFailureException e) {

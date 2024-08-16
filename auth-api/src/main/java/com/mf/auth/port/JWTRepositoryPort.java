@@ -52,7 +52,7 @@ public interface JWTRepositoryPort {
      * @throws DataModificationException  if a token cannot be updated
      * @throws DataAccessException        in repository is unavailable
      */
-    void updateAccessTokenByJwtId(String id, boolean isUsed);
+    void updateAccessTokenByJwtId(int id, boolean isUsed);
 
     /**
      * Delete a JWT bt its ID.
@@ -62,5 +62,5 @@ public interface JWTRepositoryPort {
      * @throws DataModificationException  if a JWT cannot be deleted
      * @throws DataAccessException        in repository is unavailable
      */
-    void deleteById(String id);
+    void deleteById(int id);
 }

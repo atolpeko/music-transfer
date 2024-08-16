@@ -30,8 +30,8 @@ public class SpotifyAuthController
 	}
 
 	@Override
-	public String redirectToAuth(String jwt) throws Exception {
-		return super.redirectToAuth(jwt);
+	public String redirectToAuth(String redirectUrl, String jwt) throws Exception {
+		return super.redirectToAuth(redirectUrl, jwt);
 	}
 
 	@Override

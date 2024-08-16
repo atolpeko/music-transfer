@@ -1,6 +1,7 @@
 package com.mf.auth.config;
 
-import static com.mf.auth.fixture.SpotifyAuthFixture.spotifyAuthCodeJson;
+import static com.mf.auth.fixture.AuthorizationFixture.spotifyAuthCodeJson;
+import static com.mf.auth.fixture.AuthorizationFixture.ytMusicAuthCodeJson;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -20,10 +21,15 @@ public class WireMockConfig {
     @Qualifier("spotifyProperties")
     MusicServiceProperties spotifyProperties;
 
+    @Autowired
+    @Qualifier("ytMusicProperties")
+    MusicServiceProperties ytMusicProperties;
+
     @Bean(initMethod = "start", destroyMethod = "stop")
     public WireMockServer wireMockServer() {
         var server = new WireMockServer(WireMockConfiguration.wireMockConfig().port(8089));
         mockSpotifyApi(server);
+        mockYTMusicApi(server);
 
         return server;
     }
@@ -33,7 +39,7 @@ public class WireMockConfig {
         var authUrl = getUrl(spotifyProperties.authUrl());
         server.stubFor(WireMock.post(WireMock.urlEqualTo(authUrl))
             .willReturn(WireMock.aResponse()
-                .withStatus(301)
+                .withStatus(201)
                 .withHeader("Location", spotifyProperties.redirectUrl())));
 
         // OAuth2 token exchange URL
@@ -42,6 +48,22 @@ public class WireMockConfig {
             .willReturn(WireMock.aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody(spotifyAuthCodeJson())));
+    }
+
+    private void mockYTMusicApi(WireMockServer server) {
+        // Authentication code URL
+        var authUrl = getUrl(ytMusicProperties.authUrl());
+        server.stubFor(WireMock.post(WireMock.urlEqualTo(authUrl))
+            .willReturn(WireMock.aResponse()
+                .withStatus(201)
+                .withHeader("Location", ytMusicProperties.redirectUrl())));
+
+        // OAuth2 token exchange URL
+        var tokenUrl = getUrl(ytMusicProperties.tokenUrl());
+        server.stubFor(WireMock.post(WireMock.urlEqualTo(tokenUrl))
+            .willReturn(WireMock.aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody(ytMusicAuthCodeJson())));
     }
 
     private String getUrl(String url) {

@@ -48,6 +48,11 @@ public interface SpotifyAuthAPI {
         )
     })
     String redirectToAuth(
+        @RequestParam
+        @ApiParam(value = "Used to redirect back to client"
+            + " application after successfully login", required = true)
+        String redirectUrl,
+
         @RequestParam(required = false)
         @ApiParam("JWT")
         String jwtToUpdate

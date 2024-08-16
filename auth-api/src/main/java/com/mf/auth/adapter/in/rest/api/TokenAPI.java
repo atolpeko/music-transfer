@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping(path = "/api/auth/token")
 public interface TokenAPI {
 
-    @GetMapping("/get")
+    @GetMapping
     @ApiOperation("Obtain a JWT using a single-use access token.")
     @ApiResponses(value = {
         @ApiResponse(
@@ -69,7 +69,7 @@ public interface TokenAPI {
     })
     ResponseEntity<String> validateJwt(
         @RequestParam
-        @ApiParam(value = "JWT access token", required = true)
-        String accessToken
+        @ApiParam(value = "JWT", required = true)
+        String jwt
     );
 }

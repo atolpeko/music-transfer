@@ -24,8 +24,7 @@ public class TokenController implements TokenAPI {
 
 	@Override
 	public ResponseEntity<String> validateJwt(String jwt) {
-		var valid = useCase.isValid(jwt);
-		return valid
+		return useCase.isValid(jwt)
 			? ResponseEntity.ok("valid")
 			: ResponseEntity.status(401).body("not valid");
 	}

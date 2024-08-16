@@ -1,6 +1,6 @@
 package com.mf.auth.port.exception;
 
-public class DataAccessException extends RuntimeException {
+public class DataAccessException extends RepositoryException {
 
     public DataAccessException() {
         super();

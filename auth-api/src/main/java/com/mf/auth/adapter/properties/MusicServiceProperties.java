@@ -2,6 +2,7 @@ package com.mf.auth.adapter.properties;
 
 public interface MusicServiceProperties {
 
+	String name();
 	String clientId();
 	String clientSecret();
 	String clientScope();
@@ -9,5 +10,4 @@ public interface MusicServiceProperties {
 	String authUrl();
 	String tokenUrl();
 	String redirectUrl();
-	String backRedirectUrl();
 }

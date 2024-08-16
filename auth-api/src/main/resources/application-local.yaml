@@ -1,8 +1,17 @@
-# Dev properties with DEBUG logging info.
+# Dev properties with INFO logging info.
 #
-# Set service.spotify.clientId and service.spotify.clientSecret as app params
-# or SERVICE_SPOTIFY_CLIENTID and SERVICE_SPOTIFY_CLIENTSECRET as
-# environment variables.
+# Set params
+#     service.spotify.clientId
+#     service.spotify.clientSecret
+#     service.ytmusic.clientId
+#     service.ytmusic.clientSecret
+#
+# or environment variables
+#     SERVICE_SPOTIFY_CLIENTID
+#     SERVICE_SPOTIFY_CLIENTSECRET
+#     SERVICE_YTMUSIC_CLIENTID
+#     SERVICE_YTMUSIC_CLIENTSECRET
+
 
 server:
   port: 5980
@@ -25,18 +34,25 @@ service:
   uuidSecret: secretsecretsecretsecretsecretsecretsecret
   jwtIssuer: auth-service
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
-  jwtExpirationSeconds: 600
-  uuidExpirationSeconds: 600
-  accessTokenExpirationSeconds: 600
+  jwtExpirationSeconds: 7200
+  uuidExpirationSeconds: 7200
+  accessTokenExpirationSeconds: 7200
   spotify:
     clientScope: 'user-library-read user-library-modify playlist-read-private
       playlist-modify-public playlist-modify-private'
     grantType: authorization_code
     clientRedirectUrl: http://localhost:5980/api/auth/spotify/callback
-    backRedirectUrl: http://localhost:5980
     urls:
       auth: https://accounts.spotify.com/authorize
       token: https://accounts.spotify.com/api/token
+  ytmusic:
+    clientScope: 'https://www.googleapis.com/auth/youtube.readonly 
+    https://www.googleapis.com/auth/youtube.upload'
+    grantType: authorization_code
+    clientRedirectUrl: http://localhost:5980/api/auth/ytmusic/callback
+    urls:
+      auth: https://accounts.google.com/o/oauth2/v2/auth
+      token: https://oauth2.googleapis.com/token
 logging:
   level:
     com.mf.auth: INFO

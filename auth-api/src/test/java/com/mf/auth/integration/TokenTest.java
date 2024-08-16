@@ -1,6 +1,6 @@
 package com.mf.auth.integration;
 
-import static com.mf.auth.fixture.SpotifyAuthFixture.SPOTIFY_CODE;
+import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_CODE;
 import static com.mf.auth.fixture.TokenFixture.GET_JWT_URL;
 import static com.mf.auth.fixture.TokenFixture.VALIDATE_URL;
 

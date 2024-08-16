@@ -1,6 +1,6 @@
 package com.mf.auth.port.exception;
 
-public class DataModificationException extends RuntimeException {
+public class DataModificationException extends RepositoryException {
 
     public DataModificationException() {
         super();
