@@ -13,7 +13,6 @@ service:
       searchTrack: http://localhost:8089/mock/spotify/search
       playlists: http://localhost:8089/mock/spotify/me/playlists
       playlistTracks: http://localhost:8089/mock/spotify/playlists/{id}/tracks
-      user: http://localhost:8089/mock/spotify/users
       me: http://localhost:8089/mock/spotify/me
       createPlaylist: http://localhost:8089/mock/spotify/users/{user-id}/playlists
   ytmusic:
@@ -32,7 +31,7 @@ retry:
   windowSeconds: 2
 logging:
   level:
-    com.mf.api: INFO
+    com.mf.api: DEBUG
 management:
   endpoint:
     health:
