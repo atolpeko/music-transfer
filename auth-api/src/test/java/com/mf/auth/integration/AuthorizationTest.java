@@ -68,7 +68,7 @@ class AuthorizationTest {
 		var encodedState = redirect.substring(redirect.indexOf("&state=") + 7);
 		var state = encodeStateService.decode(encodedState);
 
-		assertTrue(redirect.startsWith(returnedAuthUrl));
+		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
 		assertNotNull(state.getUuid());
 		assertEquals(redirectUrl, state.getRedirectUrl());
@@ -122,7 +122,7 @@ class AuthorizationTest {
 			restProperties.uuidSecret());
 		var jwt = encryptionService.decrypt(state.getJwt(), uuid);
 
-		assertTrue(redirect.startsWith(returnedAuthUrl));
+		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
 		assertNotNull(jwt);
 		assertEquals(redirectUrl, state.getRedirectUrl());

@@ -1,5 +1,6 @@
 server:
   port: 0
+  wireMockPort: 5723
 h2:
   console:
     enabled: true
@@ -33,8 +34,8 @@ service:
     clientRedirectUrl: http://localhost:5980/api/auth/spotify/callback
     grantType: authorization_code
     urls:
-      auth: http://localhost:8089/api/mock/spotify/authorize
-      token: http://localhost:8089/api/mock/spotify/token
+      auth: http://localhost:${server.wireMockPort}/api/mock/spotify/authorize
+      token: http://localhost:${server.wireMockPort}/api/mock/spotify/token
   ytmusic:
     name: YT_MUSIC
     clientId: clientId
@@ -43,8 +44,8 @@ service:
     clientRedirectUrl: http://localhost:5980/api/auth/ytmusic/callback
     grantType: authorization_code
     urls:
-      auth: http://localhost:8089/api/mock/ytmusic/authorize
-      token: http://localhost:8089/api/mock/ytmusic/token
+      auth: http://localhost:${server.wireMockPort}/api/mock/ytmusic/authorize
+      token: http://localhost:${server.wireMockPort}/api/mock/ytmusic/token
 logging:
   level:
     com.mf.auth: DEBUG
