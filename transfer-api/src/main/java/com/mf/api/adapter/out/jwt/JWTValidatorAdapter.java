@@ -20,7 +20,7 @@ public class JWTValidatorAdapter implements JWTValidatorPort {
 	@Override
 	public boolean isValid(String jwt) {
 		try {
-			var url = properties.jwtValidationUrl() + "?jwt=" + jwt;
+			var url = properties.domain() + properties.jwtValidationUrl() + "?jwt=" + jwt;
 			log.debug("Executing HTTP GET to {}", url);
 			var response = breaker.executeCallable(
 				() -> restTemplate.getForEntity(url, Void.class)

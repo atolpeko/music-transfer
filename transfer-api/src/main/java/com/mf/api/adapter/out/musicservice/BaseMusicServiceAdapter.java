@@ -1,10 +1,11 @@
 package com.mf.api.adapter.out.musicservice;
 
+import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
 import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.port.MusicServicePort;
-
 import com.mf.api.port.exception.AccessException;
 import com.mf.api.port.exception.MusicServiceException;
+
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
@@ -27,6 +28,11 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 	private final RestTemplate restTemplate;
 	private final CircuitBreaker circuitBreaker;
 	private final Retry retry;
+	private final DefaultMusicServiceProperties properties;
+
+	protected String getUrl(String url) {
+		return properties.domain() + url;
+	}
 
 	protected <T> ResponseEntity<T> execRequest(
 		String url,

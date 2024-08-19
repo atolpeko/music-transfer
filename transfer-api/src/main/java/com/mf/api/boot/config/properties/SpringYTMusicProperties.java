@@ -2,19 +2,22 @@ package com.mf.api.boot.config.properties;
 
 import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
 
-import lombok.Getter;
+import lombok.Setter;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Getter
+@Setter
 @Component
 @Qualifier("ytMusicProperties")
 public class SpringYTMusicProperties implements DefaultMusicServiceProperties {
 
     @Value("${service.ytmusic.name}")
     private String name;
+
+    @Value("${service.ytmusic.urls.domain}")
+    private String domain;
 
     @Value("${service.ytmusic.urls.likedTracks}")
     private String likedTracksUrl;
@@ -31,6 +34,11 @@ public class SpringYTMusicProperties implements DefaultMusicServiceProperties {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public String domain() {
+        return domain;
     }
 
     @Override
