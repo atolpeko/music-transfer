@@ -1,5 +1,7 @@
 package com.mf.api.config;
 
+import static com.mf.api.fixture.TransferFixture.INVALID_JWT;
+import static com.mf.api.fixture.TransferFixture.MALFORMED_JWT;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_CREATED_PLAYLIST_JSON;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_ME_JSON;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_PLAYLIST_ID;
@@ -14,19 +16,24 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 
+import com.mf.api.adapter.out.jwt.JwtValidatorProperties;
 import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
 import com.mf.api.adapter.out.musicservice.properties.SpotifyProperties;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
 @TestConfiguration
 public class ApiMockConfig {
 
-    public static String VALID_JWT_URL = "http://localhost:8089/mock/api/jwt/valid";
-    public static String INVALID_JWT_URL = "http://localhost:8089/mock/api/jwt/invalid";
+    @Value("${server.wireMockPort}")
+    public Integer port;
+
+    @Autowired
+    public JwtValidatorProperties jwtValidatorProperties;
 
     @Autowired
     public SpotifyProperties spotifyProperties;
@@ -37,7 +44,7 @@ public class ApiMockConfig {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public WireMockServer wireMockServer() {
-        var server = new WireMockServer(WireMockConfiguration.wireMockConfig().port(8089));
+        var server = new WireMockServer(WireMockConfiguration.options().port(port));
         mockJwtValidatorApi(server);
         mockSpotifyApi(server);
         mockYTMusicApi(server);
@@ -47,13 +54,18 @@ public class ApiMockConfig {
     private void mockJwtValidatorApi(WireMockServer server) {
 
         // Valid JWT URL
-        var validUrl = getUrl(VALID_JWT_URL);
+        var validUrl = getUrl(jwtValidatorProperties.jwtValidationUrl());
         server.stubFor(WireMock.get(WireMock.urlPathEqualTo(validUrl))
             .willReturn(WireMock.aResponse().withStatus(200)));
 
         // Invalid JWT URL
-        var invalidUrl = getUrl(INVALID_JWT_URL);
-        server.stubFor(WireMock.get(WireMock.urlPathEqualTo(invalidUrl))
+        var invalidJwtUrl = validUrl + "?jwt=" + INVALID_JWT;
+        server.stubFor(WireMock.get(WireMock.urlEqualTo(invalidJwtUrl))
+            .willReturn(WireMock.aResponse().withStatus(400)));
+
+        // Malformed JWT URL
+        var malformedJwtUrl = validUrl + "?jwt=" + MALFORMED_JWT;
+        server.stubFor(WireMock.get(WireMock.urlEqualTo(malformedJwtUrl))
             .willReturn(WireMock.aResponse().withStatus(400)));
     }
 
@@ -149,6 +161,6 @@ public class ApiMockConfig {
     }
 
     private String getUrl(String url) {
-        return url.replace("http://localhost:8089", "");
+        return url.replace("http://localhost:" + port, "");
     }
 }

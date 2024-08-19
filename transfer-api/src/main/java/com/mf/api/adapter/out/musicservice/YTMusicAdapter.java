@@ -50,7 +50,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	public List<Track> likedTracks(OAuth2Token token) {
 		try {
 			var tracks = new LinkedList<Track>();
-			var templateUrl = "%s?myRating=like&part=snippet,contentDetails&maxResults=%s{token}"
+			var templateUrl = "%s?myRating=like&part=snippet&maxResults=%s{token}"
 				.formatted(
 					properties.likedTracksUrl(),
 					properties.pageSize()
@@ -97,7 +97,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 
 	private List<Playlist> fetchPlaylists(OAuth2Token token) throws Exception {
 		var playlists = new LinkedList<Playlist>();
-		var url = "%s?mine=true&part=snippet,status&maxResults=%s{token}".formatted(
+		var url = "%s?mine=true&part=snippet&maxResults=%s{token}".formatted(
 			properties.playlistsUrl(),
 			properties.pageSize()
 		);
@@ -121,7 +121,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	}
 
 	private List<Track> fetchPlaylistTracks(String playlistId, OAuth2Token token) throws Exception {
-		var url = "%s?&part=snippet,status&playlistId=%s&maxResults=%s".formatted(
+		var url = "%s?&part=snippet&playlistId=%s&maxResults=%s".formatted(
 			properties.playlistTracksUrl(),
 			playlistId,
 			properties.pageSize()

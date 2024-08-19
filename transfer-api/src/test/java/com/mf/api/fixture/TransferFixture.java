@@ -8,6 +8,9 @@ import java.util.Map;
 public class TransferFixture {
 
     public static final String URL = "/api/transfer";
+    public static final String VALID_JWT = "Bearer vdffelkjnelpdkhdiofplkd";
+    public static final String INVALID_JWT = "gdgd";
+    public static final String MALFORMED_JWT = "grtrgr";
 
     public static Map<String, OAuth2Token> tokens(String source, String target) {
         return Map.of(
