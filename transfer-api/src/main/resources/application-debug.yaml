@@ -3,27 +3,31 @@
 server:
   port: 5990
 service:
-  jwtValidationUrl: http://localhost:5980/api/auth/token/validate
+  jwtValidator:
+    domain: http://localhost:5980
+    validationUrl: /api/auth/token/validate
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
   tokenPrefix: msvc_
   spotify:
     name: SPOTIFY
     pageSize: 50
     urls:
-      likedTracks: https://api.spotify.com/v1/me/tracks
-      likeTrack: https://api.spotify.com/v1/me/tracks
-      searchTrack: https://api.spotify.com/v1/search
-      playlists: https://api.spotify.com/v1/me/playlists
-      playlistTracks: https://api.spotify.com/v1/playlists/{id}/tracks
-      me: https://api.spotify.com/v1/me
-      createPlaylist: https://api.spotify.com/v1/users/{user-id}/playlists
+      domain: https://api.spotify.com
+      likedTracks: /v1/me/tracks
+      likeTrack: /v1/me/tracks
+      searchTrack: /v1/search
+      playlists: /v1/me/playlists
+      playlistTracks: /v1/playlists/{id}/tracks
+      me: /v1/me
+      createPlaylist: /v1/users/{user-id}/playlists
   ytmusic:
     name: YT_MUSIC
     pageSize: 50
     urls:
-      likedTracks: https://www.googleapis.com/youtube/v3/videos
-      playlists: https://www.googleapis.com/youtube/v3/playlists
-      playlistTracks: https://www.googleapis.com/youtube/v3/playlistItems
+      domain: https://www.googleapis.com
+      likedTracks: youtube/v3/videos
+      playlists: youtube/v3/playlists
+      playlistTracks: youtube/v3/playlistItems
 circuitBreaker:
   minimumNumberOfCalls: 3
   slidingWindowSize: 80

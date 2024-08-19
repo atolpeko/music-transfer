@@ -4,6 +4,8 @@ public interface DefaultMusicServiceProperties {
 
 	String name();
 
+	String domain();
+
 	String likedTracksUrl();
 
 	String trackLikeUrl();

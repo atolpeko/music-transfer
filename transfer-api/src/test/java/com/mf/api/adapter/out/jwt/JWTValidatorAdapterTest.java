@@ -1,5 +1,6 @@
 package com.mf.api.adapter.out.jwt;
 
+import static com.mf.api.fixture.JWTValidatorAdapterFixture.DOMAIN;
 import static com.mf.api.fixture.JWTValidatorAdapterFixture.INVALID_JWT;
 import static com.mf.api.fixture.JWTValidatorAdapterFixture.INVALID_JWT_URL;
 import static com.mf.api.fixture.JWTValidatorAdapterFixture.URL;
@@ -47,10 +48,11 @@ class JWTValidatorAdapterTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		when(properties.domain()).thenReturn(DOMAIN);
 		when(properties.jwtValidationUrl()).thenReturn(URL);
-		when(restTemplate.getForEntity(VALID_JWT_URL, Void.class))
+		when(restTemplate.getForEntity(DOMAIN + VALID_JWT_URL, Void.class))
 			.thenReturn(ResponseEntity.status(200).build());
-		when(restTemplate.getForEntity(INVALID_JWT_URL, Void.class))
+		when(restTemplate.getForEntity(DOMAIN + INVALID_JWT_URL, Void.class))
 			.thenReturn(ResponseEntity.status(401).build());
 
 		doAnswer(invocation -> {

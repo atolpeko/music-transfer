@@ -2,17 +2,20 @@ package com.mf.api.boot.config.properties;
 
 import com.mf.api.adapter.out.musicservice.properties.SpotifyProperties;
 
-import lombok.Getter;
+import lombok.Setter;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Getter
+@Setter
 @Component
 public class SpringSpotifyProperties implements SpotifyProperties {
 
     @Value("${service.spotify.name}")
     private String name;
+
+    @Value("${service.spotify.urls.domain}")
+    private String domain;
 
     @Value("${service.spotify.urls.likedTracks}")
     private String likedTracksUrl;
@@ -41,6 +44,11 @@ public class SpringSpotifyProperties implements SpotifyProperties {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public String domain() {
+        return domain;
     }
 
     @Override

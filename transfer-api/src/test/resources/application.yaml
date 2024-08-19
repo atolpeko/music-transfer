@@ -1,28 +1,31 @@
 server:
   port: 0
-  wireMockPort: 61735
 service:
-  jwtValidationUrl: http://localhost:${server.wireMockPort}/mock/api/auth/token/validate
+  jwtValidator:
+    domain: http://localhost:{port}
+    validationUrl: /mock/api/auth/token/validate
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
   tokenPrefix: msvc_
   spotify:
     name: SPOTIFY
     pageSize: 50
     urls:
-      likedTracks: http://localhost:${server.wireMockPort}/mock/spotify/me/tracks
-      likeTrack: http://localhost:${server.wireMockPort}/mock/spotify/me/tracks
-      searchTrack: http://localhost:${server.wireMockPort}/mock/spotify/search
-      playlists: http://localhost:${server.wireMockPort}/mock/spotify/me/playlists
-      playlistTracks: http://localhost:${server.wireMockPort}/mock/spotify/playlists/{id}/tracks
-      me: http://localhost:${server.wireMockPort}/mock/spotify/me
-      createPlaylist: http://localhost:${server.wireMockPort}/mock/spotify/users/{user-id}/playlists
+      domain: http://localhost:{port}
+      likedTracks: /mock/spotify/me/tracks
+      likeTrack: /mock/spotify/me/tracks
+      searchTrack: /mock/spotify/search
+      playlists: /mock/spotify/me/playlists
+      playlistTracks: /mock/spotify/playlists/{id}/tracks
+      me: /mock/spotify/me
+      createPlaylist: /mock/spotify/users/{user-id}/playlists
   ytmusic:
     name: YT_MUSIC
     pageSize: 50
     urls:
-      likedTracks: http://localhost:${server.wireMockPort}/mock/ytmusic/videos
-      playlists: http://localhost:${server.wireMockPort}/mock/ytmusic/playlists
-      playlistTracks: http://localhost:${server.wireMockPort}/mock/ytmusic/playlistItems
+      domain: http://localhost:{port}
+      likedTracks: /mock/ytmusic/videos
+      playlists: /mock/ytmusic/playlists
+      playlistTracks: /mock/ytmusic/playlistItems
 circuitBreaker:
   minimumNumberOfCalls: 3
   slidingWindowSize: 80

@@ -35,7 +35,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 		YTMusicTrackMapper trackMapper,
 		YTMusicPlaylistMapper playlistMapper
 	) {
-		super(restTemplate, circuitBreaker, retry);
+		super(restTemplate, circuitBreaker, retry, properties);
 		this.properties = properties;
 		this.trackMapper = trackMapper;
 		this.playlistMapper = playlistMapper;
@@ -52,7 +52,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 			var tracks = new LinkedList<Track>();
 			var templateUrl = "%s?myRating=like&part=snippet&maxResults=%s{token}"
 				.formatted(
-					properties.likedTracksUrl(),
+					getUrl(properties.likedTracksUrl()),
 					properties.pageSize()
 				);
 
@@ -98,7 +98,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	private List<Playlist> fetchPlaylists(OAuth2Token token) throws Exception {
 		var playlists = new LinkedList<Playlist>();
 		var url = "%s?mine=true&part=snippet&maxResults=%s{token}".formatted(
-			properties.playlistsUrl(),
+			getUrl(properties.playlistsUrl()),
 			properties.pageSize()
 		);
 
@@ -122,7 +122,7 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 
 	private List<Track> fetchPlaylistTracks(String playlistId, OAuth2Token token) throws Exception {
 		var url = "%s?&part=snippet&playlistId=%s&maxResults=%s".formatted(
-			properties.playlistTracksUrl(),
+			getUrl(properties.playlistTracksUrl()),
 			playlistId,
 			properties.pageSize()
 		);
