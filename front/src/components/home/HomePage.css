@@ -1,0 +1,22 @@
+.heading {
+  font-family: Franklin Gothic Medium;
+  font-size: 3.5rem;
+  text-align: center;
+}
+
+.text {
+  font-size: 1.2rem;
+  text-align: center;
+  color: gray;
+}
+
+.service-img {
+  width: 5%;
+  height: 5%;
+  margin-right: 3%;
+  padding-top: 4%;
+}
+
+.start-button {
+  margin-top: 3%;
+}
