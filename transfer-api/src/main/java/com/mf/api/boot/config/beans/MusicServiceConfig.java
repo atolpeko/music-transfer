@@ -2,8 +2,10 @@ package com.mf.api.boot.config.beans;
 
 import com.mf.api.adapter.out.musicservice.SpotifyAdapter;
 import com.mf.api.adapter.out.musicservice.YTMusicAdapter;
+import com.mf.api.adapter.out.musicservice.mapper.SpotifyPaginationMapper;
 import com.mf.api.adapter.out.musicservice.mapper.SpotifyPlaylistMapper;
 import com.mf.api.adapter.out.musicservice.mapper.SpotifyTrackMapper;
+import com.mf.api.adapter.out.musicservice.mapper.YTMusicPaginationMapper;
 import com.mf.api.adapter.out.musicservice.mapper.YTMusicPlaylistMapper;
 import com.mf.api.adapter.out.musicservice.mapper.YTMusicTrackMapper;
 import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
@@ -27,6 +29,7 @@ public class MusicServiceConfig {
 		CircuitBreaker breaker,
 		Retry retry,
 		SpotifyProperties properties,
+		SpotifyPaginationMapper paginationMapper,
 		SpotifyTrackMapper trackMapper,
 		SpotifyPlaylistMapper playlistMapper
 	) {
@@ -35,6 +38,7 @@ public class MusicServiceConfig {
 			breaker,
 			retry,
 			properties,
+			paginationMapper,
 			trackMapper,
 			playlistMapper
 		);
@@ -46,6 +50,7 @@ public class MusicServiceConfig {
 		CircuitBreaker breaker,
 		Retry retry,
 		@Qualifier("ytMusicProperties") DefaultMusicServiceProperties properties,
+		YTMusicPaginationMapper paginationMapper,
 		YTMusicTrackMapper trackMapper,
 		YTMusicPlaylistMapper playlistMapper
 	) {
@@ -54,6 +59,7 @@ public class MusicServiceConfig {
 			breaker,
 			retry,
 			properties,
+			paginationMapper,
 			trackMapper,
 			playlistMapper
 		);

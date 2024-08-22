@@ -1,8 +1,12 @@
 package com.mf.api.adapter.in.rest.api;
 
 import com.mf.api.adapter.in.rest.entity.ErrorResponse;
-import com.mf.api.adapter.in.rest.entity.TransferResult;
+import com.mf.api.adapter.in.rest.entity.PlaylistRestEntity;
+import com.mf.api.adapter.in.rest.entity.TrackRestEntity;
+import com.mf.api.adapter.in.rest.entity.TracksRestEntity;
+import com.mf.api.adapter.in.rest.entity.TransferResultRestEntity;
 import com.mf.api.adapter.in.rest.entity.MusicService;
+import com.mf.api.util.Page;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -10,8 +14,14 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-import org.springframework.validation.annotation.Validated;
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,27 +32,21 @@ import org.springframework.web.bind.annotation.RequestParam;
  * <p>
  * All methods in this interface are designed to be used over HTTP.
  */
-@Validated
 @Api(tags = "Transfer API", protocols = "http")
 @RequestMapping(path = "/api/transfer")
 public interface TransferAPI {
 
-    @PostMapping
-    @ApiOperation("Run music transfer.")
+    @GetMapping("/tracks")
+    @ApiOperation("Get liked tracks available for transfer")
     @ApiResponses(value = {
         @ApiResponse(
             code = 200,
-            message = "Successfully transferred music",
-            response = TransferResult.class
+            message = "Successfully retrieved tracks",
+            response = TransferResultRestEntity.class
         ),
         @ApiResponse(
             code = 401,
             message = "Invalid auth token provided",
-            response = ErrorResponse.class
-        ),
-        @ApiResponse(
-            code = 400,
-            message = "Invalid transfer request",
             response = ErrorResponse.class
         ),
         @ApiResponse(
@@ -51,19 +55,159 @@ public interface TransferAPI {
             response = ErrorResponse.class
         )
     })
-    TransferResult transfer(
+    Page<TrackRestEntity> availableTracks(
 
         @RequestParam
-        @ApiParam(value = "Source music service", required = true)
+        @ApiParam(value = "Music service", required = true)
+        MusicService service,
+
+        @RequestHeader("Authorization")
+        String authToken,
+
+        @RequestParam(required = false)
+        @ApiParam(value = "Next page identifier")
+        String next
+    );
+
+    @PostMapping("/tracks")
+    @ApiOperation("Transfer tracks")
+    @ApiResponses(value = {
+        @ApiResponse(
+            code = 200,
+            message = "Successfully transferred tracks",
+            response = TransferResultRestEntity.class
+        ),
+        @ApiResponse(
+            code = 401,
+            message = "Invalid auth token provided",
+            response = ErrorResponse.class
+        ),
+        @ApiResponse(
+            code = 500,
+            message = "Response in case of an unknown internal error",
+            response = ErrorResponse.class
+        )
+    })
+    TransferResultRestEntity<List<TrackRestEntity>> transferTracks(
+
+        @RequestParam
+        @ApiParam(value = "Transfer from", required = true)
         MusicService source,
 
         @RequestParam
-        @ApiParam(value = "Target music service", required = true)
+        @ApiParam(value = "Transfer to", required = true)
         MusicService target,
 
-        @RequestParam(required = false, defaultValue = "false")
-        @ApiParam("Transfer playlists?")
-        Boolean transferPlaylists,
+        @Valid
+        @RequestBody
+        TracksRestEntity tracks,
+
+        @RequestHeader("Authorization")
+        String authToken
+    );
+
+    @GetMapping("/playlists")
+    @ApiOperation("Get playlists available for transfer")
+    @ApiResponses(value = {
+        @ApiResponse(
+            code = 200,
+            message = "Successfully retrieved playlists",
+            response = TransferResultRestEntity.class
+        ),
+        @ApiResponse(
+            code = 401,
+            message = "Invalid auth token provided",
+            response = ErrorResponse.class
+        ),
+        @ApiResponse(
+            code = 500,
+            message = "Response in case of an unknown internal error",
+            response = ErrorResponse.class
+        )
+    })
+    Page<PlaylistRestEntity> availablePlaylists(
+
+        @RequestParam
+        @ApiParam(value = "Music service", required = true)
+        MusicService service,
+
+        @RequestHeader("Authorization")
+        String authToken,
+
+        @RequestParam(required = false)
+        @ApiParam(value = "Next page identifier")
+        String next
+    );
+
+    @GetMapping("/playlists/{playlistId}/tracks")
+    @ApiOperation("Get playlist tracks available for transfer")
+    @ApiResponses(value = {
+        @ApiResponse(
+            code = 200,
+            message = "Successfully retrieved tracks",
+            response = TransferResultRestEntity.class
+        ),
+        @ApiResponse(
+            code = 401,
+            message = "Invalid auth token provided",
+            response = ErrorResponse.class
+        ),
+        @ApiResponse(
+            code = 500,
+            message = "Response in case of an unknown internal error",
+            response = ErrorResponse.class
+        )
+    })
+    Page<TrackRestEntity> availablePlaylistTracks(
+
+        @RequestParam
+        @ApiParam(value = "Music service", required = true)
+        MusicService service,
+
+        @RequestHeader("Authorization")
+        String authToken,
+
+        @PathVariable
+        @ApiParam(value = "Playlist ID", required = true)
+        String playlistId,
+
+        @RequestParam(required = false)
+        @ApiParam(value = "Next page identifier")
+        String next
+    );
+
+    @PostMapping("/playlists")
+    @ApiOperation("Transfer playlists")
+    @ApiResponses(value = {
+        @ApiResponse(
+            code = 200,
+            message = "Successfully transferred playlists",
+            response = TransferResultRestEntity.class
+        ),
+        @ApiResponse(
+            code = 401,
+            message = "Invalid auth token provided",
+            response = ErrorResponse.class
+        ),
+        @ApiResponse(
+            code = 500,
+            message = "Response in case of an unknown internal error",
+            response = ErrorResponse.class
+        )
+    })
+    TransferResultRestEntity<PlaylistRestEntity> transferPlaylist(
+
+        @RequestParam
+        @ApiParam(value = "Transfer from", required = true)
+        MusicService source,
+
+        @RequestParam
+        @ApiParam(value = "Transfer to", required = true)
+        MusicService target,
+
+        @Valid
+        @RequestBody
+        PlaylistRestEntity playlist,
 
         @RequestHeader("Authorization")
         String authToken

@@ -6,7 +6,9 @@ import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.domain.entity.Playlist;
 import com.mf.api.domain.entity.Track;
 import com.mf.api.domain.valueobject.TrackSearchCriteria;
+import com.mf.api.port.exception.IllegalRequestException;
 import com.mf.api.port.exception.NotSupportedException;
+import com.mf.api.util.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,15 +19,33 @@ import java.util.Optional;
 public interface MusicServicePort {
 
 	/**
-	 * Fetch all liked tracks.
+	 * Fetch a page of liked tracks.
 	 *
 	 * @param token  OAuth2 access token
+	 * @param next   page URL
 	 *
-	 * @return a list of liked tracks
+	 * @return a page of liked tracks
 	 *
-	 * @throws AccessException         if OAuth2 authorization fails
+	 * @throws AccessException          if OAuth2 authorization fails
+	 * @throws IllegalRequestException  if next is invalid
+	 * @throws MusicServiceException    if any other music service related error occurs
 	 */
-	List<Track> likedTracks(OAuth2Token token);
+	Page<Track> likedTracks(OAuth2Token token, String next);
+
+	/**
+	 * Fetch a page of playlist tracks.
+	 *
+	 * @param token       OAuth2 access token
+	 * @param playlistId  playlist ID
+	 * @param next        page URL
+	 *
+	 * @return a page of playlist tracks
+	 *
+	 * @throws AccessException          if OAuth2 authorization fails
+	 * @throws IllegalRequestException  if next is invalid
+	 * @throws MusicServiceException    if any other music service related error occurs
+	 */
+	Page<Track> playlistTracks(OAuth2Token token, String playlistId, String next);
 
 	/**
 	 * Like the specified track.
@@ -71,16 +91,18 @@ public interface MusicServicePort {
 	Optional<Track> searchTracks(OAuth2Token token, TrackSearchCriteria criteria);
 
 	/**
-	 * Fetch all playlists.
+	 * Fetch a page of playlists.
 	 *
 	 * @param token  OAuth2 token
+	 * @param next   page URL
 	 *
-	 * @return a list of playlists
+	 * @return a page of playlists
 	 *
-	 * @throws AccessException         if OAuth2 authorization fails
-	 * @throws MusicServiceException   if any other music service related error occurs
+	 * @throws AccessException          if OAuth2 authorization fails
+	 * @throws IllegalRequestException  if next is invalid
+	 * @throws MusicServiceException    if any other music service related error occurs
 	 */
-	 List<Playlist> playlists(OAuth2Token token);
+	Page<Playlist> playlists(OAuth2Token token, String next);
 
 	/**
 	 * Create a new playlist.

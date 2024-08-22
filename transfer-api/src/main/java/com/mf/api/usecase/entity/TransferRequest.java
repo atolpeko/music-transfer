@@ -7,10 +7,10 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TransferRequest {
+public class TransferRequest <T> {
 
 	private String source;
 	private String target;
 	private TokenMap tokenMap;
-	private boolean transferPlaylists;
+	private T toTransfer;
 }
