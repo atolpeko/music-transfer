@@ -1,18 +1,14 @@
 package com.mf.api.usecase.impl;
 
-import static com.mf.api.fixture.UseCaseImplFixture.FAILED_PLAYLIST_TRACKS;
-import static com.mf.api.fixture.UseCaseImplFixture.FAILED_TRACKS;
-import static com.mf.api.fixture.UseCaseImplFixture.FULL_TRANSFER_REQUEST;
-import static com.mf.api.fixture.UseCaseImplFixture.INVALID_JWT;
-import static com.mf.api.fixture.UseCaseImplFixture.JWT;
-import static com.mf.api.fixture.UseCaseImplFixture.REQUEST_INVALID_JWT;
-import static com.mf.api.fixture.UseCaseImplFixture.REQUEST_INVALID_SOURCE_TARGET;
-import static com.mf.api.fixture.UseCaseImplFixture.SERVICE_TO_TOKENS;
-import static com.mf.api.fixture.UseCaseImplFixture.SOURCE;
-import static com.mf.api.fixture.UseCaseImplFixture.SRC_TOKEN;
-import static com.mf.api.fixture.UseCaseImplFixture.TARGET;
-import static com.mf.api.fixture.UseCaseImplFixture.TARGET_TOKEN;
-import static com.mf.api.fixture.UseCaseImplFixture.TRACK_TRANSFER_REQUEST;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.FAILED_PLAYLIST_TRACKS;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.FAILED_TRACKS;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.FULL_TRANSFER_REQUEST;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.REQUEST_INVALID_SOURCE_TARGET;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.SOURCE;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.SRC_TOKEN;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.TARGET;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.TARGET_TOKEN;
+import static com.mf.api.fixture.TransferUseCaseImplFixture.TRACK_TRANSFER_REQUEST;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.mf.api.config.UnitTest;
-import com.mf.api.domain.service.JWTService;
-import com.mf.api.domain.service.exception.InvalidJWTException;
-import com.mf.api.port.JWTValidatorPort;
 import com.mf.api.port.MusicServicePort;
 import com.mf.api.port.exception.AccessException;
 import com.mf.api.port.exception.MusicServiceException;
@@ -44,16 +37,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @UnitTest
-class UseCaseImplTest {
+class TransferUseCaseImplTest {
 
 	@InjectMocks
-	UseCaseImpl target;
-
-	@Mock
-	JWTValidatorPort jwtValidator;
-
-	@Mock
-	JWTService jwtService;
+	TransferUseCaseImpl target;
 
 	@Mock
 	TrackTransferExecutor trackTransferExecutor;
@@ -73,12 +60,6 @@ class UseCaseImplTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.initMocks(this);
-
-		when(jwtService.extractTokens(JWT)).thenReturn(SERVICE_TO_TOKENS);
-
-		when(jwtValidator.isValid(JWT)).thenReturn(true);
-		when(jwtValidator.isValid(INVALID_JWT)).thenReturn(false);
-
 		when(serviceMap.get(SOURCE)).thenReturn(sourseSvc);
 		when(serviceMap.get(TARGET)).thenReturn(targetSvc);
 	}
@@ -145,23 +126,6 @@ class UseCaseImplTest {
 		assertThrows(
 			InvalidRequestException.class,
 			() -> target.transfer(REQUEST_INVALID_SOURCE_TARGET)
-		);
-	}
-
-	@Test
-	void testThrowsExceptionWhenJWTIsInvalid() {
-		assertThrows(
-			AuthorizationException.class,
-			() -> target.transfer(REQUEST_INVALID_JWT)
-		);
-	}
-
-	@Test
-	void testThrowsExceptionWhenJWTIsMalformed() {
-		when(jwtService.extractTokens(JWT)).thenThrow(InvalidJWTException.class);
-		assertThrows(
-			AuthorizationException.class,
-			() -> target.transfer(FULL_TRANSFER_REQUEST)
 		);
 	}
 

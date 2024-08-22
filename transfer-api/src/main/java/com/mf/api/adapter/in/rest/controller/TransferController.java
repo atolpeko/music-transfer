@@ -4,7 +4,8 @@ import com.mf.api.adapter.in.rest.api.TransferAPI;
 import com.mf.api.adapter.in.rest.entity.TransferResult;
 import com.mf.api.adapter.in.rest.mapper.TrackMapper;
 import com.mf.api.adapter.in.rest.entity.MusicService;
-import com.mf.api.usecase.UseCase;
+import com.mf.api.usecase.AuthUseCase;
+import com.mf.api.usecase.TransferUseCase;
 import com.mf.api.usecase.entity.TransferRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TransferController implements TransferAPI {
 
-	private final UseCase useCase;
+	private final AuthUseCase authUseCase;
+	private final TransferUseCase transferUseCase;
 	private final TrackMapper trackMapper;
 
 	@Override
@@ -25,15 +27,15 @@ public class TransferController implements TransferAPI {
 		Boolean transferPlaylists,
 		String authToken
 	) {
-		var jwt = authToken.replace("Bearer ", "");
+		var tokenMap = authUseCase.extractTokens(authToken);
 		var request = TransferRequest.builder()
 			.source(source.name())
 			.target(target.name())
+			.tokenMap(tokenMap)
 			.transferPlaylists(transferPlaylists)
-			.jwt(jwt)
 			.build();
 
-		var result = useCase.transfer(request);
+		var result = transferUseCase.transfer(request);
 		var failed = result.getFailedToTransfer().stream()
 			.map(trackMapper::toRestEntity)
 			.toList();

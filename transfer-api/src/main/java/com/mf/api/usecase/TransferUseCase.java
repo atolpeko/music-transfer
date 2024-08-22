@@ -7,7 +7,7 @@ import com.mf.api.usecase.exception.InvalidStateException;
 import com.mf.api.usecase.entity.TransferResult;
 import com.mf.api.usecase.entity.TransferRequest;
 
-public interface UseCase {
+public interface TransferUseCase {
 
     /**
      * Transfer from source to target.
