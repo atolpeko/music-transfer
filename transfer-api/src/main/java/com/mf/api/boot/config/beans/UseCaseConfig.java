@@ -2,8 +2,10 @@ package com.mf.api.boot.config.beans;
 
 import com.mf.api.domain.service.JWTService;
 import com.mf.api.port.JWTValidatorPort;
-import com.mf.api.usecase.UseCase;
-import com.mf.api.usecase.impl.UseCaseImpl;
+import com.mf.api.usecase.AuthUseCase;
+import com.mf.api.usecase.TransferUseCase;
+import com.mf.api.usecase.impl.AuthUseCaseImpl;
+import com.mf.api.usecase.impl.TransferUseCaseImpl;
 import com.mf.api.usecase.impl.PlaylistTransferExecutor;
 import com.mf.api.usecase.impl.TrackSearcher;
 import com.mf.api.usecase.impl.TrackTransferExecutor;
@@ -16,16 +18,20 @@ import org.springframework.context.annotation.Configuration;
 public class UseCaseConfig {
 
     @Bean
-    public UseCase useCase(
+    public AuthUseCase authUseCase(
         JWTValidatorPort jwtValidator,
-        JWTService jwtService,
+        JWTService jwtService
+    ) {
+        return new AuthUseCaseImpl(jwtValidator, jwtService);
+    }
+
+    @Bean
+    public TransferUseCase useCase(
         TrackTransferExecutor trackTransferExecutor,
         PlaylistTransferExecutor playlistTransferExecutor,
         ServiceMap serviceMap
     ) {
-        return new UseCaseImpl(
-            jwtValidator,
-            jwtService,
+        return new TransferUseCaseImpl(
             trackTransferExecutor,
             playlistTransferExecutor,
             serviceMap

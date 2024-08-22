@@ -1,7 +1,8 @@
 package com.mf.api.config;
 
-import static com.mf.api.fixture.TransferFixture.INVALID_JWT;
-import static com.mf.api.fixture.TransferFixture.MALFORMED_JWT;
+import static com.mf.api.fixture.TransferFixture.INVALID_TOKEN;
+import static com.mf.api.fixture.TransferFixture.JWT;
+import static com.mf.api.fixture.TransferFixture.MALFORMED_TOKEN;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_CREATED_PLAYLIST_JSON;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_ME_JSON;
 import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_PLAYLIST_ID;
@@ -50,17 +51,17 @@ public class ApiMockConfig {
     private void mockJwtValidatorApi(WireMockServer server) {
 
         // Valid JWT URL
-        var validUrl = jwtValidatorProperties.jwtValidationUrl();
-        server.stubFor(WireMock.get(WireMock.urlPathEqualTo(validUrl))
+        var jwtUrl = jwtValidatorProperties.jwtValidationUrl() + "?jwt=";
+        server.stubFor(WireMock.get(WireMock.urlEqualTo(jwtUrl + JWT))
             .willReturn(WireMock.aResponse().withStatus(200)));
 
         // Invalid JWT URL
-        var invalidJwtUrl = validUrl + "?jwt=" + INVALID_JWT;
+        var invalidJwtUrl = jwtUrl + INVALID_TOKEN;
         server.stubFor(WireMock.get(WireMock.urlEqualTo(invalidJwtUrl))
             .willReturn(WireMock.aResponse().withStatus(400)));
 
         // Malformed JWT URL
-        var malformedJwtUrl = validUrl + "?jwt=" + MALFORMED_JWT;
+        var malformedJwtUrl = jwtUrl + MALFORMED_TOKEN;
         server.stubFor(WireMock.get(WireMock.urlEqualTo(malformedJwtUrl))
             .willReturn(WireMock.aResponse().withStatus(400)));
     }

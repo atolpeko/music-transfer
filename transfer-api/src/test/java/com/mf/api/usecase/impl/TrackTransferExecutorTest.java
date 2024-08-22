@@ -5,17 +5,18 @@ import static com.mf.api.fixture.TrackTransferExecutorFixture.TOKEN;
 import static com.mf.api.fixture.TrackTransferExecutorFixture.TRACKS;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mf.api.config.UnitTest;
+import com.mf.api.domain.entity.Track;
 import com.mf.api.port.MusicServicePort;
 import com.mf.api.usecase.valueobject.TransferContext;
 
-import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +35,7 @@ class TrackTransferExecutorTest {
 	TrackSearcher trackSearcher;
 
 	@Mock
-	MusicServicePort sourceSvc;
-
-	@Mock
-	MusicServicePort targetSvc;
+	MusicServicePort service;
 
 	@BeforeEach
 	void setUp() {
@@ -45,44 +43,39 @@ class TrackTransferExecutorTest {
 	}
 
 	@Test
-	void testTransfersAllTracks() {
-		when(sourceSvc.likedTracks(TOKEN)).thenReturn(TRACKS);
-		when(trackSearcher.search(targetSvc, TOKEN, TRACKS)).thenReturn(TRACKS);
+	void testTransfersSelectedTracks() {
+		when(trackSearcher.search(service, TOKEN, TRACKS)).thenReturn(TRACKS);
 
 		var result = target.transfer(getContext());
-		verify(targetSvc, times(1)).trackBulkLike(TOKEN, TRACKS);
-		assertEquals(TRACKS.size(), result.getFirst());
-		assertTrue(result.getSecond().isEmpty());
+		verify(service, times(1)).trackBulkLike(TOKEN, TRACKS);
+		assertEquals(TRACKS.size(), result.getTransferredCount());
+		assertTrue(result.getFailed().isEmpty());
 	}
 
-	private TransferContext getContext() {
-		return TransferContext.builder()
+	private TransferContext<List<Track>> getContext() {
+		return TransferContext.<List<Track>>builder()
 			.source("source")
 			.target("target")
-			.sourceSvc(sourceSvc)
-			.targetSvc(targetSvc)
-			.sourceToken(TOKEN)
-			.targetToken(TOKEN)
+			.toTransfer(TRACKS)
+			.service(service)
+			.token(TOKEN)
 			.build();
 	}
 
 	@Test
 	void testTransfersNotAllTracks() {
-		when(sourceSvc.likedTracks(TOKEN)).thenReturn(TRACKS);
-		when(trackSearcher.search(targetSvc, TOKEN, TRACKS)).thenReturn(SOME_TRACKS);
+		when(trackSearcher.search(service, TOKEN, TRACKS)).thenReturn(SOME_TRACKS);
 
 		var result = target.transfer(getContext());
-		verify(targetSvc, times(1)).trackBulkLike(TOKEN, SOME_TRACKS);
-		assertEquals(SOME_TRACKS.size(), result.getFirst());
-		assertEquals(TRACKS.size() - SOME_TRACKS.size(), result.getSecond().size());
+		verify(service, times(1)).trackBulkLike(TOKEN, SOME_TRACKS);
+		assertEquals(SOME_TRACKS.size(), result.getTransferredCount());
+		assertEquals(TRACKS.size() - SOME_TRACKS.size(), result.getFailed().size());
 	}
 
 	@Test
 	void testTransferWithNoTracks() {
-		when(sourceSvc.likedTracks(TOKEN)).thenReturn(Collections.emptyList());
-
 		var result = target.transfer(getContext());
-		assertEquals(0, result.getFirst());
-		assertTrue(result.getSecond().isEmpty());
+		assertEquals(0, result.getTransferredCount());
+		assertEquals(TRACKS.size(), result.getFailed().size());
 	}
 }
