@@ -28,10 +28,6 @@ service:
       likedTracks: /youtube/v3/videos
       playlists: /youtube/v3/playlists
       playlistTracks: /youtube/v3/playlistItems
-circuitBreaker:
-  minimumNumberOfCalls: 3
-  slidingWindowSize: 80
-  failureRateThreshold: 70.0
 retry:
   attempts: 4
   windowSeconds: 2

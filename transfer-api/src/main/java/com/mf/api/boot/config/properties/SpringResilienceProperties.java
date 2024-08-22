@@ -9,15 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpringResilienceProperties {
 
-    @Value("${circuitBreaker.minimumNumberOfCalls}")
-    private int minimumNumberOfCalls;
-
-    @Value("${circuitBreaker.slidingWindowSize}")
-    private int slidingWindowSize;
-
-    @Value("${circuitBreaker.failureRateThreshold}")
-    private float failureRateThreshold;
-
     @Value("${retry.attempts}")
     private int attempts;
 

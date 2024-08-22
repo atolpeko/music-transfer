@@ -8,7 +8,6 @@ import com.mf.api.port.exception.IllegalRequestException;
 import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.util.Page;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
 import java.util.Collections;
@@ -34,7 +33,6 @@ import org.springframework.web.client.RestTemplate;
 public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 
 	private final RestTemplate restTemplate;
-	private final CircuitBreaker circuitBreaker;
 	private final Retry retry;
 	private final DefaultMusicServiceProperties properties;
 
@@ -73,10 +71,7 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 		Class<T> clazz
 	) throws Exception {
 		var callable = callable(url, method, token, null, clazz);
-		var response = retry.executeCallable(
-			() -> circuitBreaker.executeCallable(callable)
-		);
-
+		var response = retry.executeCallable(callable);
 		return checkResponse(url, response);
 	}
 
@@ -120,10 +115,7 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 		Class<T> clazz
 	) throws Exception {
 		var callable = callable(url, method, token, json, clazz);
-		var response = retry.executeCallable(
-			() -> circuitBreaker.executeCallable(callable)
-		);
-
+		var response = retry.executeCallable(callable);
 		return checkResponse(url, response);
 	}
 }

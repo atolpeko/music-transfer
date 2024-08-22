@@ -12,7 +12,6 @@ import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServicePropert
 import com.mf.api.adapter.out.musicservice.properties.SpotifyProperties;
 import com.mf.api.port.MusicServicePort;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +25,6 @@ public class MusicServiceConfig {
 	@Bean
 	public MusicServicePort spotifyAdapter(
 		RestTemplate restTemplate,
-		CircuitBreaker breaker,
 		Retry retry,
 		SpotifyProperties properties,
 		SpotifyPaginationMapper paginationMapper,
@@ -35,7 +33,6 @@ public class MusicServiceConfig {
 	) {
 		return new SpotifyAdapter(
 			restTemplate,
-			breaker,
 			retry,
 			properties,
 			paginationMapper,
@@ -47,7 +44,6 @@ public class MusicServiceConfig {
 	@Bean
 	public MusicServicePort ytMusicAdapter(
 		RestTemplate restTemplate,
-		CircuitBreaker breaker,
 		Retry retry,
 		@Qualifier("ytMusicProperties") DefaultMusicServiceProperties properties,
 		YTMusicPaginationMapper paginationMapper,
@@ -56,7 +52,6 @@ public class MusicServiceConfig {
 	) {
 		return new YTMusicAdapter(
 			restTemplate,
-			breaker,
 			retry,
 			properties,
 			paginationMapper,

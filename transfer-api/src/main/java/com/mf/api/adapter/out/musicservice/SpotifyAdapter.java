@@ -11,7 +11,6 @@ import com.mf.api.domain.valueobject.TrackSearchCriteria;
 import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.util.Page;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 
 import java.util.LinkedHashMap;
@@ -31,14 +30,13 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
 	public SpotifyAdapter(
 		RestTemplate restTemplate,
-		CircuitBreaker circuitBreaker,
 		Retry retry,
 		SpotifyProperties properties,
 		SpotifyPaginationMapper paginationMapper,
 		SpotifyTrackMapper trackMapper,
 		SpotifyPlaylistMapper playlistMapper
 	) {
-		super(restTemplate, circuitBreaker, retry, properties);
+		super(restTemplate, retry, properties);
 		this.properties = properties;
 		this.paginationMapper = paginationMapper;
 		this.trackMapper = trackMapper;
