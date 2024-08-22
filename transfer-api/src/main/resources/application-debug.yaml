@@ -25,9 +25,9 @@ service:
     pageSize: 50
     urls:
       domain: https://www.googleapis.com
-      likedTracks: youtube/v3/videos
-      playlists: youtube/v3/playlists
-      playlistTracks: youtube/v3/playlistItems
+      likedTracks: /youtube/v3/videos
+      playlists: /youtube/v3/playlists
+      playlistTracks: /youtube/v3/playlistItems
 circuitBreaker:
   minimumNumberOfCalls: 3
   slidingWindowSize: 80
@@ -37,7 +37,7 @@ retry:
   windowSeconds: 2
 logging:
   level:
-    com.mf.api: INFO
+    com.mf.api: DEBUG
 management:
   endpoint:
     health:
