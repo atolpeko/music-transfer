@@ -8,12 +8,11 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TransferContext {
+public class TransferContext <T> {
 
 	private String source;
 	private String target;
-	private MusicServicePort sourceSvc;
-	private MusicServicePort targetSvc;
-	private OAuth2Token sourceToken;
-	private OAuth2Token targetToken;
+	private MusicServicePort service;
+	private OAuth2Token token;
+	private T toTransfer;
 }

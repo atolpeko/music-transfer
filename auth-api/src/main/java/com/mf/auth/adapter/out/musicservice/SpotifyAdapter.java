@@ -1,7 +1,6 @@
 package com.mf.auth.adapter.out.musicservice;
 
 import com.mf.auth.adapter.properties.MusicServiceProperties;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,10 +9,9 @@ public class SpotifyAdapter extends StandardOauth2MusicService {
 
 	public SpotifyAdapter(
 		MusicServiceProperties properties,
-		RestTemplate restTemplate,
-		CircuitBreaker breaker
+		RestTemplate restTemplate
 	) {
-		super(properties, restTemplate, breaker);
+		super(properties, restTemplate);
 	}
 
 	@Override

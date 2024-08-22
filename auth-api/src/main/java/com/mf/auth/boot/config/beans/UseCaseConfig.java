@@ -11,8 +11,6 @@ import com.mf.auth.usecase.JWTUseCase;
 import com.mf.auth.usecase.impl.JWTUseCaseImpl;
 import com.mf.auth.usecase.valueobject.ServiceMap;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,7 +24,6 @@ public class UseCaseConfig {
         SymmetricEncryptionService encryptionService,
         UUIDRepositoryPort uuidRepository,
         JWTRepositoryPort jwtRepository,
-        CircuitBreaker breaker,
         ServiceMap serviceMap
     ) {
         return new AuthUseCaseImpl(
@@ -35,7 +32,6 @@ public class UseCaseConfig {
             encryptionService,
             uuidRepository,
             jwtRepository,
-            breaker,
             serviceMap
         );
     }
@@ -43,13 +39,11 @@ public class UseCaseConfig {
     @Bean
     public JWTUseCase tokenUseCase(
         JWTService jwtService,
-        JWTRepositoryPort jwtRepository,
-        CircuitBreaker breaker
+        JWTRepositoryPort jwtRepository
     ) {
         return new JWTUseCaseImpl(
             jwtService,
-            jwtRepository,
-            breaker
+            jwtRepository
         );
     }
 }

@@ -3,7 +3,6 @@ package com.mf.api.adapter.in.rest;
 import com.mf.api.adapter.in.rest.entity.ErrorResponse;
 import com.mf.api.usecase.exception.AuthorizationException;
 import com.mf.api.usecase.exception.InvalidRequestException;
-import com.mf.api.usecase.exception.InvalidStateException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -61,7 +60,6 @@ public class ExceptionInterceptor {
 
     @ExceptionHandler({
         InvalidRequestException.class,
-        InvalidStateException.class,
         HttpMessageNotReadableException.class,
         HttpMediaTypeNotSupportedException.class,
         UnsatisfiedServletRequestParameterException.class,

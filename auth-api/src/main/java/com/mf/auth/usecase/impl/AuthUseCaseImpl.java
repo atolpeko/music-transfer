@@ -1,7 +1,6 @@
 package com.mf.auth.usecase.impl;
 
 import com.mf.auth.domain.entity.AccessToken;
-import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.entity.Token;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.domain.service.SymmetricEncryptionService;
@@ -17,12 +16,8 @@ import com.mf.auth.usecase.exception.UseCaseException;
 import com.mf.auth.usecase.valueobject.ServiceMap;
 import com.mf.auth.domain.entity.OAuth2Token;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-
 import java.util.Map;
-import java.util.Optional;
 
-import java.util.concurrent.Callable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -40,14 +35,13 @@ public class AuthUseCaseImpl implements AuthUseCase {
 	private final UUIDRepositoryPort uuidRepository;
 	private final JWTRepositoryPort jwtRepository;
 
-	private final CircuitBreaker breaker;
 	private final ServiceMap serviceMap;
 
 	@Override
 	public Token generateUuid() {
 		try {
 			var uuid = tokenService.generateUuid();
-			breaker.executeRunnable(() -> uuidRepository.save(uuid));
+			uuidRepository.save(uuid);
 			log.debug("Generated UUID for a new user");
 			return uuid;
 		} catch (UseCaseException e) {
@@ -80,7 +74,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 			var accessToken = tokenService.generateAccessToken();
 			jwt.setAccessToken(accessToken);
 
-			breaker.executeRunnable(() -> jwtRepository.save(jwt));
+			jwtRepository.save(jwt);
 			log.info("Authenticated into {}", service);
 			return accessToken;
 		} catch (UseCaseException e) {
@@ -92,11 +86,8 @@ public class AuthUseCaseImpl implements AuthUseCase {
 		}
 	}
 
-	private Token findValidUuid(String uuidValue) throws Exception {
-		var uuid = breaker.executeCallable(
-			() -> uuidRepository.findValidByValue(uuidValue)
-		);
-
+	private Token findValidUuid(String uuidValue) {
+		var uuid = uuidRepository.findValidByValue(uuidValue);
 		if (uuid.isEmpty() || !uuid.get().isValid()) {
 			throw new AuthorizationException("UUID is invalid");
 		}
@@ -125,8 +116,7 @@ public class AuthUseCaseImpl implements AuthUseCase {
 			var uuid = findValidUuid(uuidValue);
 
 			log.debug("Looking for an existing JWT");
-			Callable<Optional<JWT>> find = () -> jwtRepository.findValidByValue(jwt);
-			var oldJwt = breaker.executeCallable(find)
+			var oldJwt = jwtRepository.findValidByValue(jwt)
 				.orElseThrow(() -> new AuthorizationException("No such JWT " + jwt));
 			if (!oldJwt.isValid()) {
 				throw new AuthorizationException("JWT expired");
@@ -141,8 +131,8 @@ public class AuthUseCaseImpl implements AuthUseCase {
 			var accessToken = tokenService.generateAccessToken();
 			newJwt.setAccessToken(accessToken);
 
-			breaker.executeRunnable(() -> jwtRepository.deleteById(oldJwt.getId()));
-			breaker.executeRunnable(() -> jwtRepository.save(newJwt));
+			jwtRepository.deleteById(oldJwt.getId());
+			jwtRepository.save(newJwt);
 			log.info("Authenticated into {}", service);
 			return accessToken;
 		} catch (UseCaseException e) {

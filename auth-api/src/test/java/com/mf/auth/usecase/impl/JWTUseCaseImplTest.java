@@ -6,24 +6,18 @@ import static com.mf.auth.fixture.JWTUseCaseFixture.JWT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mf.auth.config.UnitTest;
-import com.mf.auth.domain.entity.Token;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.usecase.exception.AuthorizationException;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.BeforeEach;
 
@@ -44,23 +38,9 @@ class JWTUseCaseImplTest {
 	@Mock
 	JWTRepositoryPort jwtRepository;
 
-	@Mock
-	CircuitBreaker breaker;
-
 	@BeforeEach
-	void setUp() throws Exception {
+	void setUp() {
 		MockitoAnnotations.initMocks(this);
-
-		doAnswer(invocation -> {
-			Callable<Optional<Token>> task = invocation.getArgument(0);
-			return task.call();
-		}).when(breaker).executeCallable(any());
-
-		doAnswer(invocation -> {
-			Runnable task = invocation.getArgument(0);
-			task.run();
-			return null;
-		}).when(breaker).executeRunnable(any());
 	}
 
 	@Test

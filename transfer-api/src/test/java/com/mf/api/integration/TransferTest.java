@@ -2,15 +2,22 @@ package com.mf.api.integration;
 
 import static com.mf.api.adapter.in.rest.entity.MusicService.SPOTIFY;
 import static com.mf.api.adapter.in.rest.entity.MusicService.YT_MUSIC;
-import static com.mf.api.fixture.TransferFixture.INVALID_JWT;
-import static com.mf.api.fixture.TransferFixture.MALFORMED_JWT;
-import static com.mf.api.fixture.TransferFixture.URL;
-import static com.mf.api.fixture.TransferFixture.VALID_JWT;
+import static com.mf.api.fixture.TransferFixture.INVALID_TOKEN;
+import static com.mf.api.fixture.TransferFixture.INVALID_PLAYLIST_JSON_1;
+import static com.mf.api.fixture.TransferFixture.INVALID_PLAYLIST_JSON_2;
+import static com.mf.api.fixture.TransferFixture.INVALID_TRACK_JSON_1;
+import static com.mf.api.fixture.TransferFixture.INVALID_TRACK_JSON_2;
+import static com.mf.api.fixture.TransferFixture.INVALID_TRACK_JSON_3;
+import static com.mf.api.fixture.TransferFixture.INVALID_TRACK_JSON_4;
+import static com.mf.api.fixture.TransferFixture.INVALID_TRACK_JSON_5;
+import static com.mf.api.fixture.TransferFixture.JWT;
+import static com.mf.api.fixture.TransferFixture.MALFORMED_TOKEN;
+import static com.mf.api.fixture.TransferFixture.PLAYLISTS_URL;
+import static com.mf.api.fixture.TransferFixture.TRACKS_URL;
+import static com.mf.api.fixture.TransferFixture.VALID_TOKEN;
+import static com.mf.api.fixture.TransferFixture.playlistJson;
 import static com.mf.api.fixture.TransferFixture.tokens;
-import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_LIKED_TRACKS_NUMBER;
-import static com.mf.api.fixture.jsons.SpotifyJSONs.SPOTIFY_PLAYLISTS_NUMBER;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.mf.api.fixture.TransferFixture.tracksJson;
 
 import static org.mockito.Mockito.when;
 
@@ -18,118 +25,216 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.mf.api.config.IntegrationTest;
 import com.mf.api.domain.service.JWTService;
-import com.mf.api.usecase.entity.TransferResult;
 
 import java.util.stream.Stream;
-
-import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @IntegrationTest
-public class TransferTest {
+class TransferTest {
 
 	@Autowired
 	MockMvc mvc;
-
-	@Autowired
-	ObjectMapper jsonMapper;
 
 	@MockBean
 	JWTService jwtService;
 
 	@ParameterizedTest
-	@MethodSource("provideArgumentsForTransferTest")
-	void testFullTransfer(
+	@MethodSource("provideArgumentsForTrackTransfer")
+	void testTransfer(
+		String url,
 		String source,
 		String target,
 		String token,
-		boolean transferPlaylists,
-		int transferredTracks,
-		int transferredPlaylists,
-		int failedToTransfer
+		String jwt,
+		String json
 	) throws Exception {
-		when(jwtService.extractTokens(token.replace("Bearer ", "")))
-			.thenReturn(tokens(source, target));
-
-		var response = mvc.perform(post(URL)
+		when(jwtService.extractTokens(jwt)).thenReturn(tokens(source, target));
+		mvc.perform(post(url)
 				.param("source", source)
 				.param("target", target)
-				.param("transferPlaylists", String.valueOf(transferPlaylists))
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
 				.header("Authorization", token))
 			.andDo(print())
 			.andExpect(status().is2xxSuccessful())
 			.andReturn()
 			.getResponse();
-
-		var result = jsonMapper.readValue(response.getContentAsString(), TransferResult.class);
-		assertEquals(result.getTransferredTracks(), transferredTracks);
-		assertEquals(result.getFailedToTransfer().size(), failedToTransfer);
-		assertEquals(result.getTransferredPlaylists(), transferredPlaylists);
 	}
 
-	static Stream<Arguments> provideArgumentsForTransferTest() {
+	static Stream<Arguments> provideArgumentsForTrackTransfer() {
 		return Stream.of(
-			Arguments.of(YT_MUSIC.name(), SPOTIFY.name(), VALID_JWT, true,
-				SPOTIFY_LIKED_TRACKS_NUMBER, SPOTIFY_PLAYLISTS_NUMBER, 0),
-
-			Arguments.of(YT_MUSIC.name(), SPOTIFY.name(), VALID_JWT, false,
-				SPOTIFY_LIKED_TRACKS_NUMBER, 0, 0)
+			Arguments.of(TRACKS_URL, YT_MUSIC.name(), SPOTIFY.name(),
+				VALID_TOKEN, JWT, tracksJson()),
+			Arguments.of(PLAYLISTS_URL, YT_MUSIC.name(), SPOTIFY.name(),
+				VALID_TOKEN, JWT, playlistJson())
 		);
 	}
 
-	@Test
-	void testReturn400IfNoSourceProvided() throws Exception {
-		mvc.perform(post(URL)
-				.param("target", YT_MUSIC.name())
-				.header("Authorization", "token"))
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn400IfNoSourceProvided(
+		String url,
+		String json,
+		String service
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("target", service)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", VALID_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(400));
 	}
 
-	@Test
-	void testReturn400IfNoTargetProvided() throws Exception {
-		mvc.perform(post(URL)
-				.param("source", YT_MUSIC.name())
-				.header("Authorization", "token"))
+	static Stream<Arguments> provideArgumentsForValidationTests() {
+		return Stream.of(
+			Arguments.of(TRACKS_URL, tracksJson(), YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(TRACKS_URL, tracksJson(), SPOTIFY.name(), YT_MUSIC.name()),
+			Arguments.of(PLAYLISTS_URL, playlistJson(), YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(PLAYLISTS_URL, playlistJson(), SPOTIFY.name(), YT_MUSIC.name())
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn400IfNoTargetProvided(
+		String url,
+		String json,
+		String service
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("source", service)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", VALID_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(400));
 	}
 
-	@Test
-	void testReturn400IfNoTokenProvided() throws Exception {
-		mvc.perform(post(URL)
-				.param("source", YT_MUSIC.name())
-				.param("target", SPOTIFY.name()))
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn400IfNoJsonProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.header("Authorization", VALID_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(400));
 	}
 
-	@Test
-	void testReturn401IfMalformedTokenProvided() throws Exception {
-		mvc.perform(post(URL)
-				.param("source", YT_MUSIC.name())
-				.param("target", SPOTIFY.name())
-				.header("Authorization", MALFORMED_JWT))
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForJsonValidationTests")
+	void testReturn400IfInvalidJsonProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		when(jwtService.extractTokens(JWT)).thenReturn(tokens(sourceService, targetService));
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", VALID_TOKEN))
+			.andDo(print())
+			.andExpect(status().is(400));
+	}
+
+	static Stream<Arguments> provideArgumentsForJsonValidationTests() {
+		return Stream.of(
+			Arguments.of(TRACKS_URL, INVALID_TRACK_JSON_1, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(TRACKS_URL, INVALID_TRACK_JSON_2, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(TRACKS_URL, INVALID_TRACK_JSON_3, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(TRACKS_URL, INVALID_TRACK_JSON_4, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(TRACKS_URL, INVALID_TRACK_JSON_5, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(PLAYLISTS_URL, INVALID_PLAYLIST_JSON_1, YT_MUSIC.name(), SPOTIFY.name()),
+			Arguments.of(PLAYLISTS_URL, INVALID_PLAYLIST_JSON_2, YT_MUSIC.name(), SPOTIFY.name())
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn400IfMalformedJsonProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		when(jwtService.extractTokens(JWT)).thenReturn(tokens(sourceService, targetService));
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.content("{n}")
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", VALID_TOKEN))
+			.andDo(print())
+			.andExpect(status().is(400));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn400IfNoTokenProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().is(400));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn401IfMalformedTokenProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", MALFORMED_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(401));
 	}
 
-	@Test
-	void testReturn401IfInvalidTokenProvided() throws Exception {
-		mvc.perform(post(URL)
-				.param("source", YT_MUSIC.name())
-				.param("target", SPOTIFY.name())
-				.header("Authorization", INVALID_JWT))
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForValidationTests")
+	void testReturn401IfInvalidTokenProvided(
+		String url,
+		String json,
+		String sourceService,
+		String targetService
+	) throws Exception {
+		mvc.perform(post(url)
+				.param("source", sourceService)
+				.param("target", targetService)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", INVALID_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(401));
 	}
