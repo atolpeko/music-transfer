@@ -12,10 +12,6 @@ spring:
   sql:
     init:
       mode: always
-circuitBreaker:
-  minimumNumberOfCalls: 3
-  slidingWindowSize: 8
-  failureRateThreshold: 70.0
 service:
   encryptionAlgName: AES
   encryptionKeySize: 16
