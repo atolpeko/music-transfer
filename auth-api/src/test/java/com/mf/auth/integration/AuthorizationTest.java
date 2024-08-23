@@ -1,16 +1,13 @@
 package com.mf.auth.integration;
 
-import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_AUTH_URL;
+import static com.mf.auth.fixture.AuthorizationFixture.AUTH_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_CALLBACK_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_LOGIN_REDIRECT;
-import static com.mf.auth.fixture.AuthorizationFixture.YT_MUSIC_AUTH_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.YT_MUSIC_CALLBACK_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.YT_MUSIC_CODE;
-import static com.mf.auth.fixture.AuthorizationFixture.REDIRECT_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_CODE;
-
 import static com.mf.auth.fixture.AuthorizationFixture.YT_MUSIC_LOGIN_REDIRECT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,6 +15,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.mf.auth.adapter.in.rest.entity.TokenRestEntity;
 import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
@@ -28,10 +28,10 @@ import com.mf.auth.usecase.JWTUseCase;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,29 +57,29 @@ class AuthorizationTest {
 	@Autowired
 	RestProperties restProperties;
 
+	@Autowired
+	ObjectMapper mapper;
+
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForAuthTest")
 	void testRedirectionToMusicServiceLoginOnAuthCall(
-		String authUrl,
-		String redirectUrl,
+		MusicService service,
 		String returnedAuthUrl
 	) throws Exception {
-		var redirect = performAuthRedirect(authUrl, redirectUrl);
+		var redirect = performAuthRedirect(service);
 		var encodedState = redirect.substring(redirect.indexOf("&state=") + 7);
 		var state = encodeStateService.decode(encodedState);
 
 		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
 		assertNotNull(state.getUuid());
-		assertEquals(redirectUrl, state.getRedirectUrl());
 	}
 
 	private String performAuthRedirect(
-		String url,
-		String redirectUrl
+		MusicService service
 	) throws Exception {
-		return mvc.perform(get(url)
-				.param("redirectUrl", redirectUrl))
+		return mvc.perform(get(AUTH_URL)
+				.param("service", service.name()))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
 			.andReturn()
@@ -89,26 +89,24 @@ class AuthorizationTest {
 
 	private static Stream<Arguments> provideArgumentsForAuthTest() {
 		return Stream.of(
-			Arguments.of(SPOTIFY_AUTH_URL, REDIRECT_URL, SPOTIFY_LOGIN_REDIRECT),
-			Arguments.of(YT_MUSIC_AUTH_URL, REDIRECT_URL, YT_MUSIC_LOGIN_REDIRECT)
+			Arguments.of(MusicService.SPOTIFY, SPOTIFY_LOGIN_REDIRECT),
+			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_LOGIN_REDIRECT)
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForAuthWithJwtTest")
 	void testRedirectionToMusicServiceLoginOnAuthWithJwtCall(
-		String authUrl,
-		String redirectUrl,
-		String returnedAuthUrl,
 		MusicService service,
+		String returnedAuthUrl,
 		String authCode
 	) throws Exception {
 		var prevUuid = authUseCase.generateUuid().getValue();
 		var prevToken = authUseCase.auth(prevUuid,service.name(), authCode);
 		var prevJwt = jwtUseCase.obtain(prevToken.getValue()).getValue();
 
-		var redirect = mvc.perform(get(authUrl)
-				.param("redirectUrl", redirectUrl)
+		var redirect = mvc.perform(get(AUTH_URL)
+				.param("service", service.name())
 				.param("jwt", prevJwt))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
@@ -125,75 +123,84 @@ class AuthorizationTest {
 		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
 		assertNotNull(jwt);
-		assertEquals(redirectUrl, state.getRedirectUrl());
 	}
 
 	private static Stream<Arguments> provideArgumentsForAuthWithJwtTest() {
 		return Stream.of(
-			Arguments.of(SPOTIFY_AUTH_URL, REDIRECT_URL, SPOTIFY_LOGIN_REDIRECT,
-				MusicService.SPOTIFY, SPOTIFY_CODE),
-			Arguments.of(YT_MUSIC_AUTH_URL, REDIRECT_URL, YT_MUSIC_LOGIN_REDIRECT,
-				MusicService.YT_MUSIC, YT_MUSIC_CODE)
+			Arguments.of(MusicService.SPOTIFY, SPOTIFY_LOGIN_REDIRECT, SPOTIFY_CODE),
+			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_LOGIN_REDIRECT, YT_MUSIC_CODE)
 		);
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = { SPOTIFY_AUTH_URL, YT_MUSIC_AUTH_URL })
-	void testReturn400IfNoRedirectUrlProvided(String authUrl) throws Exception {
-		mvc.perform(get(authUrl))
+	@Test
+	void testReturn400IfNoMusicServiceProvided() throws Exception {
+		mvc.perform(get(AUTH_URL))
+			.andDo(print())
+			.andExpect(status().is(400));
+	}
+
+	@Test
+	void testReturn400IfInvalidMusicServiceProvided() throws Exception {
+		mvc.perform(get(AUTH_URL)
+				.param("service", "dfd"))
 			.andDo(print())
 			.andExpect(status().is(400));
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { SPOTIFY_AUTH_URL, YT_MUSIC_AUTH_URL })
-	void testReturn401IfInvalidJwtProvided(String authUrl) throws Exception {
-		mvc.perform(get(authUrl)
-				.param("redirectUrl", REDIRECT_URL)
+	@MethodSource("provideArgumentsForJwtTest")
+	void testReturn401IfInvalidJwtProvided(MusicService service) throws Exception {
+		mvc.perform(get(AUTH_URL)
+				.param("service", service.name())
 				.param("jwt", "335336"))
 			.andDo(print())
 			.andExpect(status().is(401));
 	}
 
+	private static Stream<Arguments> provideArgumentsForJwtTest() {
+		return Stream.of(
+			Arguments.of(MusicService.SPOTIFY),
+			Arguments.of(MusicService.YT_MUSIC)
+		);
+	}
+
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
-	void testRedirectToClientWithAccessTokenOnCallbackCall(
-		String authUrl,
-		String redirectUrl,
+	void testReturnsAccessTokenOnCallbackCall(
+		MusicService service,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(authUrl, redirectUrl);
+		var callback = performAuthRedirect(service);
 		var state = callback.substring(callback.indexOf("&state=") + 7);
 
-		var redirect = mvc.perform(get(callbackUrl)
+		var response = mvc.perform(get(callbackUrl)
 				.param("code", authCode)
 				.param("state", state))
 			.andDo(print())
-			.andExpect(status().is3xxRedirection())
+			.andExpect(status().is2xxSuccessful())
 			.andReturn()
 			.getResponse()
-			.getRedirectedUrl();
+			.getContentAsString();
 
-		var accessToken = redirect.substring(redirect.indexOf("?access_token=") + 14);
-		assertNotNull(accessToken);
+		var token = mapper.readValue(response, TokenRestEntity.class);
+		assertNotNull(token.getValue());
 	}
 
 	private static Stream<Arguments> provideArgumentsForCallbackTest() {
 		return Stream.of(
-			Arguments.of(SPOTIFY_AUTH_URL, REDIRECT_URL, SPOTIFY_CALLBACK_URL, SPOTIFY_CODE),
-			Arguments.of(YT_MUSIC_AUTH_URL, REDIRECT_URL, YT_MUSIC_CALLBACK_URL, YT_MUSIC_CODE)
+			Arguments.of(MusicService.SPOTIFY, SPOTIFY_CALLBACK_URL, SPOTIFY_CODE),
+			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_CALLBACK_URL, YT_MUSIC_CODE)
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn403IfErrorProvided(
-		String authUrl,
-		String redirectUrl,
+		MusicService service,
 		String callbackUrl
 	) throws Exception {
-		var callback = performAuthRedirect(authUrl, redirectUrl);
+		var callback = performAuthRedirect(service);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);
@@ -208,12 +215,11 @@ class AuthorizationTest {
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn400IfInvalidUuidProvided(
-		String authUrl,
-		String redirectUrl,
+		MusicService service,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(authUrl, redirectUrl);
+		var callback = performAuthRedirect(service);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);
@@ -231,12 +237,11 @@ class AuthorizationTest {
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn400IfInvalidJwtProvided(
-		String authUrl,
-		String redirectUrl,
+		MusicService service,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(authUrl, redirectUrl);
+		var callback = performAuthRedirect(service);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);

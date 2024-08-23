@@ -1,0 +1,16 @@
+server:
+  port: 6010
+logging:
+  level:
+    com.mf.auth: INFO
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+swagger:
+  url: /swagger-ui/index.html
+  title: Service Config API [LOCAL PROFILE]
+  description: Service Config API
+  version: "1.0.0-SNAPSHOT"
+  controllersPackage: com.mf.serviceconfig.rest
