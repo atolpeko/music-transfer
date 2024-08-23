@@ -1,8 +1,8 @@
 package com.mf.auth.adapter.in.rest.controller;
 
 import com.mf.auth.adapter.in.rest.api.TokenAPI;
-import com.mf.auth.adapter.in.rest.entity.JWTRestEntity;
-import com.mf.auth.adapter.in.rest.mapper.JWTMapper;
+import com.mf.auth.adapter.in.rest.entity.TokenRestEntity;
+import com.mf.auth.adapter.in.rest.mapper.TokenMapper;
 import com.mf.auth.usecase.JWTUseCase;
 
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TokenController implements TokenAPI {
 
 	private final JWTUseCase useCase;
-	private final JWTMapper jwtMapper;
+	private final TokenMapper tokenMapper;
 
 	@Override
-	public JWTRestEntity getJwt(String accessToken) {
+	public TokenRestEntity getJwt(String accessToken) {
 		var jwt = useCase.obtain(accessToken);
-		return jwtMapper.toRestEntity(jwt);
+		return tokenMapper.toRestEntity(jwt);
 	}
 
 	@Override

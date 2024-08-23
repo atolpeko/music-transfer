@@ -1,7 +1,7 @@
 package com.mf.auth.adapter.in.rest.api;
 
 import com.mf.auth.adapter.in.rest.entity.ErrorResponse;
-import com.mf.auth.adapter.in.rest.entity.JWTRestEntity;
+import com.mf.auth.adapter.in.rest.entity.TokenRestEntity;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,12 +31,12 @@ public interface TokenAPI {
         @ApiResponse(
             code = 200,
             message = "Successfully acquired JWT",
-            response = JWTRestEntity.class
+            response = TokenRestEntity.class
         ),
         @ApiResponse(
             code = 401,
             message = "Invalid access token provided",
-            response = JWTRestEntity.class
+            response = TokenRestEntity.class
         ),
         @ApiResponse(
             code = 500,
@@ -44,7 +44,7 @@ public interface TokenAPI {
             response = ErrorResponse.class
         )
     })
-    JWTRestEntity getJwt(
+    TokenRestEntity getJwt(
 
         @RequestParam
         @ApiParam(value = "JWT access token", required = true)
