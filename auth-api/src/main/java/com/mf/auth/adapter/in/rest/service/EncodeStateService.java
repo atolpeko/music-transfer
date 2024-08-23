@@ -23,7 +23,7 @@ public class EncodeStateService {
 		return URLEncoder.encode(base64Encoded, StandardCharsets.UTF_8);
 	}
 
-	public AuthState decode(String state) throws Exception {
+	public AuthState decode(String state) throws JsonProcessingException {
 		var urlDecoded = URLDecoder.decode(state, StandardCharsets.UTF_8);
 		var bytes = Base64.getDecoder().decode(urlDecoded);
 		var json = new String(bytes, StandardCharsets.UTF_8);
