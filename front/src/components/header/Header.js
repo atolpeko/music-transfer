@@ -14,7 +14,7 @@ const Header = ({ homeUrl, aboutUrl, contactUrl, supportUrl }) => {
           <span className="navbar-toggler-icon" />
         </button>
 
-        <a class="navbar-brand" href={homeUrl}>Home</a>
+        <a className="navbar-brand" href={homeUrl}>Home</a>
         <div className="collapse navbar-collapse"
             id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">

@@ -1,0 +1,31 @@
+.service-card {
+	margin: 3%;
+  padding: 4%;
+  border-radius: 13%;
+  cursor: pointer;
+}
+
+.service-card:hover {
+	transform: scale(1.05);
+}
+
+.service-card.selected {
+  border: 1px solid #007bff;
+	transform: scale(0.95);
+}
+
+.service-card-text {
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: lighter;
+  text-align: center;
+  padding-top: 10%;
+}
+
+.service-img {
+  align-self: center;
+  width: 40%;
+  height: 40%;
+  margin-right: 3%;
+  padding-top: 4%;
+}

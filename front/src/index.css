@@ -50,3 +50,8 @@ select {
 .section {
   margin-top: 5%;
 }
+
+.error-section {
+  margin-top: 1%;
+  margin-bottom: 0%;
+}

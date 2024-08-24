@@ -4,19 +4,19 @@
   text-align: center;
 }
 
-.text {
+.home-text {
   font-size: 1.2rem;
   text-align: center;
   color: gray;
 }
 
-.service-img {
+.home-img {
   width: 5%;
   height: 5%;
   margin-right: 3%;
   padding-top: 4%;
 }
 
-.start-button {
+.home-button {
   margin-top: 3%;
 }
