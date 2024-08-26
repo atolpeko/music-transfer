@@ -18,13 +18,13 @@ const TransferPage = ({ source, target, run }) => {
       setError(`Transfer error: ${error}`)
       setRunning(false);
     });
-  }, [])
+  }, []);
 
   const renderContent = () => {
     return (
       <div>
         <div className="row justify-content-center section">
-          <h2 className="transfer-title">
+          <h2 className="page-title">
             Transferred {result.tracksCount || 0} tracks
              and {result.playlistsCount || 0} playlists from {source} to {target}
           </h2>  
@@ -50,7 +50,7 @@ const TransferPage = ({ source, target, run }) => {
           </div>    
         </div>   
       </div>
-    )
+    );
   }
 
   const renderSpinner = () => {
@@ -58,7 +58,7 @@ const TransferPage = ({ source, target, run }) => {
       <div className="row justify-content-center section">
         <div className="container justify-content-center section">
           <h2 className="transfer-spinner-text">
-            Transferring your Library from {source} to {target}...
+            Transferring the Library from {source} to {target}...
           </h2>
         </div>
         <div className="row justify-content-center section">
@@ -68,7 +68,7 @@ const TransferPage = ({ source, target, run }) => {
                       data-testid="loader" />
         </div>
       </div>
-    )
+    );
   }
 
   return (

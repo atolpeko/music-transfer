@@ -30,7 +30,7 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
       setError(`Failed to load playlists`)
       setLoading(false);
     });
-  }, [])
+  }, []);
 
   const toggleModal = () => setShowModal(!showModal);
 
@@ -55,8 +55,8 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
   }
 
   const handleTransferClick = () => {
-    var selectedTracks = tracks.filter(track => track.selected == true);
-    var selectedPlaylists = playlists.filter(playlist => playlist.selected == true);
+    const selectedTracks = tracks.filter(track => track.selected == true);
+    const selectedPlaylists = playlists.filter(playlist => playlist.selected == true);
     if (selectedTracks.length == 0) {
       setError('Select at least one track');
     } else {
@@ -94,7 +94,7 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
     return (
       <div>
         <div className="row justify-content-center section">
-          <h1 className="transfer-title">
+          <h1 className="page-title">
             Transfer from {source} to {target}
           </h1>
         </div>
@@ -153,7 +153,7 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
           </div>
         </div>   
       </div>
-    )
+    );
   }
 
   const renderSpinner = () => {
@@ -163,7 +163,7 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
                     aria-label="Loading"
                     data-testid="loader" />
       </div>
-    )
+    );
   }
 
   return (

@@ -26,10 +26,10 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
       setError(`Failed to load services: ${loadError}`);
       setLoading(false);
     });
-  }, [])
+  }, []);
   
   const handleCardSelection = id => {
-    var i = id.replace('service-card-', '');
+    const i = id.replace('service-card-', '');
     if (select == 'Source') {
       setSource(sourceServices.at(i).visibleName);
     } else {;
@@ -51,7 +51,7 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
   }
 
   const resetSelection = () => {
-    let cards = document.querySelectorAll('.card');
+    const cards = document.querySelectorAll('.card');
     cards.forEach(card => card.classList.remove('selected'));	
   }
 
@@ -92,8 +92,8 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
                               imageUrl={service.logoUrl} 
                               onSelect={handleCardSelection} />
             </div> )
-        : (<div key={i}/>)  
-    })
+        : (<div key={i}/>)
+    });
   }
   
   const renderContent = () => {
@@ -101,8 +101,8 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
       <div>
         <div className="row justify-content-center section">
         { sourceServices.length > 0 
-          ? <h1 className="service-title">Select {select}</h1>
-          : <h1 className="service-title">No services available now</h1>
+          ? <h1 className="page-title">Select {select}</h1>
+          : <h1 className="page-title">No services available now</h1>
         }
         </div>
         <div className="row justify-content-center section">
@@ -127,7 +127,7 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
           }
         </div>
       </div>
-    )
+    );
   }
 
   const renderSpinner = () => {

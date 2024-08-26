@@ -12,9 +12,9 @@ import TransferPage from './components/transfer/TransferPage';
 
 const App = () => {
   
-  const [selectedServices, setSelectedServices] = useState(undefined);
-  const [selectedTracks, setSelectedTracks] = useState(undefined);
-  const [selectedPlaylists, setSelectedPlaylists] = useState(undefined);
+  const [services, setServices] = useState(undefined);
+  const [tracks, setTracks] = useState(undefined);
+  const [playlists, setPlaylists] = useState(undefined);
   
   const handleStartClick = () => {
     window.location = '/transfer';
@@ -25,40 +25,40 @@ const App = () => {
     return fetchServices();
   }
 
-  const handleServicesSelection = (source, target) => {
+  const handleServiceSelection = (source, target) => {
     console.log(`Source ${source} and target ${target} selected`);
-    setSelectedServices({
+    setServices({
       'source': source,
       'target': target
     });
   }
 
   const loadTracks = () => {
-    console.log(`Loading tracks from ${selectedServices['source']}`);
+    console.log(`Loading tracks from ${services['source']}`);
     return fetchTracks();
   }
 
   const loadPlaylists = () => {
-    console.log(`Loading playlists from ${selectedServices['source']}`);
+    console.log(`Loading playlists from ${services['source']}`);
     return fetchPlaylists();
   }
 
   const handleTransferClick = (tracks, playlists) => {
     console.log(`Selected ${tracks.length} tracks and
        ${playlists.length} playlists to transfer`);
-    setSelectedTracks(tracks);
-    setSelectedPlaylists(playlists);
+    setTracks(tracks);
+    setPlaylists(playlists);
   }
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
   const runTransfer = async () => {
-    console.log(`Running transfer from ${selectedServices.source} to ${selectedServices.target}`);
+    console.log(`Running transfer from ${services.source} to ${services.target}`);
     await delay(3000);
     return {
-      'tracksCount' : selectedTracks.length - 3,
-      'playlistsCount': selectedPlaylists.length,
-      'failed': selectedTracks.slice(0, 3)
+      'tracksCount' : tracks.length - 3,
+      'playlistsCount': playlists.length,
+      'failed': tracks.slice(0, 3)
     }
   }
 
@@ -75,17 +75,17 @@ const App = () => {
             <HomePage onStartClick={handleStartClick} />
           } />
           <Route path='/transfer' element={
-            (selectedServices == undefined) 
+            (services == undefined) 
               ? <ServiceSelectionPage loadServices={loadServices}
-                                      onDoneClick={handleServicesSelection} />
-              : (selectedTracks == undefined && selectedPlaylists == undefined) 
-                ? <TransferSetupPage source={selectedServices['source']}
-                                     target={selectedServices['target']}
+                                      onDoneClick={handleServiceSelection} />
+              : (tracks == undefined && playlists == undefined) 
+                ? <TransferSetupPage source={services['source']}
+                                     target={services['target']}
                                      loadTracks={loadTracks}
                                      loadPlaylists={loadPlaylists}
                                      onTransferClick={handleTransferClick} />
-                : <TransferPage source={selectedServices['source']}
-                                target={selectedServices['target']} 
+                : <TransferPage source={services['source']}
+                                target={services['target']} 
                                 run={runTransfer}/>
             } />      
           <Route path="*" element={<Navigate to="/home" />}/>
