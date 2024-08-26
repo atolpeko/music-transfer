@@ -1,0 +1,22 @@
+.home-heading {
+  font-family: Franklin Gothic Medium;
+  font-size: 3.4rem;
+  text-align: center;
+}
+
+.home-text {
+  font-size: 1.2rem;
+  text-align: center;
+  color: gray;
+}
+
+.home-img {
+  width: 5%;
+  height: 5%;
+  margin-right: 3%;
+  padding-top: 4%;
+}
+
+.home-button {
+  margin-top: 3%;
+}

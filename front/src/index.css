@@ -1,0 +1,95 @@
+/* Global stylesheet */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+}
+
+button {
+  border-radius: 30px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  appearance: none;
+  background-color: white;
+}
+
+.page-title {
+  font-family: Franklin Gothic Medium;
+  font-size: 2.3rem;
+  text-align: center;
+}
+
+.center-container {
+  margin-top: 3%;
+}
+
+.section {
+  margin-top: 5%;
+}
+
+.error-section {
+  margin-top: 1%;
+  margin-bottom: 0%;
+}
+
+.item-card {
+	margin: 3%;
+  padding: 4%;
+  border-radius: 13%;
+  cursor: pointer;
+}
+
+.item-card:hover {
+	transform: scale(1.05);
+}
+
+.item-card.selected {
+  border: 1px solid #007bff;
+	transform: scale(0.95);
+}
+
+.item-card-text {
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: lighter;
+  text-align: center;
+  padding-top: 10%;
+}
+
+.item-card-img {
+  align-self: center;
+  width: 40%;
+  height: 40%;
+  margin-right: 3%;
+  padding-top: 4%;
+}

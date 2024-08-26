@@ -1,0 +1,52 @@
+.transfer-title {
+  font-family: Franklin Gothic Medium;
+  font-size: 2.3rem;
+  text-align: center;
+}
+
+.transfer-spinner-text {
+  font-family: Franklin Gothic Medium;
+  font-size: 2.3rem;
+  text-align: center;
+}
+
+.transfer-fail-text {
+  font-family: Franklin Gothic Medium;
+  font-size: 1.55rem;
+  text-align: center;
+  color: red;
+  margin-bottom: 3%;
+}
+
+.transfer-info-card {
+  margin: 3%;
+  width: 60%;
+  padding: 4%;
+  border-width: 0.5px;
+  border-radius: 2%;
+}
+
+.transfer-item-text {
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.transfer-page-button {
+  margin-top: 3%;
+  margin-left: 3%;
+  margin-bottom: 3%;
+}
+
+.transfer-page-run-button {
+  background-color: red;
+}
+
+.transfer-modal {
+  position: fixed;
+  border-radius: 5%;
+  overflow: auto; 
+}
+
+.spinner {
+  align-self: center;
+}
