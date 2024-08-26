@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { fetchServices } from './api/ServiceApi';
+import { nextRedirectUrl, redirectUrl, exchangeToken } from './api/AuthApi';
 import { fetchTracks, fetchPlaylists } from './api/TransferApi';
 
 import Header from './components/header/Header';
@@ -9,43 +10,118 @@ import HomePage from './components/home/HomePage';
 import ServiceSelectionPage from './components/service/ServiceSelectionPage';
 import TransferSetupPage from './components/transfer/TransferSetupPage';
 import TransferPage from './components/transfer/TransferPage';
+import Spinner from './components/spinner/Spinner';
 
 const App = () => {
   
-  const [services, setServices] = useState(undefined);
+  const getParam = param => new URLSearchParams(window.location.search).get(param);
+  
+  const loadServiceParam = service => {
+    const param = getParam(service);
+    if (param) {
+      return JSON.parse(atob(param));
+    }
+  }
+
+  const [source, setSource] = useState(loadServiceParam('source'));
+  const [target, setTarget] = useState(loadServiceParam('target'));
+  const [token, setToken] = useState(getParam('accessToken'));  
+ 
+  const [authenticating, setAuthenticating] = useState(false);
   const [tracks, setTracks] = useState(undefined);
   const [playlists, setPlaylists] = useState(undefined);
-  
+
+  const getJwt = () => sessionStorage.getItem('jwt');
+  const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
+
+  useEffect(() => {
+    if (token) {
+      obtainJwt();
+    }
+  }, []);
+
+  const obtainJwt = () => {
+    exchangeToken(token)
+      .then(jwt => setJwt(jwt.value))
+      .then(() => {
+        removeTokenParam();
+        setToken(null);
+      })
+      .then(() => {
+        const service = (target) ? target : source;
+        console.log(`Authencticated into ${service.visibleName}`);
+      })
+      .then(() => setAuthenticating(false))
+      .catch(error => { 
+        showError(error);
+        setSource(undefined);
+        setTarget(undefined);
+        setAuthenticating(false);
+      });  
+  }
+
+  const removeTokenParam = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('accessToken');
+    window.history.pushState(null, '', url.toString());
+  }
+
+  const showError = error => {
+    console.error(error);
+    alert(error);
+  }
+
   const handleStartClick = () => {
     window.location = '/transfer';
   }
 
-  const loadServices = () => {
-    console.log('Loading available services');
-    return fetchServices();
+  const handleSourceSelection = service => {
+    console.log(`Source ${service.visibleName} selected`);
+    setAuthenticating(true);
+    setSource(service);
+    setParam('source', btoa(JSON.stringify(service)));
+    
+    const url = redirectUrl(service.internalName, window.location.href);
+    console.log(`Redirecting to ${service.visibleName} auth URL`);
+    window.location = url;
   }
 
-  const handleServiceSelection = (source, target) => {
-    console.log(`Source ${source} and target ${target} selected`);
-    setServices({
-      'source': source,
-      'target': target
-    });
+  const setParam = (key, value) => {
+    const url = new URL(window.location.href);
+    url.searchParams.append(key, value);
+    window.history.pushState(null, '', url.toString());
+  }
+
+  const handleTargetSelection = service => {
+    console.log(`Target ${service.visibleName} selected`);
+    setAuthenticating(true);
+    setTarget(service);
+    setParam('target', btoa(JSON.stringify(service)));
+  
+    const url = nextRedirectUrl(service.internalName, window.location.href, getJwt());
+    console.log(`Redirecting to ${service.visibleName} auth URL`);
+    window.location = url;
+  }
+
+  const handleBackClick = () => {
+    setSource(undefined);
+    setTarget(undefined);
+    setJwt(undefined);
+    setToken(undefined);
   }
 
   const loadTracks = () => {
-    console.log(`Loading tracks from ${services['source']}`);
+    console.log(`Loading tracks from ${source.visibleName}`);
     return fetchTracks();
   }
 
   const loadPlaylists = () => {
-    console.log(`Loading playlists from ${services['source']}`);
+    console.log(`Loading playlists from ${source.visibleName}`);
     return fetchPlaylists();
   }
 
   const handleTransferClick = (tracks, playlists) => {
-    console.log(`Selected ${tracks.length} tracks and
-       ${playlists.length} playlists to transfer`);
+    console.log(`Selected ${tracks.length} tracks and ${playlists.length} playlists to transfer`);
     setTracks(tracks);
     setPlaylists(playlists);
   }
@@ -53,7 +129,8 @@ const App = () => {
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
   const runTransfer = async () => {
-    console.log(`Running transfer from ${services.source} to ${services.target}`);
+    console.log(`Running transfer from ${source.visibleName}
+       to ${target.visibleName}`);
     await delay(3000);
     return {
       'tracksCount' : tracks.length - 3,
@@ -75,18 +152,23 @@ const App = () => {
             <HomePage onStartClick={handleStartClick} />
           } />
           <Route path='/transfer' element={
-            (services == undefined) 
-              ? <ServiceSelectionPage loadServices={loadServices}
-                                      onDoneClick={handleServiceSelection} />
-              : (tracks == undefined && playlists == undefined) 
-                ? <TransferSetupPage source={services['source']}
-                                     target={services['target']}
-                                     loadTracks={loadTracks}
-                                     loadPlaylists={loadPlaylists}
-                                     onTransferClick={handleTransferClick} />
-                : <TransferPage source={services['source']}
-                                target={services['target']} 
-                                run={runTransfer}/>
+            (authenticating)
+              ? <Spinner text='Waiting for authorization...'/> 
+              : (!source || !target)
+                ? <ServiceSelectionPage source={source}
+                                        loadServices={fetchServices}
+                                        onSourceSelection={handleSourceSelection}
+                                        onTargetSelection={handleTargetSelection} 
+                                        onBackClick={handleBackClick}/>  
+                : (!tracks && !playlists) 
+                  ? <TransferSetupPage source={source.visibleName}
+                                       target={target.visibleName}
+                                       loadTracks={loadTracks}
+                                       loadPlaylists={loadPlaylists}
+                                       onTransferClick={handleTransferClick} />
+                  : <TransferPage source={source.visibleName}
+                                  target={target.visibleName} 
+                                  run={runTransfer}/>
             } />      
           <Route path="*" element={<Navigate to="/home" />}/>
         </Routes>

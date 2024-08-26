@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import ClipLoader from "react-spinners/ClipLoader";
 import SelectableCard from '../SelectableCard';
+import Spinner from '../spinner/Spinner';
 
 import './TransferPage.css';
 
@@ -53,30 +53,11 @@ const TransferPage = ({ source, target, run }) => {
     );
   }
 
-  const renderSpinner = () => {
-    return (
-      <div className="row justify-content-center section">
-        <div className="container justify-content-center section">
-          <h2 className="transfer-spinner-text">
-            Transferring the Library from {source} to {target}...
-          </h2>
-        </div>
-        <div className="row justify-content-center section">
-          <ClipLoader loading={running}
-                      className="spinner"
-                      aria-label="Loading"
-                      data-testid="loader" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { running == true 
-        ? renderSpinner()
-        : renderContent()
-      }
+      { running 
+        ? <Spinner text={`Transferring the Library from ${source} to ${target}...`} />
+        : renderContent() }
     </div>
   );
 }

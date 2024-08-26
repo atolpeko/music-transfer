@@ -1,26 +1,36 @@
 import { useState, useEffect } from 'react';
-import ClipLoader from "react-spinners/ClipLoader";
 import SelectableCard from '../SelectableCard';
+import Spinner from '../spinner/Spinner';
 
 import './ServiceSelectionPage.css';
 
-const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
+const ServiceSelectionPage = ({ source, loadServices, 
+  onSourceSelection, onTargetSelection, onBackClick }) => {
 
   const [sourceServices, setSourceServices] = useState([]);
   const [targetServices, setTargetServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [select, setSelect] = useState('Source');
-  const [source, setSource] = useState('');
-  const [target, setTarget] = useState('');
   const [error, setError] = useState('');
+  
+  const [entity, setEntity] = useState('Source');
+  const [selected, setSelected] = useState('');
  
   useEffect(() => {
     loadServices().then(data => {
-      data.source.forEach(service => service.available = true)
-      data.target.forEach(service => service.available = true)  
+      const targets = source 
+        ? data.target.filter(service => service.visibleName != source.visibleName)
+        : data.target;
+      targets.forEach(service => service.available = true);
+      data.source.forEach(service => service.available = true);
+     
       setSourceServices(data.source);
       setTargetServices(data.target);
       setLoading(false);
+    })
+    .then(() => {
+      if (source) {
+        setEntity('Target');
+      }
     })
     .catch(loadError => {
       setError(`Failed to load services: ${loadError}`);
@@ -30,24 +40,20 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
   
   const handleCardSelection = id => {
     const i = id.replace('service-card-', '');
-    if (select == 'Source') {
-      setSource(sourceServices.at(i).visibleName);
-    } else {;
-      setTarget(targetServices.at(i).visibleName);
-    }
-
+    const service = (entity == 'Source') 
+      ? sourceServices.at(i).visibleName
+      : targetServices.at(i).visibleName;
+    setSelected(service);  
     setError('');
   }
 
   const handleBackClick = () => {
-    if (select != 'Source') {
-      setSelect('Source');
-      setSource('');
-      setError('');
-      resetSelection();
-
-      targetServices.forEach(service => service.available = true);
-    }
+    setEntity('Source');
+    setSelected('');
+    setError('');
+    resetSelection();
+    targetServices.forEach(service => service.available = true);
+    onBackClick();
   }
 
   const resetSelection = () => {
@@ -56,29 +62,35 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
   }
 
   const handleNextClick = () => {
-    if (select == 'Source' && source == '') {
+    if (entity == 'Source' && selected == '') {
       setError('Please select source');
-    } else if (select == 'Target' && target == '') {
+    } else if (entity == 'Target' && selected == '') {
       setError('Please select target');
-    } else if (select == 'Source') {
-      nextClicked();
+    } else if (entity == 'Source') {
+      sourceDone();
     } else {
-      doneClicked();
+      targetDone();
     }
   }
 
-  const nextClicked = () => {
-    var target = targetServices.find(service => service.visibleName === source);
-    if (target != null && target != undefined) {
-      target.available = false;
-    }
+  const sourceDone = () => {
+    removeFromTargets(selected);
+    onSourceSelection(sourceServices.find(svc => svc.visibleName == selected))
     resetSelection();
-    setSelect('Target');
+    setEntity('Target');
     setError('');
   }
 
-  const doneClicked = () => {
-    onDoneClick(source, target);
+  const removeFromTargets = source => {
+    var target = targetServices.find(service => service.visibleName == source);
+    if (target) {
+      target.available = false;
+    }
+  }
+
+  const targetDone = () => {
+    const service = targetServices.find(svc => svc.visibleName == selected);
+    onTargetSelection(service);
     setError('');
   }
 
@@ -101,12 +113,12 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
       <div>
         <div className="row justify-content-center section">
         { sourceServices.length > 0 
-          ? <h1 className="page-title">Select {select}</h1>
+          ? <h1 className="page-title">Select {entity}</h1>
           : <h1 className="page-title">No services available now</h1>
         }
         </div>
         <div className="row justify-content-center section">
-          { select == 'Source' 
+          { entity == 'Source' 
             ? renderServices(sourceServices) 
             : renderServices(targetServices)
           }
@@ -115,12 +127,12 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
           { error && <p style= {{ color: 'red' }}> {error} </p> }
         </div>    
         <div className="row justify-content-center"> 
-          { select == 'Target' &&
+          { entity == 'Target' &&
             <button className="service-page-button" onClick={handleBackClick}>
               Back
             </button>
           }
-          { sourceServices.length != 0 &&
+          { sourceServices.length > 0 &&
             <button className="service-page-button" onClick={handleNextClick}>
               Next
             </button>
@@ -130,22 +142,11 @@ const ServiceSelectionPage = ({ loadServices, onDoneClick }) => {
     );
   }
 
-  const renderSpinner = () => {
-    return (
-      <div className="row justify-content-center section">
-        <ClipLoader loading={loading}
-                    aria-label="Loading"
-                    data-testid="loader" />
-      </div>
-    )
-  }
-
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { loading == true 
-        ? renderSpinner()
-        : renderContent()
-      }
+      { loading 
+        ? <Spinner text='Loading services...' />
+        : renderContent() }
     </div>
   );
 }

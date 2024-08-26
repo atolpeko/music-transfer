@@ -168,10 +168,7 @@ const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransf
 
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { loading == true 
-        ? renderSpinner()
-        : renderContent()
-      }
+      { loading ? renderSpinner() : renderContent() }
     </div>
   );
 }
