@@ -1,8 +1,8 @@
 package com.mf.serviceconfig.service;
 
 import com.mf.serviceconfig.entity.Service;
+import com.mf.serviceconfig.util.Tuple;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,31 +21,28 @@ public class ServiceLoader {
 		SERVICE_DIR = ServiceLoader.class.getResource("/services").getPath();
 	}
 
-	public static List<Service> load() {
+	public static Tuple<List<Service>, List<Service>> load() {
 		try (var services = Files.walk(Paths.get(SERVICE_DIR))) {
-			return services
+			var config = services
 				.filter(path -> path.toString().endsWith(".config"))
+				.map(ServiceLoader::loadConfig)
+				.toList();
+			var sourceServices = config.stream()
+				.filter(c -> c.get("source").equals("true"))
 				.map(ServiceLoader::loadService)
 				.toList();
+			var targetServices = config.stream()
+				.filter(c -> c.get("target").equals("true"))
+				.map(ServiceLoader::loadService)
+				.toList();
+
+			return Tuple.of(sourceServices, targetServices);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static Service loadService(Path path) {
-		try {
-			var yaml = loadYaml(path);
-			return Service.builder()
-				.visibleName(yaml.get("visibleName"))
-				.internalName(yaml.get("internalName"))
-				.logoUrl(yaml.get("logoUrl"))
-				.build();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static Map<String, String> loadYaml(Path path) throws IOException {
+	private static Map<String, String> loadConfig(Path path) {
 		try {
 			var map = new HashMap<String, String>();
 			var lines = Files.readAllLines(path);
@@ -56,7 +53,17 @@ public class ServiceLoader {
 
 			return map;
 		} catch (NullPointerException e) {
-			throw new IOException("No config file found");
+			throw new RuntimeException("No config file found");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
+	}
+
+	private static Service loadService(Map<String, String> config) {
+		return Service.builder()
+			.visibleName(config.get("visibleName"))
+			.internalName(config.get("internalName"))
+			.logoUrl(config.get("logoUrl"))
+			.build();
 	}
 }

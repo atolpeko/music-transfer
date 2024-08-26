@@ -18,7 +18,9 @@ public class ServiceConfigController implements ServiceConfigAPI {
 
 	@Override
 	public Response get() {
-		var services = serviceHolder.get();
-		return new Response(services);
+		return new Response(
+			serviceHolder.getSourceServices(),
+			serviceHolder.getTargetServices()
+		);
 	}
 }

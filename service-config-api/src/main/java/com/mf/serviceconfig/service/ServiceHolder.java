@@ -5,5 +5,7 @@ import java.util.List;
 
 public interface ServiceHolder {
 
-	List<Service> get();
+	List<Service> getSourceServices();
+
+	List<Service> getTargetServices();
 }
