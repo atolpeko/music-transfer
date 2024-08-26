@@ -4,6 +4,20 @@
   text-align: center;
 }
 
+.transfer-spinner-text {
+  font-family: Franklin Gothic Medium;
+  font-size: 2.3rem;
+  text-align: center;
+}
+
+.transfer-fail-text {
+  font-family: Franklin Gothic Medium;
+  font-size: 1.55rem;
+  text-align: center;
+  color: red;
+  margin-bottom: 3%;
+}
+
 .transfer-info-card {
   margin: 3%;
   width: 60%;
@@ -31,4 +45,8 @@
   position: fixed;
   border-radius: 5%;
   overflow: auto; 
+}
+
+.spinner {
+  align-self: center;
 }

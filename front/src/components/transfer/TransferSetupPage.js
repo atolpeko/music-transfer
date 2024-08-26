@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ClipLoader from "react-spinners/ClipLoader";
 import SelectableCard from '../SelectableCard';
 
-import './TransferSetupPage.css';
+import './TransferPage.css';
 
 const TransferSetupPage = ({ source, target, loadTracks, loadPlaylists, onTransferClick }) => {
 
