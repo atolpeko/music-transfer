@@ -1,7 +1,7 @@
 server:
   port: 0
 service:
-  configLocation: location
+  configLocation: src/test/resources/services
 logging:
   level:
     com.mf.auth: DEBUG
