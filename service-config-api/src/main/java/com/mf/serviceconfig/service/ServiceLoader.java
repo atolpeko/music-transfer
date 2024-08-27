@@ -21,6 +21,7 @@ public class ServiceLoader {
 	private final SpringServiceProperties properties;
 
 	public Tuple<List<Service>, List<Service>> load() {
+		log.info("Loading config from {}", properties.getConfigLocation());
 		try (var services = Files.walk(Paths.get(properties.getConfigLocation()))) {
 			var config = services
 				.filter(path -> path.toString().endsWith(".config"))

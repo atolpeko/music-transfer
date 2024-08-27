@@ -1,6 +1,6 @@
 logging:
   level:
-    com.mf.auth: INFO
+    com.mf.serviceconfig: INFO
 management:
   endpoint:
     health:
