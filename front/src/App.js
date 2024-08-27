@@ -26,8 +26,8 @@ const App = () => {
   const [source, setSource] = useState(loadServiceParam('source'));
   const [target, setTarget] = useState(loadServiceParam('target'));
   const [token, setToken] = useState(getParam('accessToken'));  
- 
-  const [authenticating, setAuthenticating] = useState(false);
+
+  const [authenticating, setAuthenticating] = useState(true);
   const [tracks, setTracks] = useState(undefined);
   const [playlists, setPlaylists] = useState(undefined);
 
@@ -37,21 +37,22 @@ const App = () => {
   useEffect(() => {
     if (token) {
       obtainJwt();
+    } else {
+      setAuthenticating(false);
     }
   }, []);
 
-  const obtainJwt = () => {
-    exchangeToken(token)
-      .then(jwt => setJwt(jwt.value))
-      .then(() => {
+  const obtainJwt = async () => {
+    console.log('Exchanging access token');
+    await exchangeToken(token)
+      .then(res => {
+        setJwt(res.value);
         removeTokenParam();
         setToken(null);
-      })
-      .then(() => {
+        setAuthenticating(false);
         const service = (target) ? target : source;
         console.log(`Authencticated into ${service.visibleName}`);
       })
-      .then(() => setAuthenticating(false))
       .catch(error => { 
         showError(error);
         setSource(undefined);
@@ -73,6 +74,11 @@ const App = () => {
 
   const handleStartClick = () => {
     window.location = '/transfer';
+  }
+
+  const loadServices = () => {
+    console.log('Fetching available services');
+    return fetchServices();
   }
 
   const handleSourceSelection = service => {
@@ -110,14 +116,14 @@ const App = () => {
     setToken(undefined);
   }
 
-  const loadTracks = () => {
+  const loadTracks = async () => {
     console.log(`Loading tracks from ${source.visibleName}`);
-    return fetchTracks();
+    return fetchTracks(source.internalName, getJwt());
   }
 
-  const loadPlaylists = () => {
+  const loadPlaylists = async () => {
     console.log(`Loading playlists from ${source.visibleName}`);
-    return fetchPlaylists();
+    return fetchPlaylists(source.internalName, getJwt());
   }
 
   const handleTransferClick = (tracks, playlists) => {
@@ -156,7 +162,7 @@ const App = () => {
               ? <Spinner text='Waiting for authorization...'/> 
               : (!source || !target)
                 ? <ServiceSelectionPage source={source}
-                                        loadServices={fetchServices}
+                                        loadServices={loadServices}
                                         onSourceSelection={handleSourceSelection}
                                         onTargetSelection={handleTargetSelection} 
                                         onBackClick={handleBackClick}/>  
