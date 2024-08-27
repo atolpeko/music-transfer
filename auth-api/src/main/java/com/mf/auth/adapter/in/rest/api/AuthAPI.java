@@ -29,7 +29,7 @@ public interface AuthAPI {
     @ApiOperation(
         value = "Redirect to the music service OAuth2 consent page. "
             + "When following the redirect a JWT access token is going to be "
-            + "returned in the end if a user successfully logins",
+            + "returned as a URL parameter of the provided redirectUrl",
         response = String.class
     )
     @ApiResponses(value = {
@@ -64,6 +64,10 @@ public interface AuthAPI {
         @RequestParam
         @ApiParam(value = "Music service to authenticate into", required = true)
         MusicService service,
+
+        @RequestParam
+        @ApiParam(value = "Redirect URL", required = true)
+        String redirectUrl,
 
         @RequestParam(required = false)
         @ApiParam("JWT")

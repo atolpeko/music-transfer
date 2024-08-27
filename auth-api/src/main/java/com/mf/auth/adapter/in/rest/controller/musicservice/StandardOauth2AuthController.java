@@ -1,9 +1,8 @@
 package com.mf.auth.adapter.in.rest.controller.musicservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mf.auth.adapter.in.rest.entity.TokenRestEntity;
+
 import com.mf.auth.adapter.in.rest.exception.AuthorizationException;
-import com.mf.auth.adapter.in.rest.mapper.TokenMapper;
 import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
@@ -23,9 +22,8 @@ abstract class StandardOauth2AuthController {
 	private final AuthUseCase authUseCase;
 	private final EncodeStateService encodeStateService;
 	private final RestProperties properties;
-	private final TokenMapper tokenMapper;
 
-	public TokenRestEntity callback(String code, String error, String state) {
+	public String callback(String code, String error, String state) {
 		try {
 			if (error != null || code == null) {
 				throw new AuthorizationException(HttpStatus.FORBIDDEN, error);
@@ -38,7 +36,11 @@ abstract class StandardOauth2AuthController {
 			);
 
 			var token = auth(uuid, stateData.getJwt(), code);
-			return tokenMapper.toRestEntity(token);
+			return "redirect:%s%saccessToken=%s".formatted(
+				stateData.getRedirectUrl(),
+				(stateData.getRedirectUrl().contains("?")) ? "&" : "?",
+				token.getValue()
+			);
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		}

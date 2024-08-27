@@ -1,6 +1,7 @@
 package com.mf.auth.integration;
 
 import static com.mf.auth.fixture.AuthorizationFixture.AUTH_URL;
+import static com.mf.auth.fixture.AuthorizationFixture.REDIRECT_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_CALLBACK_URL;
 import static com.mf.auth.fixture.AuthorizationFixture.SPOTIFY_LOGIN_REDIRECT;
 import static com.mf.auth.fixture.AuthorizationFixture.YT_MUSIC_CALLBACK_URL;
@@ -15,9 +16,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.mf.auth.adapter.in.rest.entity.TokenRestEntity;
 import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
@@ -57,29 +55,30 @@ class AuthorizationTest {
 	@Autowired
 	RestProperties restProperties;
 
-	@Autowired
-	ObjectMapper mapper;
-
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForAuthTest")
 	void testRedirectionToMusicServiceLoginOnAuthCall(
 		MusicService service,
+		String redirectUrl,
 		String returnedAuthUrl
 	) throws Exception {
-		var redirect = performAuthRedirect(service);
+		var redirect = performAuthRedirect(service, redirectUrl);
 		var encodedState = redirect.substring(redirect.indexOf("&state=") + 7);
 		var state = encodeStateService.decode(encodedState);
 
 		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
 		assertNotNull(state.getUuid());
+		assertNotNull(state.getRedirectUrl());
 	}
 
 	private String performAuthRedirect(
-		MusicService service
+		MusicService service,
+		String redirectUrl
 	) throws Exception {
 		return mvc.perform(get(AUTH_URL)
-				.param("service", service.name()))
+				.param("service", service.name())
+				.param("redirectUrl", redirectUrl))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
 			.andReturn()
@@ -89,8 +88,8 @@ class AuthorizationTest {
 
 	private static Stream<Arguments> provideArgumentsForAuthTest() {
 		return Stream.of(
-			Arguments.of(MusicService.SPOTIFY, SPOTIFY_LOGIN_REDIRECT),
-			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_LOGIN_REDIRECT)
+			Arguments.of(MusicService.SPOTIFY, REDIRECT_URL, SPOTIFY_LOGIN_REDIRECT),
+			Arguments.of(MusicService.YT_MUSIC, REDIRECT_URL, YT_MUSIC_LOGIN_REDIRECT)
 		);
 	}
 
@@ -98,6 +97,7 @@ class AuthorizationTest {
 	@MethodSource("provideArgumentsForAuthWithJwtTest")
 	void testRedirectionToMusicServiceLoginOnAuthWithJwtCall(
 		MusicService service,
+		String redirectUrl,
 		String returnedAuthUrl,
 		String authCode
 	) throws Exception {
@@ -107,6 +107,7 @@ class AuthorizationTest {
 
 		var redirect = mvc.perform(get(AUTH_URL)
 				.param("service", service.name())
+				.param("redirectUrl", redirectUrl)
 				.param("jwt", prevJwt))
 			.andDo(print())
 			.andExpect(status().is3xxRedirection())
@@ -122,13 +123,15 @@ class AuthorizationTest {
 
 		assertTrue(redirect.contains(returnedAuthUrl));
 		assertNotNull(state);
+		assertNotNull(state.getUuid());
+		assertNotNull(state.getRedirectUrl());
 		assertNotNull(jwt);
 	}
 
 	private static Stream<Arguments> provideArgumentsForAuthWithJwtTest() {
 		return Stream.of(
-			Arguments.of(MusicService.SPOTIFY, SPOTIFY_LOGIN_REDIRECT, SPOTIFY_CODE),
-			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_LOGIN_REDIRECT, YT_MUSIC_CODE)
+			Arguments.of(MusicService.SPOTIFY, REDIRECT_URL, SPOTIFY_LOGIN_REDIRECT, SPOTIFY_CODE),
+			Arguments.of(MusicService.YT_MUSIC, REDIRECT_URL, YT_MUSIC_LOGIN_REDIRECT, YT_MUSIC_CODE)
 		);
 	}
 
@@ -149,9 +152,13 @@ class AuthorizationTest {
 
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForJwtTest")
-	void testReturn401IfInvalidJwtProvided(MusicService service) throws Exception {
+	void testReturn401IfInvalidJwtProvided(
+		MusicService service,
+		String redirectUrl
+	) throws Exception {
 		mvc.perform(get(AUTH_URL)
 				.param("service", service.name())
+				.param("redirectUrl", redirectUrl)
 				.param("jwt", "335336"))
 			.andDo(print())
 			.andExpect(status().is(401));
@@ -159,38 +166,38 @@ class AuthorizationTest {
 
 	private static Stream<Arguments> provideArgumentsForJwtTest() {
 		return Stream.of(
-			Arguments.of(MusicService.SPOTIFY),
-			Arguments.of(MusicService.YT_MUSIC)
+			Arguments.of(MusicService.SPOTIFY, REDIRECT_URL),
+			Arguments.of(MusicService.YT_MUSIC, REDIRECT_URL)
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
-	void testReturnsAccessTokenOnCallbackCall(
+	void testRedirectsToProvidedUrlWithAccessTokenOnCallbackCall(
 		MusicService service,
+		String redirectUrl,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(service);
+		var callback = performAuthRedirect(service, redirectUrl);
 		var state = callback.substring(callback.indexOf("&state=") + 7);
 
-		var response = mvc.perform(get(callbackUrl)
+		var redirect = mvc.perform(get(callbackUrl)
 				.param("code", authCode)
 				.param("state", state))
 			.andDo(print())
-			.andExpect(status().is2xxSuccessful())
+			.andExpect(status().is3xxRedirection())
 			.andReturn()
 			.getResponse()
-			.getContentAsString();
+			.getRedirectedUrl();
 
-		var token = mapper.readValue(response, TokenRestEntity.class);
-		assertNotNull(token.getValue());
+		assertTrue(redirect.contains("accessToken"));
 	}
 
 	private static Stream<Arguments> provideArgumentsForCallbackTest() {
 		return Stream.of(
-			Arguments.of(MusicService.SPOTIFY, SPOTIFY_CALLBACK_URL, SPOTIFY_CODE),
-			Arguments.of(MusicService.YT_MUSIC, YT_MUSIC_CALLBACK_URL, YT_MUSIC_CODE)
+			Arguments.of(MusicService.SPOTIFY, REDIRECT_URL, SPOTIFY_CALLBACK_URL, SPOTIFY_CODE),
+			Arguments.of(MusicService.YT_MUSIC, REDIRECT_URL, YT_MUSIC_CALLBACK_URL, YT_MUSIC_CODE)
 		);
 	}
 
@@ -198,9 +205,10 @@ class AuthorizationTest {
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn403IfErrorProvided(
 		MusicService service,
+		String redirectUrl,
 		String callbackUrl
 	) throws Exception {
-		var callback = performAuthRedirect(service);
+		var callback = performAuthRedirect(service, redirectUrl);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);
@@ -216,10 +224,11 @@ class AuthorizationTest {
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn400IfInvalidUuidProvided(
 		MusicService service,
+		String redirectUrl,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(service);
+		var callback = performAuthRedirect(service, redirectUrl);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);
@@ -238,10 +247,11 @@ class AuthorizationTest {
 	@MethodSource("provideArgumentsForCallbackTest")
 	void testReturn400IfInvalidJwtProvided(
 		MusicService service,
+		String redirectUrl,
 		String callbackUrl,
 		String authCode
 	) throws Exception {
-		var callback = performAuthRedirect(service);
+		var callback = performAuthRedirect(service, redirectUrl);
 		var state = encodeStateService.decode(
 			callback.substring(callback.indexOf("&state=") + 7)
 		);
