@@ -18,7 +18,12 @@ public class SpotifyJSONs {
                 "id": "%s",
                 "name": "%s",
                 "album": {
-                    "name": "%s"
+                    "name": "%s",
+                    "images": [
+                        {
+                            "url": "%s"
+                        }
+                    ]
                 },
                 "artists": [
                     {
@@ -55,7 +60,12 @@ public class SpotifyJSONs {
 		"""
 		{
 			"id": "%s",
-			"name": "%s"
+			"name": "%s",
+			"images": [
+				{
+					"url": "%s"
+				}
+			]
 		}
 		""";
 
@@ -87,7 +97,7 @@ public class SpotifyJSONs {
 	public static String spotifyLikedTracksJson() {
 		var tracks = IntStream.range(0, SPOTIFY_LIKED_TRACKS_NUMBER)
 			.mapToObj(i -> SPOTIFY_TRACK_JSON
-				.formatted(i, "name_" + i, "album_" + i, "artist_" + i))
+				.formatted(i, "name_" + i, "album_" + i, "img_" + i, "artist_" + i))
 			.reduce((t1, t2) -> String.join(",", t1, t2))
 			.orElseThrow();
 
@@ -97,13 +107,13 @@ public class SpotifyJSONs {
 	public static String spotifyFoundTrackJson() {
 		var i = UUID.randomUUID();
 		var track = SPOTIFY_TRACK_JSON
-			.formatted(i, "name_" + i, "album_" + i, "artist_" + i);
+			.formatted(i, "name_" + i, "album_" + i, "img_" + i, "artist_" + i);
 		return SPOTIFY_FOUND_TRACKS_JSON.formatted(track);
 	}
 
 	public static String spotifyPlaylistsJson() {
 		var lists = IntStream.range(0, SPOTIFY_PLAYLISTS_NUMBER)
-			.mapToObj(i -> SPOTIFY_PLAYLIST_JSON.formatted(i, "name" + i))
+			.mapToObj(i -> SPOTIFY_PLAYLIST_JSON.formatted(i, "name" + i, "img" + i))
 			.reduce((t1, t2) -> String.join(",", t1, t2))
 			.orElseThrow();
 

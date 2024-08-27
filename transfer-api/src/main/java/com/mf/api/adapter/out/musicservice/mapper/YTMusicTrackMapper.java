@@ -23,9 +23,16 @@ public class YTMusicTrackMapper {
 		return Track.builder()
 			.serviceId((String) restResponse.get("id"))
 			.name((String) data.get("title"))
+			.imgUrl(extractImageUrl(data))
 			.albumName(extractAlbum(desc, artist, title))
 			.artists(List.of(artist))
 			.build();
+	}
+
+	private String extractImageUrl(LinkedHashMap data) {
+		var thumbnails = (LinkedHashMap) data.get("thumbnails");
+		var image = (LinkedHashMap) thumbnails.get("high");
+		return (String) image.get("url");
 	}
 
 	private String extractArtist(LinkedHashMap data) {

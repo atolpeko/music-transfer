@@ -1,5 +1,7 @@
 package com.mf.api.adapter.in.rest.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -27,6 +29,10 @@ public class TrackRestEntity {
 	@ApiModelProperty("Album name")
 	@NotBlank(message = "Album name is required")
 	private String albumName;
+
+	@ApiModelProperty("Image URL")
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	private String imageUrl;
 
 	@ApiModelProperty("Track artists")
 	private List<String> artists;

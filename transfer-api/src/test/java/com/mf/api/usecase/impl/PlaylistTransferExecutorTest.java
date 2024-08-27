@@ -39,7 +39,7 @@ class PlaylistTransferExecutorTest {
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.initMocks(this);
-		when(service.createPlaylist(TOKEN, PLAYLIST)).thenReturn(PLAYLIST.getId());
+		when(service.createPlaylist(TOKEN, PLAYLIST)).thenReturn(PLAYLIST.getServiceId());
 	}
 
 	@Test
@@ -49,7 +49,7 @@ class PlaylistTransferExecutorTest {
 		var result = target.transfer(getContext());
 
 		verify(service, times(1)).createPlaylist(TOKEN, PLAYLIST);
-		verify(service, times(1)).addToPlaylist(TOKEN, PLAYLIST.getId(), PLAYLIST.getTracks());
+		verify(service, times(1)).addToPlaylist(TOKEN, PLAYLIST.getServiceId(), PLAYLIST.getTracks());
 		assertEquals(1, result.getTransferredCount());
 		assertNull(result.getFailed());
 	}
@@ -71,7 +71,7 @@ class PlaylistTransferExecutorTest {
 		var result = target.transfer(getContext());
 
 		verify(service, times(1)).createPlaylist(TOKEN, PLAYLIST);
-		verify(service, times(1)).addToPlaylist(TOKEN, PLAYLIST.getId(), SOME_TRACKS);
+		verify(service, times(1)).addToPlaylist(TOKEN, PLAYLIST.getServiceId(), SOME_TRACKS);
 		assertEquals(1, result.getTransferredCount());
 		assertEquals(SOME_TRACKS.size(), result.getFailed().getTracks().size());
 		assertEquals(TRACKS.size() - SOME_TRACKS.size(), result.getFailed().getTracks().size());

@@ -14,7 +14,12 @@ public class YTMusicJsons {
 			"snippet": {
 				"title": "%s",
 				"description": "%s",
-				"channelTitle": "%s"
+				"channelTitle": "%s",
+				"thumbnails": {
+					"high": {
+						"url": "%s"
+					}
+				}
 			}
 		}
 		""";
@@ -34,7 +39,12 @@ public class YTMusicJsons {
 		{
 			"id": "%s",
 			"snippet": {
-				"title": "%s"
+				"title": "%s",
+				"thumbnails": {
+					"high": {
+						"url": "%s"
+					}
+				}
 			}
 		}
 		""";
@@ -54,7 +64,7 @@ public class YTMusicJsons {
 			.mapToObj(i -> {
 				var desc = "Provided to YouTube by ";
 				return YT_MUSIC_TRACK_JSON
-					.formatted(i, "name_" + i, desc, "artist_" + i);
+					.formatted(i, "name_" + i, desc, "artist_" + i, "img_" + i);
 			})
 			.reduce((t1, t2) -> String.join(",", t1, t2))
 			.orElseThrow();
@@ -64,7 +74,7 @@ public class YTMusicJsons {
 
 	public static String ytMusicPlaylistsJson() {
 		var tracks = IntStream.range(0, PLAYLISTS_NUMBER)
-			.mapToObj(i -> YT_MUSIC_PLAYLIST_JSON.formatted(i, "name_" + i))
+			.mapToObj(i -> YT_MUSIC_PLAYLIST_JSON.formatted(i, "name_" + i, "img_" + i))
 			.reduce((t1, t2) -> String.join(",", t1, t2))
 			.orElseThrow();
 

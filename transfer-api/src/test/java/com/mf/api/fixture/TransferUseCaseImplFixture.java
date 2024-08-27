@@ -47,13 +47,13 @@ public class TransferUseCaseImplFixture {
 	public static final List<Track> SOME_TRACKS = TRACKS.subList(0, 2);
 
 	public static final Playlist PLAYLIST_1 =
-		Playlist.builder().id("i1").name("p1").tracks(TRACKS).build();
+		Playlist.builder().serviceId("i1").name("p1").tracks(TRACKS).build();
 
 	public static final Playlist PLAYLIST_2 =
-		Playlist.builder().id("i2").name("p2").tracks(TRACKS).build();
+		Playlist.builder().serviceId("i2").name("p2").tracks(TRACKS).build();
 
 	public static final Playlist FAILED_PLAYLIST =
-		Playlist.builder().id("i3").name("p3").tracks(SOME_TRACKS).build();
+		Playlist.builder().serviceId("i3").name("p3").tracks(SOME_TRACKS).build();
 
 	public static final String NEXT = "NEXT";
 

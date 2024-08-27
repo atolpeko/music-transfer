@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface TrackMapper {
 
     @Mapping(source = "id", target = "serviceId")
+    @Mapping(target = "uniqueId", ignore = true)
     Track toEntity(TrackRestEntity restEntity);
 
     @Mapping(source = "serviceId", target = "id")
