@@ -41,6 +41,10 @@
   background-color: red;
 }
 
+.transfer-page-run-button:hover {
+  background-color: rgb(160, 3, 3);
+}
+
 .transfer-modal {
   position: fixed;
   border-radius: 5%;
