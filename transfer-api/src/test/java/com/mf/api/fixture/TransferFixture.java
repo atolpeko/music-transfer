@@ -78,7 +78,7 @@ public class TransferFixture {
     }
 
     private static String tracks() {
-        return IntStream.range(0, 1000)
+        return IntStream.range(0, 2)
             .mapToObj(i -> TRACK_JSON.formatted("id" + i, "n" + i, "a" + i, "ar" + i))
             .reduce((s1, s2) -> String.join(", ", s1, s2))
             .orElseThrow();

@@ -14,17 +14,20 @@ public class SpotifyTrackMapper  {
 			data = restResponse;
 		}
 
+		var album = (LinkedHashMap) data.get("album");
 		return Track.builder()
 			.serviceId((String) data.get("id"))
 			.name((String) data.get("name"))
-			.albumName(extractAlbum(data))
+			.imgUrl(extractImageUrl(album))
+			.albumName((String) album.get("name"))
 			.artists(extractArtists(data))
 			.build();
 	}
 
-	private String extractAlbum(LinkedHashMap data) {
-		var album = (LinkedHashMap) data.get("album");
-		return (String) album.get("name");
+	private String extractImageUrl(LinkedHashMap data) {
+		var images = (List) data.get("images");
+		var image = (LinkedHashMap) images.get(0);
+		return (String) image.get("url");
 	}
 
 	private List<String> extractArtists(LinkedHashMap data) {

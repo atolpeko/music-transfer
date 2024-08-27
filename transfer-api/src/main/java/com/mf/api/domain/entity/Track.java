@@ -4,25 +4,35 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
-@AllArgsConstructor
-public class Track {
+public class Track extends Transferable {
 
-	@Builder.Default
-	private String uniqueId = UUID.randomUUID().toString();
-
-	private String serviceId;
-	private String name;
+	private String uniqueId;
 	private String albumName;
 	private List<String> artists;
 
 	public Track() {
 		this.uniqueId = UUID.randomUUID().toString();
+	}
+
+	@Builder
+	public Track(String serviceId, String name, String imgUrl,
+		String uniqueId, String albumName, List<String> artists) {
+		super(serviceId, name, imgUrl);
+		this.uniqueId = (uniqueId == null)
+			? UUID.randomUUID().toString()
+			: uniqueId;
+		this.albumName = albumName;
+		this.artists = artists;
+	}
+
+	public Track(String uniqueId, String albumName, List<String> artists) {
+		this.uniqueId = uniqueId;
+		this.albumName = albumName;
+		this.artists = artists;
 	}
 
 	@Override

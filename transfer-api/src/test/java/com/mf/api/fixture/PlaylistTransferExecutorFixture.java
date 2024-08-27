@@ -25,5 +25,5 @@ public class PlaylistTransferExecutorFixture {
 	public static final List<Track> SOME_TRACKS = TRACKS.subList(1, 3);
 
 	public static final Playlist PLAYLIST =
-		Playlist.builder().id("i1").name("p1").tracks(TRACKS).build();
+		Playlist.builder().serviceId("i1").name("p1").tracks(TRACKS).build();
 }

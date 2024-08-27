@@ -166,7 +166,7 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			);
 
 			var body = Objects.requireNonNull(response.getBody());
-			return playlistMapper.map(body).getId();
+			return playlistMapper.map(body).getServiceId();
 		} catch (MusicServiceException e) {
 			throw e;
 		} catch (Exception e) {

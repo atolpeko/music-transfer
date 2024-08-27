@@ -4,12 +4,17 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-@Builder
-public class Playlist {
+@EqualsAndHashCode(callSuper = true)
+public class Playlist extends Transferable {
 
-	private String id;
-	private String name;
 	private List<Track> tracks;
+
+	@Builder
+	public Playlist(String serviceId, String name, String imgUrl, List<Track> tracks) {
+		super(serviceId, name, imgUrl);
+		this.tracks = tracks;
+	}
 }
