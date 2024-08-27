@@ -1,5 +1,6 @@
 package com.mf.serviceconfig.service;
 
+import com.mf.serviceconfig.boot.config.properties.SpringServiceProperties;
 import com.mf.serviceconfig.entity.Service;
 import com.mf.serviceconfig.util.Tuple;
 
@@ -10,30 +11,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@RequiredArgsConstructor
 public class ServiceLoader {
 
-	private static final String SERVICE_DIR;
+	private final SpringServiceProperties properties;
 
-	static {
-		SERVICE_DIR = ServiceLoader.class.getResource("/services").getPath();
-	}
-
-	public static Tuple<List<Service>, List<Service>> load() {
-		try (var services = Files.walk(Paths.get(SERVICE_DIR))) {
+	public Tuple<List<Service>, List<Service>> load() {
+		try (var services = Files.walk(Paths.get(properties.getConfigLocation()))) {
 			var config = services
 				.filter(path -> path.toString().endsWith(".config"))
-				.map(ServiceLoader::loadConfig)
+				.map(this::loadConfig)
 				.toList();
 			var sourceServices = config.stream()
 				.filter(c -> c.get("source").equals("true"))
-				.map(ServiceLoader::loadService)
+				.map(this::loadService)
 				.toList();
 			var targetServices = config.stream()
 				.filter(c -> c.get("target").equals("true"))
-				.map(ServiceLoader::loadService)
+				.map(this::loadService)
 				.toList();
 
 			return Tuple.of(sourceServices, targetServices);
@@ -42,7 +41,7 @@ public class ServiceLoader {
 		}
 	}
 
-	private static Map<String, String> loadConfig(Path path) {
+	private Map<String, String> loadConfig(Path path) {
 		try {
 			var map = new HashMap<String, String>();
 			var lines = Files.readAllLines(path);
@@ -59,7 +58,7 @@ public class ServiceLoader {
 		}
 	}
 
-	private static Service loadService(Map<String, String> config) {
+	private Service loadService(Map<String, String> config) {
 		return Service.builder()
 			.visibleName(config.get("visibleName"))
 			.internalName(config.get("internalName"))

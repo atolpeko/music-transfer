@@ -1,5 +1,7 @@
 server:
   port: 6010
+service:
+  configLocation: /Users/atolpeko/code/projects/music-transfer/local-env
 logging:
   level:
     com.mf.auth: DEBUG
