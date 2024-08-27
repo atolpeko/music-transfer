@@ -12,7 +12,6 @@ export const nextRedirectUrl = (service, redirectUrl, jwt) => {
 
 export const exchangeToken = async token => {
   const url = `${window.DOMAIN}${window.AUTH_API}/token?accessToken=${token}`;
-  console.log(`Exchanging access token at ${url}`);
   return fetch(url, { method: 'GET' })
 		.then(response => response.json());
 }
