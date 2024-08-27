@@ -13,6 +13,9 @@ import lombok.Data;
 @ApiModel(value = "Response")
 public class Response {
 
-	@ApiModelProperty("Services")
-	private final List<Service> services;
+	@ApiModelProperty("Source services")
+	private final List<Service> source;
+
+	@ApiModelProperty("Source services")
+	private final List<Service> target;
 }

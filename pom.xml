@@ -17,6 +17,7 @@
     <modules>
         <module>auth-api</module>
         <module>transfer-api</module>
+        <module>service-config-api</module>
     </modules>
 
     <properties>
