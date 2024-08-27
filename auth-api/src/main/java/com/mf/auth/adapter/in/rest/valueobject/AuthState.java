@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthState {
 
+	private String redirectUrl;
 	private String uuid;
 	private String jwt;
 }

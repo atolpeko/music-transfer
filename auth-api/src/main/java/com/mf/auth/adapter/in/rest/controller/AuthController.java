@@ -31,12 +31,13 @@ public class AuthController implements AuthAPI {
 	private final PropertyMap propertyMap;
 
 	@Override
-	public String redirectToAuth(MusicService service, String jwt) {
+	public String redirectToAuth(MusicService service, String redirectUrl, String jwt) {
 		try {
 			var uuid = authUseCase.generateUuid().getValue();
 			var encryptedJwt = encryptJwt(jwt, uuid);
 			var encryptedUuid = authUseCase.encryptWithSecret(uuid, properties.uuidSecret());
-			var url = buildAuthUrl(propertyMap.get(service), encryptedUuid, encryptedJwt);
+			var properties = propertyMap.get(service);
+			var url = buildAuthUrl(properties, redirectUrl, encryptedUuid, encryptedJwt);
 
 			log.debug("Redirecting to {} login page", service.name());
 			return "redirect:" + url;
@@ -62,10 +63,12 @@ public class AuthController implements AuthAPI {
 
 	private String buildAuthUrl(
 		MusicServiceProperties properties,
+		String redirectUrl,
 		String uuid,
 		String jwt
 	) throws JsonProcessingException {
 		var state = AuthState.builder()
+			.redirectUrl(redirectUrl)
 			.uuid(uuid)
 			.jwt(jwt)
 			.build();
