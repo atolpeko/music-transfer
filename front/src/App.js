@@ -186,9 +186,7 @@ const App = () => {
    <BrowserRouter>
     <div className="d-flex flex-column vh-100">
       <Header homeUrl='/home'
-              aboutUrl='/about'
-              contactUrl='/contact'
-              supportUrl='/support' />
+              contactUrl='/contact' />
       <main className="center-container align-items-center justify-content-center">
         <Routes>
           <Route path='/home' element={
