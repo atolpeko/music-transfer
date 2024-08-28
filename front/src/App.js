@@ -7,6 +7,7 @@ import { fetchTracks, fetchPlaylists, transferTracks, transferPlaylist } from '.
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
 import HomePage from './components/home/HomePage';
+import ContactPage from './components/contact/ContactPage';
 import ServiceSelectionPage from './components/service/ServiceSelectionPage';
 import TransferSetupPage from './components/transfer/TransferSetupPage';
 import TransferPage from './components/transfer/TransferPage';
@@ -191,6 +192,9 @@ const App = () => {
         <Routes>
           <Route path='/home' element={
             <HomePage onStartClick={handleStartClick} />
+          } />
+          <Route path='/contact' element={
+            <ContactPage />
           } />
           <Route path='/transfer' element={
             (authenticating)
