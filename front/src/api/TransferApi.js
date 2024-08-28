@@ -37,3 +37,30 @@ export const fetchPlaylistTracks = async (service, authToken, playlistId) => {
 	const url = `${endpoint}/${playlistId}/tracks?service=${service}`;
 	return fetchAll(url, authToken);
 }
+
+export const transferTracks = async (source, target, tracks, authToken) => {
+  const url = `${window.DOMAIN}${window.TRANSFER_API}/tracks?source=${source}&target=${target}`;
+  return fetch(url, { 
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${authToken}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ tracks: tracks })
+	})
+	.then(response => response.json());
+}
+
+export const transferPlaylist = async (source, target, playlist, authToken) => {
+  const url = `${window.DOMAIN}${window.TRANSFER_API}/playlists?source=${source}&target=${target}`;
+  return fetch(url, { 
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${authToken}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(playlist)
+	})
+	.then(response => response.json());
+}
+

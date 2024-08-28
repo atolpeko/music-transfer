@@ -4,17 +4,28 @@ import Spinner from '../spinner/Spinner';
 
 import './TransferPage.css';
 
-const TransferPage = ({ source, target, run }) => {
+const TransferPage = ({ source, target, transferTracks, transferPlaylists, onHomeClick }) => {
 
-  const [result, setResult] = useState({ data: undefined, loading: true });
-  const [error, setError] = useState('');
+  const [tracksResult, setTracksResult] = useState({ data: undefined, loading: true });
+  const [playlistsResult, setPlaylistsResult] = useState({ data: undefined, loading: true });
+  const [failed, setFailed] = useState([]);
+  const [error, setError] = useState(undefined);
 
   useEffect(() => {
-    run().then(res => {
-      setResult({ data: res, loading: false });
+    transferTracks().then(res => {
+      setTracksResult({ data: res, loading: false });
+      setFailed(failed.concat(res.failedToTransfer));
     }).catch(error => {
-      setError(`Transfer error: ${error}`)
-      setResult({ loading: false });
+      setError(`Track transfer error: ${error}`)
+      setTracksResult({ loading: false });
+    });
+
+    transferPlaylists().then(res => {
+      setPlaylistsResult({ data: res, loading: false });
+      setFailed(failed.concat(res.failedToTransfer));
+    }).catch(error => {
+      setError(`Playlist transfer error: ${error}`)
+      setPlaylistsResult({ loading: false });
     });
   }, []);
 
@@ -22,40 +33,50 @@ const TransferPage = ({ source, target, run }) => {
     return (
       <div>
         <div className="row justify-content-center section">
-          <h2 className="page-title">
-            Transferred {result.data.tracksCount || 0} tracks
-             and {result.data.playlistsCount || 0} playlists from {source} to {target}
-          </h2>  
+          { !error
+            ?  <h1 className="page-title">
+                Transferred {tracksResult.data.transferred || 0} tracks
+                and {playlistsResult.data.transferred || 0} playlists from {source} to {target}
+               </h1>
+            :  <h1 className="page-title"><p style= {{ color: 'red' }}> {error} </p></h1>
+          }    
         </div>
         <div className="row justify-content-center section">
-          { result.data.failed && result.data.failed.length > 0 &&
-            <div className="row align-items-center justify-content-center section">
-              <h4 className="transfer-fail-text">Tracks Failed to Transfer</h4>
-              <div className="row align-items-center justify-content-center">
-                { result.data.failed.map((track, i) => (
-                  <div className="col col-md-3" key={i}>
-                    <SelectableCard id={"track-" + i}
-                                    text={track.name + ' ·  ID ' + track.id}
-                                    imageUrl={track.imageUrl} />
-                  </div>  
-                 )) 
-                } 
+          <button onClick={onHomeClick}>
+            Home
+          </button>
+        </div>
+      
+        { !error &&
+          <div className="row justify-content-center section">
+            { failed.length > 0  &&
+              <div className="row align-items-center justify-content-center section">
+                <h4 className="transfer-fail-text">Tracks Failed to Transfer</h4>
+                <div className="row align-items-center justify-content-center">
+                  { failed.map((track, i) => (
+                    <div className="col col-md-3" key={i}>
+                      <SelectableCard id={"track-" + i}
+                                      text={track.name + ' ·  ID ' + track.id}
+                                      imageUrl={track.imageUrl} />
+                    </div>  
+                  )) 
+                  } 
+                </div>
               </div>
-            </div>
-          }
-          <div className="row justify-content-center error-section"> 
-            { error && <p style= {{ color: 'red' }}> {error} </p> }
-          </div>    
-        </div>   
+            }  
+          </div>   
+        }
       </div>
     );
   }
 
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { result.loading 
-        ? <Spinner text={`Transferring the Library from ${source} to ${target}...`} />
-        : renderContent() 
+      { tracksResult.loading 
+        ? <Spinner text={`Transferring tracks from ${source} to ${target}...`} />
+        :  playlistsResult.loading
+          ? <Spinner text={`Transferring playlists from ${source} to ${target}...`} />
+          : renderContent() 
       }
     </div>
   );

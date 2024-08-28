@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { fetchServices } from './api/ServiceApi';
 import { nextRedirectUrl, redirectUrl, exchangeToken } from './api/AuthApi';
-import { fetchTracks, fetchPlaylists } from './api/TransferApi';
+import { fetchTracks, fetchPlaylists, transferTracks, transferPlaylist } from './api/TransferApi';
 
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
@@ -134,24 +134,52 @@ const App = () => {
   }
 
   const handleTransferClick = (tracks, playlists) => {
-    console.log(`Selected ${tracks.length} tracks and ${playlists.length} playlists to transfer`);
+    console.log('Selected ' + tracks.length + ' tracks ' + 
+      'and ' + playlists.length + ' playlists to transfer');
     setToTransfer({
       tracks: tracks,
       playlists: playlists
     })
   }
 
-  const delay = ms => new Promise(res => setTimeout(res, ms));
+  const runTracksTransfer = async () => {
+    console.log('Transferring tracks from ' + services.source.visibleName +
+     ' to ' + services.target.visibleName);
+    return transferTracks(
+      services.source.internalName, 
+      services.target.internalName,
+      toTransfer.tracks,
+      getJwt()
+    );
+  }
 
-  const runTransfer = async () => {
-    console.log(`Running transfer from ${services.source.visibleName}
-       to ${services.target.visibleName}`);
-    await delay(3000);
+  const runPlaylistTransfer = async () => {
+    console.log('Transferring playlists from ' + services.source.visibleName +
+      ' to ' + services.target.visibleName);
+    let results = []; 
+    let failed = []; 
+    for (let i = 0; i < toTransfer.playlists.length; i++) {
+      const result = await transferPlaylist(
+        services.source.internalName, 
+        services.target.internalName,
+        toTransfer.playlists[i],
+        getJwt()
+      );
+
+      results.push(result);
+      if (result.failed) {
+        failed.push(result.failed.tracks);
+      }
+    } 
+
     return {
-      'tracksCount' : toTransfer.tracks.length - 3,
-      'playlistsCount': toTransfer.playlists.length,
-      'failed': toTransfer.tracks.slice(0, 3)
+      transferred: results.length,
+      failedToTransfer: failed
     }
+  }
+
+  const handleHomeClick = () => {
+    window.location = '/home';
   }
 
   return (  
@@ -168,13 +196,13 @@ const App = () => {
           } />
           <Route path='/transfer' element={
             (authenticating)
-              ? <Spinner text='Waiting for authorization...'/> 
+              ? <Spinner text='Waiting for authorization...' /> 
               : (!services.source || !services.target)
                 ? <ServiceSelectionPage source={services.source}
                                         loadServices={loadServices}
                                         onSourceSelection={handleSourceSelection}
                                         onTargetSelection={handleTargetSelection} 
-                                        onBackClick={handleBackClick}/>  
+                                        onBackClick={handleBackClick} />  
                 : (!toTransfer.tracks && !toTransfer.playlists) 
                   ? <TransferSetupPage source={services.source.visibleName}
                                        target={services.target.visibleName}
@@ -182,7 +210,9 @@ const App = () => {
                                        onTransferClick={handleTransferClick} />
                   : <TransferPage source={services.source.visibleName}
                                   target={services.target.visibleName} 
-                                  run={runTransfer}/>
+                                  transferTracks={runTracksTransfer}
+                                  transferPlaylists={runPlaylistTransfer}
+                                  onHomeClick={handleHomeClick} />
             } />      
           <Route path="*" element={<Navigate to="/home" />}/>
         </Routes>
