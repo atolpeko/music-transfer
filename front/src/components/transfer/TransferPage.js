@@ -6,17 +6,15 @@ import './TransferPage.css';
 
 const TransferPage = ({ source, target, run }) => {
 
-  const [running, setRunning] = useState(true);
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState({ data: undefined, loading: true });
   const [error, setError] = useState('');
 
   useEffect(() => {
     run().then(res => {
-      setResult(res);
-      setRunning(false);
+      setResult({ data: res, loading: false });
     }).catch(error => {
       setError(`Transfer error: ${error}`)
-      setRunning(false);
+      setResult({ loading: false });
     });
   }, []);
 
@@ -25,16 +23,16 @@ const TransferPage = ({ source, target, run }) => {
       <div>
         <div className="row justify-content-center section">
           <h2 className="page-title">
-            Transferred {result.tracksCount || 0} tracks
-             and {result.playlistsCount || 0} playlists from {source} to {target}
+            Transferred {result.data.tracksCount || 0} tracks
+             and {result.data.playlistsCount || 0} playlists from {source} to {target}
           </h2>  
         </div>
         <div className="row justify-content-center section">
-          { result.failed && result.failed.length > 0 &&
+          { result.data.failed && result.data.failed.length > 0 &&
             <div className="row align-items-center justify-content-center section">
               <h4 className="transfer-fail-text">Tracks Failed to Transfer</h4>
               <div className="row align-items-center justify-content-center">
-                { result.failed.map((track, i) => (
+                { result.data.failed.map((track, i) => (
                   <div className="col col-md-3" key={i}>
                     <SelectableCard id={"track-" + i}
                                     text={track.name + ' ·  ID ' + track.id}
@@ -55,9 +53,10 @@ const TransferPage = ({ source, target, run }) => {
 
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { running 
+      { result.loading 
         ? <Spinner text={`Transferring the Library from ${source} to ${target}...`} />
-        : renderContent() }
+        : renderContent() 
+      }
     </div>
   );
 }
