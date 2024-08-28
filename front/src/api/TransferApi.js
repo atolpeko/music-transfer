@@ -24,8 +24,10 @@ export const fetchAll = async (baseUrl, authToken) => {
 export const fetchPlaylists = async (service, authToken) => {
 	const url = `${window.DOMAIN}${window.TRANSFER_API}/playlists?service=${service}`;
 	const playlists = await fetchAll(url, authToken);
-	playlists.forEach(async playlist => 
-		playlist.tracks = await fetchPlaylistTracks(service, authToken, playlist.id));
+	for (let i = 0; i < playlists.length; i++) {
+		const playlist = playlists[i];
+		playlist.tracks = await fetchPlaylistTracks(service, authToken, playlist.id);
+	}
 	
 	return playlists;	 
 }

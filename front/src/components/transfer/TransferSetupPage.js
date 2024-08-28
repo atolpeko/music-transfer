@@ -12,7 +12,6 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
 
   useEffect(() => {
     load().then(data => {
-      console.log(data.playlists)
       data.tracks.forEach(track => track.selected = true);
       data.playlists.forEach(playlist => playlist.selected = true);
       setSourceData({
@@ -73,11 +72,10 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
   }
 
   const renderPlaylists = () => {
-    console.log(sourceData.playlists);
     return sourceData.playlists.map((playlist, i) => (
       <div className="col col-md-3" key={i}>
         <SelectableCard id={"playlist-" + i}
-                        text={[playlist.name, <br/>, playlist.tracks.length, ' tracks']}
+                        text={[playlist.name, <br key={i}/>, playlist.tracks.length, ' tracks']}
                         imageUrl={playlist.imageUrl}
                         reversedSelection={true}
                         selected={playlist.selected}
