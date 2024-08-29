@@ -8,10 +8,8 @@ import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.domain.entity.Playlist;
 import com.mf.api.domain.entity.Track;
 import com.mf.api.domain.valueobject.TrackSearchCriteria;
-import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.util.Page;
-
-import io.github.resilience4j.retry.Retry;
+import com.mf.queue.service.RequestQueue;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
 
 public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
@@ -29,14 +26,13 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 	private final SpotifyPlaylistMapper playlistMapper;
 
 	public SpotifyAdapter(
-		RestTemplate restTemplate,
-		Retry retry,
+		RequestQueue requestQueue,
 		SpotifyProperties properties,
 		SpotifyPaginationMapper paginationMapper,
 		SpotifyTrackMapper trackMapper,
 		SpotifyPlaylistMapper playlistMapper
 	) {
-		super(restTemplate, retry, properties);
+		super(requestQueue, properties);
 		this.properties = properties;
 		this.paginationMapper = paginationMapper;
 		this.trackMapper = trackMapper;
@@ -76,36 +72,24 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
 	@Override
 	public void likeTrack(OAuth2Token token, Track track) {
-		try {
-			execRequest(
-				getUrl(properties.trackLikeUrl()),
-				HttpMethod.PUT,
-				token,
-				trackMapper.idsToJson(track),
-				Void.class
-			);
-		} catch (MusicServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new MusicServiceException(e.getMessage(), e.getCause());
-		}
+		request(
+			getUrl(properties.trackLikeUrl()),
+			HttpMethod.PUT,
+			token,
+			trackMapper.idsToJson(track),
+			Void.class
+		);
 	}
 
 	@Override
 	public void trackBulkLike(OAuth2Token token, List<Track> tracks) {
-		try {
-			execRequest(
-				getUrl(properties.trackLikeUrl()),
-				HttpMethod.PUT,
-				token,
-				trackMapper.idsToJson(tracks),
-				Void.class
-			);
-		} catch (MusicServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new MusicServiceException(e.getMessage(), e.getCause());
-		}
+		request(
+			getUrl(properties.trackLikeUrl()),
+			HttpMethod.PUT,
+			token,
+			trackMapper.idsToJson(tracks),
+			Void.class
+		);
 	}
 
 	@Override
@@ -154,31 +138,26 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
 	@Override
 	public String createPlaylist(OAuth2Token token, Playlist playlist) {
-		try {
-			var userId = getUserId(token);
-			var url = getUrl(properties.createPlaylistUrl().replace("{user-id}", userId));
-			var response = execRequest(
-				url,
-				HttpMethod.POST,
-				token,
-				playlistMapper.mapToJson(playlist),
-				LinkedHashMap.class
-			);
+		var userId = getUserId(token);
+		var url = getUrl(properties.createPlaylistUrl().replace("{user-id}", userId));
+		var response = request(
+			url,
+			HttpMethod.POST,
+			token,
+			playlistMapper.mapToJson(playlist),
+			LinkedHashMap.class
+		);
 
-			var body = Objects.requireNonNull(response.getBody());
-			return playlistMapper.map(body).getServiceId();
-		} catch (MusicServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new MusicServiceException(e.getMessage(), e.getCause());
-		}
+		var body = Objects.requireNonNull(response.getBody());
+		return playlistMapper.map(body).getServiceId();
 	}
 
-	private String getUserId(OAuth2Token token) throws Exception {
-		var response = execRequest(
+	private String getUserId(OAuth2Token token) {
+		var response = request(
 			getUrl(properties.meUrl()),
 			HttpMethod.GET,
 			token,
+			null,
 			LinkedHashMap.class
 		);
 
@@ -212,19 +191,13 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 	}
 
 	private void add(List<Track> tracks, String playlistId, OAuth2Token token) {
-		try {
-			var url = getUrl(properties.playlistTracksUrl().replace("{id}", playlistId));
-			execRequest(
-				url,
-				HttpMethod.POST,
-				token,
-				trackMapper.urisToJson(tracks),
-				Void.class
-			);
-		} catch (MusicServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new MusicServiceException(e.getMessage(), e.getCause());
-		}
+		var url = getUrl(properties.playlistTracksUrl().replace("{id}", playlistId));
+		request(
+			url,
+			HttpMethod.POST,
+			token,
+			trackMapper.urisToJson(tracks),
+			Void.class
+		);
 	}
 }

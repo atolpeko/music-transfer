@@ -11,29 +11,25 @@ import com.mf.api.adapter.out.musicservice.mapper.YTMusicTrackMapper;
 import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
 import com.mf.api.adapter.out.musicservice.properties.SpotifyProperties;
 import com.mf.api.port.MusicServicePort;
-
-import io.github.resilience4j.retry.Retry;
+import com.mf.queue.service.RequestQueue;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class MusicServiceConfig {
 
 	@Bean
 	public MusicServicePort spotifyAdapter(
-		RestTemplate restTemplate,
-		Retry retry,
+		RequestQueue requestQueue,
 		SpotifyProperties properties,
 		SpotifyPaginationMapper paginationMapper,
 		SpotifyTrackMapper trackMapper,
 		SpotifyPlaylistMapper playlistMapper
 	) {
 		return new SpotifyAdapter(
-			restTemplate,
-			retry,
+			requestQueue,
 			properties,
 			paginationMapper,
 			trackMapper,
@@ -43,16 +39,14 @@ public class MusicServiceConfig {
 
 	@Bean
 	public MusicServicePort ytMusicAdapter(
-		RestTemplate restTemplate,
-		Retry retry,
+		RequestQueue requestQueue,
 		@Qualifier("ytMusicProperties") DefaultMusicServiceProperties properties,
 		YTMusicPaginationMapper paginationMapper,
 		YTMusicTrackMapper trackMapper,
 		YTMusicPlaylistMapper playlistMapper
 	) {
 		return new YTMusicAdapter(
-			restTemplate,
-			retry,
+			requestQueue,
 			properties,
 			paginationMapper,
 			trackMapper,

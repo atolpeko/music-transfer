@@ -9,13 +9,10 @@ import com.mf.api.domain.entity.Playlist;
 import com.mf.api.domain.entity.Track;
 import com.mf.api.domain.valueobject.TrackSearchCriteria;
 import com.mf.api.util.Page;
-
-import io.github.resilience4j.retry.Retry;
+import com.mf.queue.service.RequestQueue;
 
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.web.client.RestTemplate;
 
 public class YTMusicAdapter extends BaseMusicServiceAdapter {
 
@@ -25,14 +22,13 @@ public class YTMusicAdapter extends BaseMusicServiceAdapter {
 	private final YTMusicPlaylistMapper playlistMapper;
 
 	public YTMusicAdapter(
-		RestTemplate restTemplate,
-		Retry retry,
+		RequestQueue requestQueue,
 		DefaultMusicServiceProperties properties,
 		YTMusicPaginationMapper paginationMapper,
 		YTMusicTrackMapper trackMapper,
 		YTMusicPlaylistMapper playlistMapper
 	) {
-		super(restTemplate, retry, properties);
+		super(requestQueue, properties);
 		this.properties = properties;
 		this.paginationMapper = paginationMapper;
 		this.trackMapper = trackMapper;

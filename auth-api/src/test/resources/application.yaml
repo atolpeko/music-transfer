@@ -4,6 +4,10 @@ server:
 h2:
   console:
     enabled: true
+redis:
+  host: localhost
+  port: 6379
+  password:
 spring:
   datasource:
     url: jdbc:h2:mem:testdb;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
@@ -12,6 +16,10 @@ spring:
   sql:
     init:
       mode: always
+requestQueue:
+  requestsPerWindow: 200
+  requestWindowSeconds: 30
+  waitSeconds: 5
 service:
   encryptionAlgName: AES
   encryptionKeySize: 16
@@ -22,6 +30,10 @@ service:
   jwtExpirationSeconds: 600
   uuidExpirationSeconds: 600
   accessTokenExpirationSeconds: 600
+  requestQueue:
+    requestsPerWindow: 200
+    requestWindowSeconds: 30
+    waitSeconds: 5
   spotify:
     name: SPOTIFY
     clientId: clientId
@@ -44,6 +56,7 @@ service:
       token: http://localhost:${server.wireMockPort}/api/mock/ytmusic/token
 logging:
   level:
+    requestQueue: DEBUG
     com.mf.auth: DEBUG
 management:
   endpoint:

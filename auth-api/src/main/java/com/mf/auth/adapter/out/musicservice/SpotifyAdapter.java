@@ -1,17 +1,18 @@
 package com.mf.auth.adapter.out.musicservice;
 
 import com.mf.auth.adapter.properties.MusicServiceProperties;
+import com.mf.queue.service.RequestQueue;
+
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.client.RestTemplate;
 
 @Log4j2
 public class SpotifyAdapter extends StandardOauth2MusicService {
 
 	public SpotifyAdapter(
 		MusicServiceProperties properties,
-		RestTemplate restTemplate
+		RequestQueue requestQueue
 	) {
-		super(properties, restTemplate);
+		super(properties, requestQueue);
 	}
 
 	@Override

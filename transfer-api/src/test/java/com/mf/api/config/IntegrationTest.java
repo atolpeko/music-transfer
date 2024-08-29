@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Target(ElementType.TYPE)
 @ActiveProfiles("test")
 @Tag("category.IntegrationTest")
-@Import(ApiMockConfig.class)
+@Import({EmbeddedRedisConfig.class, ApiMockConfig.class})
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 public @interface IntegrationTest {

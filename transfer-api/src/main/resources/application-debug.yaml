@@ -2,12 +2,20 @@
 
 server:
   port: 5990
+redis:
+  host: localhost
+  port: 6379
+  password: docker
 service:
   jwtValidator:
     domain: http://localhost:5980
     validationUrl: /api/auth/token/validate
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
   tokenPrefix: msvc_
+  requestQueue:
+    requestsPerWindow: 200
+    requestWindowSeconds: 30
+    waitSeconds: 5
   spotify:
     name: SPOTIFY
     pageSize: 50
@@ -33,6 +41,7 @@ retry:
   windowSeconds: 2
 logging:
   level:
+    requestQueue: DEBUG
     com.mf.api: DEBUG
 management:
   endpoint:

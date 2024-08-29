@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>request-queue</module>
         <module>auth-api</module>
         <module>transfer-api</module>
         <module>service-config-api</module>
@@ -24,16 +25,19 @@
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.2</spring-cloud.version>
         <jsonwebtoken.version>0.12.5</jsonwebtoken.version>
-        <mongo-connector.version>3.12.13</mongo-connector.version>
         <swagger.version>3.0.0</swagger.version>
         <mapstruct.version>1.5.3.Final</mapstruct.version>
         <lombok.version>1.18.34</lombok.version>
         <lombok-mapstruct-binding.version>0.1.0</lombok-mapstruct-binding.version>
         <wiremock.version>2.35.0</wiremock.version>
+        <embedded-redis.version>1.4.2</embedded-redis.version>
+        <maven-javadoc-plugin.version>2.10.1</maven-javadoc-plugin.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <!--Spring-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -106,6 +110,14 @@
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.codemonstur</groupId>
+                <artifactId>embedded-redis</artifactId>
+                <version>${embedded-redis.version}</version>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -166,6 +178,7 @@
                 </configuration>
             </plugin>
 
+
             <!-- Run -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -173,5 +186,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>

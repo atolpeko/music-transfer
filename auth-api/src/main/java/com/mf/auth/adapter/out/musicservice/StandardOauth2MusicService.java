@@ -4,6 +4,8 @@ import com.mf.auth.adapter.properties.MusicServiceProperties;
 import com.mf.auth.domain.entity.OAuth2Token;
 import com.mf.auth.port.MusicServicePort;
 import com.mf.auth.port.exception.MusicServiceException;
+import com.mf.queue.entity.Request;
+import com.mf.queue.service.RequestQueue;
 
 import java.util.Map;
 
@@ -14,40 +16,56 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
 @RequiredArgsConstructor
 public abstract class StandardOauth2MusicService implements MusicServicePort {
 
 	protected final MusicServiceProperties properties;
-	private final RestTemplate restTemplate;
+	private final RequestQueue requestQueue;
 
 	@Override
 	public OAuth2Token oauth2ExchangeCode(String authCode) {
 		try {
-			var headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-			var params = new LinkedMultiValueMap<String, String>();
-			params.add("code", authCode);
-			params.add("client_id", properties.clientId());
-			params.add("client_secret", properties.clientSecret());
-			params.add("grant_type", properties.grantType());
-			params.add("redirect_uri", properties.redirectUrl());
-
-			var url = properties.tokenUrl();
-			var request = new HttpEntity<>(params, headers);
-			var response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
-
+			var request = buildRequest(authCode);
+			requestQueue.submit(request);
+			var response = request.getResultWhenComplete();
 			var body = response.getBody();
 			return new OAuth2Token(
 				(String) body.get("access_token"),
 				(String) body.get("refresh_token"),
 				(Integer) body.get("expires_in")
 			);
+
+			// TODO improve error handling
+		} catch (HttpClientErrorException e) {
+			var msg = (e.getStatusCode().is4xxClientError())
+				? "Authorization failed: %s".formatted(e.getMessage())
+				: "Service %s unavailable: %s".formatted(properties.name(), e.getMessage());
+			throw new MusicServiceException(msg, e.getCause());
 		} catch (Exception e) {
 			var msg = "Authorization failed: " + e.getMessage();
 			throw new MusicServiceException(msg, e);
 		}
+	}
+
+	private Request<LinkedMultiValueMap<String, String>, Map> buildRequest(String code) {
+		var headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+		var params = new LinkedMultiValueMap<String, String>();
+		params.add("code", code);
+		params.add("client_id", properties.clientId());
+		params.add("client_secret", properties.clientSecret());
+		params.add("grant_type", properties.grantType());
+		params.add("redirect_uri", properties.redirectUrl());
+
+		var entity = new HttpEntity<>(params, headers);
+		return Request.<LinkedMultiValueMap<String, String>, Map>builder()
+			.url(properties.tokenUrl())
+			.method(HttpMethod.POST)
+			.entity(entity)
+			.responseType(Map.class)
+			.build();
 	}
 }

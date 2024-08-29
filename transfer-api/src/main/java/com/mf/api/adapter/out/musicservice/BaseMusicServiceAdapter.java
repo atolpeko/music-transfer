@@ -7,14 +7,13 @@ import com.mf.api.port.exception.AccessException;
 import com.mf.api.port.exception.IllegalRequestException;
 import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.util.Page;
-
-import io.github.resilience4j.retry.Retry;
+import com.mf.queue.entity.Request;
+import com.mf.queue.service.RequestQueue;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 
 import lombok.RequiredArgsConstructor;
@@ -26,14 +25,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 @Log4j2
 @RequiredArgsConstructor
 public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 
-	private final RestTemplate restTemplate;
-	private final Retry retry;
+	private final RequestQueue requestQueue;
 	private final DefaultMusicServiceProperties properties;
 
 	protected String getUrl(String url) {
@@ -47,9 +44,8 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 		Function<LinkedHashMap, List<T>> itemMapper
 	) {
 		try {
-			var response = execRequest(url, HttpMethod.GET, token, LinkedHashMap.class);
+			var response = request(url, HttpMethod.GET, token, null, LinkedHashMap.class);
 			var body = Objects.requireNonNull(response.getBody());
-
 			var nextPage = paginationMapper.apply(body);
 			var items = itemMapper.apply(body);
 			return Page.of(items, nextPage);
@@ -57,65 +53,73 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 			throw e;
 		} catch (NullPointerException e) {
 			return Page.of(Collections.emptyList());
-		} catch (IllegalArgumentException | HttpClientErrorException e) {
-			throw new IllegalRequestException(e.getMessage());
+		}
+	}
+
+	protected <T> ResponseEntity<T> request(
+		String url,
+		HttpMethod method,
+		OAuth2Token token,
+		String json,
+		Class<T> responseType
+	) {
+		try {
+			var request = (json != null)
+				? buildRequest(url, method, token, json, responseType)
+				: buildRequest(url, method, token, responseType);
+			requestQueue.submit(request);
+			return request.getResultWhenComplete();
+		} catch (HttpClientErrorException e) {
+			var status = e.getStatusCode();
+			if (status.value() == 401 || status.value() == 403) {
+				throw new AccessException("Authorization failed");
+			} else if (status.is4xxClientError()){
+				var msg = "Invalid request to %s: %s".formatted(url, e.getMessage());
+				throw new IllegalRequestException(msg);
+			} else {
+				var msg = "Service %s unavailable: %s".formatted(url, e.getMessage());
+				throw new MusicServiceException(msg);
+			}
+		} catch (IllegalArgumentException e) {
+			throw new IllegalRequestException(e.getMessage(), e);
 		} catch (Exception e) {
 			throw new MusicServiceException(e.getMessage(), e.getCause());
 		}
 	}
 
-	protected <T> ResponseEntity<T> execRequest(
+	private <T> Request<?, T> buildRequest(
 		String url,
 		HttpMethod method,
 		OAuth2Token token,
-		Class<T> clazz
-	) throws Exception {
-		var callable = callable(url, method, token, null, clazz);
-		var response = retry.executeCallable(callable);
-		return checkResponse(url, response);
-	}
-
-	private <T> Callable<ResponseEntity<T>> callable(
-		String url,
-		HttpMethod method,
-		OAuth2Token token,
-		String json,
-		Class<T> clazz
+		Class<T> responseType
 	) {
 		var headers = new HttpHeaders();
 		headers.setBearerAuth(token.getValue());
-		if (json != null) {
-			headers.setContentType(MediaType.APPLICATION_JSON);
-		}
-		var entity = (json != null)
-			? new HttpEntity<>(json, headers)
-			: new HttpEntity<>(headers);
 
-		log.debug("Executing HTTP {} to {}", method.name(), url);
-		return () -> restTemplate.exchange(url, method, entity, clazz);
+		return Request.<Object, T>builder()
+			.url(url)
+			.method(method)
+			.entity(new HttpEntity<>(headers))
+			.responseType(responseType)
+			.build();
 	}
 
-	private <T> ResponseEntity<T> checkResponse(String url, ResponseEntity<T> response) {
-		var status = response.getStatusCode();
-		if (status.is2xxSuccessful()) {
-			return response;
-		} else if (status.value() == 401 || status.value() == 403) {
-			throw new AccessException("Authorization failed");
-		} else {
-			var msg = "Failed to request %s: %s".formatted(url, status);
-			throw new MusicServiceException(msg);
-		}
-	}
-
-	protected <T> ResponseEntity<T> execRequest(
+	private <T> Request<?, T> buildRequest(
 		String url,
 		HttpMethod method,
 		OAuth2Token token,
 		String json,
-		Class<T> clazz
-	) throws Exception {
-		var callable = callable(url, method, token, json, clazz);
-		var response = retry.executeCallable(callable);
-		return checkResponse(url, response);
+		Class<T> responseType
+	) {
+		var headers = new HttpHeaders();
+		headers.setBearerAuth(token.getValue());
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		return Request.<Object, T>builder()
+			.url(url)
+			.method(method)
+			.entity(new HttpEntity<>(json, headers))
+			.responseType(responseType)
+			.build();
 	}
 }

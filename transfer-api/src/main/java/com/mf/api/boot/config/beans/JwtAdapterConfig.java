@@ -4,18 +4,18 @@ import com.mf.api.adapter.out.jwt.JWTValidatorAdapter;
 import com.mf.api.adapter.out.jwt.JwtValidatorProperties;
 import com.mf.api.port.JWTValidatorPort;
 
+import com.mf.queue.service.RequestQueue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class JwtAdapterConfig {
 
 	@Bean
 	public JWTValidatorPort jwtServicePort(
-		RestTemplate restTemplate,
+		RequestQueue requestQueue,
 		JwtValidatorProperties properties
 	) {
-		return new JWTValidatorAdapter(restTemplate, properties);
+		return new JWTValidatorAdapter(requestQueue, properties);
 	}
 }
