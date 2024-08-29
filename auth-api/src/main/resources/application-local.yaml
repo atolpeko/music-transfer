@@ -23,6 +23,10 @@ spring:
   sql:
     init:
       mode: always
+redis:
+  host: localhost
+  port: 6379
+  password: docker
 service:
   encryptionAlgName: AES
   encryptionKeySize: 16
@@ -33,7 +37,12 @@ service:
   jwtExpirationSeconds: 7200
   uuidExpirationSeconds: 7200
   accessTokenExpirationSeconds: 7200
+  requestQueue:
+    requestsPerWindow: 200
+    requestWindowSeconds: 30
+    waitSeconds: 5
   spotify:
+    name: SPOTIFY
     clientScope: 'user-library-read user-library-modify playlist-read-private
       playlist-modify-public playlist-modify-private'
     grantType: authorization_code
@@ -42,6 +51,7 @@ service:
       auth: https://accounts.spotify.com/authorize
       token: https://accounts.spotify.com/api/token
   ytmusic:
+    name: YT_MUSIC
     clientScope: 'https://www.googleapis.com/auth/youtube.readonly 
     https://www.googleapis.com/auth/youtube.upload'
     grantType: authorization_code
@@ -51,6 +61,7 @@ service:
       token: https://oauth2.googleapis.com/token
 logging:
   level:
+    requestQueue: DEBUG
     com.mf.auth: INFO
 management:
   endpoint:

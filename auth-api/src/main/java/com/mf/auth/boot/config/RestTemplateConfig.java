@@ -1,7 +1,9 @@
 package com.mf.auth.boot.config;
 
+import java.time.Duration;
 import java.util.Collections;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -17,7 +19,10 @@ public class RestTemplateConfig {
 		converter.setSupportedMediaTypes(
 			Collections.singletonList(MediaType.APPLICATION_FORM_URLENCODED));
 
-		var template = new RestTemplate();
+		var template = new RestTemplateBuilder()
+			.setConnectTimeout(Duration.ofSeconds(5))
+			.setReadTimeout(Duration.ofSeconds(5))
+			.build();
 		template.getMessageConverters().add(converter);
 		return template;
 	}
