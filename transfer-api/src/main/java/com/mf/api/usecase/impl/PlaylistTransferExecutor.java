@@ -34,7 +34,14 @@ public class PlaylistTransferExecutor {
 			context.getToken(),
 			playlist.getTracks()
 		);
-		context.getService().addToPlaylist(context.getToken(), id, foundTracks);
+		if (!foundTracks.isEmpty()) {
+			context.getService().addToPlaylist(context.getToken(), id, foundTracks);
+			log.debug("Transferred {} tracks for playlist {}",
+				foundTracks.size(), context.getToTransfer().getName());
+		}
+
+		log.info("Transferred playlist {} from {} to {}",
+			context.getToTransfer().getName(), source, target);
 
 		var failedTracks = getFailed(playlist.getTracks(), foundTracks);
 		if (failedTracks.isEmpty()) {
