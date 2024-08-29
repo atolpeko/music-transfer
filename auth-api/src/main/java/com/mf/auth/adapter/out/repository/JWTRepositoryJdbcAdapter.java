@@ -27,7 +27,8 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             + "at.is_used AS at_is_used, at.expires_at AS at_expires_at "
             + "FROM jwt j "
             + "INNER JOIN access_token at ON at.id = j.access_token_id "
-            + "WHERE j.id = ? AND j.expires_at > CURRENT_TIMESTAMP";
+            + "WHERE j.id = ? AND j.expires_at > CURRENT_TIMESTAMP "
+            + "FOR UPDATE";
 
     private static final String SELECT_BY_VALUE =
         "SELECT j.id AS jwt_id, j.token AS jwt_value, "
@@ -35,7 +36,8 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             + "at.is_used AS at_is_used, at.expires_at AS at_expires_at "
             + "FROM jwt j "
             + "INNER JOIN access_token at ON at.id = j.access_token_id "
-            + "WHERE j.token = ? AND j.expires_at > CURRENT_TIMESTAMP";
+            + "WHERE j.token = ? AND j.expires_at > CURRENT_TIMESTAMP "
+            + "FOR UPDATE";
 
     private static final String SELECT_BY_ACCESS_TOKEN =
         "SELECT j.id AS jwt_id, j.token AS jwt_value, "
@@ -45,7 +47,8 @@ public class JWTRepositoryJdbcAdapter implements JWTRepositoryPort {
             + "INNER JOIN jwt j ON at.id = j.access_token_id "
             + "WHERE at.token = ? "
             + "AND at.is_used = FALSE "
-            + "AND at.expires_at > CURRENT_TIMESTAMP ";
+            + "AND at.expires_at > CURRENT_TIMESTAMP "
+            + "FOR UPDATE";
 
     private static final String INSERT_INTO_JWT =
         "INSERT INTO jwt(token, expires_at, access_token_id) VALUES (?, ?, ?)";
