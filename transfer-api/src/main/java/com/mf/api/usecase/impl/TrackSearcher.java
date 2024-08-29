@@ -4,13 +4,10 @@ import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.domain.entity.Track;
 import com.mf.api.domain.valueobject.TrackSearchCriteria;
 import com.mf.api.port.MusicServicePort;
-import com.mf.api.util.type.Tuple;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.IntStream;
+import java.util.Optional;
 
 public class TrackSearcher {
 
@@ -28,29 +25,26 @@ public class TrackSearcher {
 		OAuth2Token token,
 		List<Track> tracks
 	) {
-		return IntStream.range(0, tracks.size())
-			.mapToObj(i -> Tuple.of(i, tracks.get(i)))
-			.parallel()
+		return tracks.stream()
 			.map(track -> findTrack(service, token, track))
-			.sorted(Comparator.comparing(Tuple::getFirst))
-			.map(Tuple::getSecond)
-			.filter(Objects::nonNull)
+			.filter(Optional::isPresent)
+			.map(Optional::get)
 			.toList();
 	}
 
-	private Tuple<Integer, Track> findTrack(
+	private Optional<Track> findTrack(
 		MusicServicePort service,
 		OAuth2Token token,
-		Tuple<Integer, Track> track
+		Track track
 	) {
-		var name = (track.getSecond().getName() != null)
-			? track.getSecond().getName()
+		var name = (track.getName() != null)
+			? track.getName()
 			: "";
-		var album = (track.getSecond().getAlbumName() != null)
-			? track.getSecond().getAlbumName()
+		var album = (track.getAlbumName() != null)
+			? track.getAlbumName()
 			: "";
-		List<String> artists = (track.getSecond().getArtists() != null)
-			? track.getSecond().getArtists()
+		List<String> artists = (track.getArtists() != null)
+			? track.getArtists()
 			: Collections.emptyList();
 
 		var fullSearch = TrackSearchCriteria.builder()
@@ -69,8 +63,7 @@ public class TrackSearcher {
 		var found = service.searchTracks(token, fullSearch)
 			.or(() -> service.searchTracks(token, byNameAndArtist))
 			.or(() -> service.searchTracks(token, byName));
-		found.ifPresent(t -> t.setUniqueId(track.getSecond().getUniqueId()));
-
-		return Tuple.of(track.getFirst(), found.orElse(null));
+		found.ifPresent(t -> t.setUniqueId(track.getUniqueId()));
+		return found;
 	}
 }

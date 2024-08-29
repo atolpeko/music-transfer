@@ -1,5 +1,6 @@
 logging:
   level:
+    requestQueue: INFO
     com.mf.api: INFO
 management:
   endpoint:
