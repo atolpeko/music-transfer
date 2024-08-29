@@ -1,5 +1,6 @@
 package com.mf.queue.service.impl;
 
+import com.mf.queue.entity.Request;
 import com.mf.queue.exception.InvalidUrlException;
 import com.mf.queue.service.RateLimiter;
 import com.mf.queue.service.RequestQueue;
@@ -32,8 +33,9 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
         Runnable task = () -> {
             log.info("Starting request queue");
             while (!Thread.currentThread().isInterrupted()) {
+                Request<?, ?> request = null;
                 try {
-                    var request = requestQueue.take();
+                    request = requestQueue.take();
                     var service = request.getHost();
                     var queue = serviceQueues.computeIfAbsent(service, key -> new RequestQueue());
 
@@ -44,14 +46,16 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
                     }
 
                     queue.submit(request);
-                } catch (InvalidUrlException e) {
-                    log.info("Invalid request provided: {}", e.getUrl());
                 } catch (InterruptedException e) {
                     log.info("Stopping request queue");
                     Thread.currentThread().interrupt();
                     break;
+                } catch (InvalidUrlException e) {
+                    var msg = "Invalid request provided: %s".formatted(e.getUrl());
+                    fail(request, e, msg);
                 } catch (Exception e) {
-                    log.error("Exception while processing requests: {}", e.getMessage());
+                    var msg = "Exception while processing requests: %s".formatted(e.getMessage());
+                    fail(request, e, msg);
                 }
             }
         };
@@ -61,11 +65,19 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
         thread.start();
     }
 
+    private void fail(Request<?, ?> request, Exception exception, String msg) {
+        log.error(msg);
+        if (request != null) {
+            request.fail(exception);
+        }
+    }
+
     private void runProcessing(String service, RequestQueue queue) {
         log.info("Starting a new request queue for service: {}", service);
         while (!Thread.currentThread().isInterrupted()) {
+            Request<?, ?> request = null;
             try {
-                var request = queue.take();
+                request = queue.take();
                 if (rateLimiter.allowed(request)) {
                     log.debug("Executing request to {}", request.getUrl());
                     request.execute(restTemplate);
@@ -80,7 +92,9 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                log.error("Exception while processing request for {}: {}", service, e);
+                var msg = "Exception while processing request for %s: %s"
+                    .formatted(service, e);
+                fail(request, e, msg);
             }
         }
     }

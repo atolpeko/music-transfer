@@ -101,4 +101,13 @@ public class Request<T, K> {
 			}
 		}
 	}
+
+	/**
+	 * Complete this request with exception.
+	 *
+	 * @param e  exception
+	 */
+	public void fail(Exception e) {
+		result.completeExceptionally(e);
+	}
 }
