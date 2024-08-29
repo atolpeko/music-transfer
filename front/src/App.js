@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { fetchServices } from './api/ServiceApi';
 import { nextRedirectUrl, redirectUrl, exchangeToken } from './api/AuthApi';
-import { fetchTracks, fetchPlaylists } from './api/TransferApi';
+import { fetchTracks, fetchPlaylists, transferTracks, transferPlaylist } from './api/TransferApi';
 
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
 import HomePage from './components/home/HomePage';
+import ContactPage from './components/contact/ContactPage';
 import ServiceSelectionPage from './components/service/ServiceSelectionPage';
 import TransferSetupPage from './components/transfer/TransferSetupPage';
 import TransferPage from './components/transfer/TransferPage';
@@ -16,20 +17,22 @@ const App = () => {
   
   const getParam = param => new URLSearchParams(window.location.search).get(param);
   
-  const loadServiceParam = service => {
+  const getServiceParam = service => {
     const param = getParam(service);
     if (param) {
       return JSON.parse(atob(param));
     }
   }
 
-  const [source, setSource] = useState(loadServiceParam('source'));
-  const [target, setTarget] = useState(loadServiceParam('target'));
   const [token, setToken] = useState(getParam('accessToken'));  
 
+  const [services, setServices] = useState({ 
+    source: getServiceParam('source'),
+    target: getServiceParam('target')
+  });
+
   const [authenticating, setAuthenticating] = useState(true);
-  const [tracks, setTracks] = useState(undefined);
-  const [playlists, setPlaylists] = useState(undefined);
+  const [toTransfer, setToTransfer] = useState({ tracks: undefined, playlists: undefined });
 
   const getJwt = () => sessionStorage.getItem('jwt');
   const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
@@ -50,14 +53,13 @@ const App = () => {
         removeTokenParam();
         setToken(null);
         setAuthenticating(false);
-        const service = (target) ? target : source;
+        const service = (services.target) ? services.target : services.source;
         console.log(`Authencticated into ${service.visibleName}`);
       })
       .catch(error => { 
-        showError(error);
-        setSource(undefined);
-        setTarget(undefined);
+        setServices({ source: undefined, target: undefined });
         setAuthenticating(false);
+        showError(error);
       });  
   }
 
@@ -84,7 +86,7 @@ const App = () => {
   const handleSourceSelection = service => {
     console.log(`Source ${service.visibleName} selected`);
     setAuthenticating(true);
-    setSource(service);
+    setServices({ source: service });
     setParam('source', btoa(JSON.stringify(service)));
     
     const url = redirectUrl(service.internalName, window.location.href);
@@ -101,7 +103,7 @@ const App = () => {
   const handleTargetSelection = service => {
     console.log(`Target ${service.visibleName} selected`);
     setAuthenticating(true);
-    setTarget(service);
+    setServices({ source: services.source, target: service });
     setParam('target', btoa(JSON.stringify(service)));
   
     const url = nextRedirectUrl(service.internalName, window.location.href, getJwt());
@@ -110,71 +112,109 @@ const App = () => {
   }
 
   const handleBackClick = () => {
-    setSource(undefined);
-    setTarget(undefined);
+    setServices({ source: undefined, target: undefined });
     setJwt(undefined);
     setToken(undefined);
   }
 
+  const loadFromSource = async () => {
+    return {
+      tracks: await loadTracks(),
+      playlists: await loadPlaylists()
+    }
+  }
+
   const loadTracks = async () => {
-    console.log(`Loading tracks from ${source.visibleName}`);
-    return fetchTracks(source.internalName, getJwt());
+    console.log(`Loading tracks from ${services.source.visibleName}`);
+    return fetchTracks(services.source.internalName, getJwt());
   }
 
   const loadPlaylists = async () => {
-    console.log(`Loading playlists from ${source.visibleName}`);
-    return fetchPlaylists(source.internalName, getJwt());
+    console.log(`Loading playlists from ${services.source.visibleName}`);
+    return fetchPlaylists(services.source.internalName, getJwt());
   }
 
   const handleTransferClick = (tracks, playlists) => {
-    console.log(`Selected ${tracks.length} tracks and ${playlists.length} playlists to transfer`);
-    setTracks(tracks);
-    setPlaylists(playlists);
+    console.log('Selected ' + tracks.length + ' tracks ' + 
+      'and ' + playlists.length + ' playlists to transfer');
+    setToTransfer({
+      tracks: tracks,
+      playlists: playlists
+    })
   }
 
-  const delay = ms => new Promise(res => setTimeout(res, ms));
+  const runTracksTransfer = async () => {
+    console.log('Transferring tracks from ' + services.source.visibleName +
+     ' to ' + services.target.visibleName);
+    return transferTracks(
+      services.source.internalName, 
+      services.target.internalName,
+      toTransfer.tracks,
+      getJwt()
+    );
+  }
 
-  const runTransfer = async () => {
-    console.log(`Running transfer from ${source.visibleName}
-       to ${target.visibleName}`);
-    await delay(3000);
+  const runPlaylistTransfer = async () => {
+    console.log('Transferring playlists from ' + services.source.visibleName +
+      ' to ' + services.target.visibleName);
+    let results = []; 
+    let failed = []; 
+    for (let i = 0; i < toTransfer.playlists.length; i++) {
+      const result = await transferPlaylist(
+        services.source.internalName, 
+        services.target.internalName,
+        toTransfer.playlists[i],
+        getJwt()
+      );
+
+      results.push(result);
+      if (result.failed) {
+        failed.push(result.failed.tracks);
+      }
+    } 
+
     return {
-      'tracksCount' : tracks.length - 3,
-      'playlistsCount': playlists.length,
-      'failed': tracks.slice(0, 3)
+      transferred: results.length,
+      failedToTransfer: failed
     }
+  }
+
+  const handleHomeClick = () => {
+    window.location = '/home';
   }
 
   return (  
    <BrowserRouter>
     <div className="d-flex flex-column vh-100">
       <Header homeUrl='/home'
-              aboutUrl='/about'
-              contactUrl='/contact'
-              supportUrl='/support' />
+              contactUrl='/contact' />
       <main className="center-container align-items-center justify-content-center">
         <Routes>
           <Route path='/home' element={
             <HomePage onStartClick={handleStartClick} />
           } />
+          <Route path='/contact' element={
+            <ContactPage />
+          } />
           <Route path='/transfer' element={
             (authenticating)
-              ? <Spinner text='Waiting for authorization...'/> 
-              : (!source || !target)
-                ? <ServiceSelectionPage source={source}
+              ? <Spinner text='Waiting for authorization...' /> 
+              : (!services.source || !services.target)
+                ? <ServiceSelectionPage source={services.source}
                                         loadServices={loadServices}
                                         onSourceSelection={handleSourceSelection}
                                         onTargetSelection={handleTargetSelection} 
-                                        onBackClick={handleBackClick}/>  
-                : (!tracks && !playlists) 
-                  ? <TransferSetupPage source={source.visibleName}
-                                       target={target.visibleName}
-                                       loadTracks={loadTracks}
-                                       loadPlaylists={loadPlaylists}
+                                        onBackClick={handleBackClick} />  
+                : (!toTransfer.tracks && !toTransfer.playlists) 
+                  ? <TransferSetupPage source={services.source.visibleName}
+                                       target={services.target.visibleName}
+                                       load={loadFromSource}
                                        onTransferClick={handleTransferClick} />
-                  : <TransferPage source={source.visibleName}
-                                  target={target.visibleName} 
-                                  run={runTransfer}/>
+                  : <TransferPage source={services.source.visibleName}
+                                  target={services.target.visibleName} 
+                                  transferTracks={runTracksTransfer}
+                                  transferPlaylists={runPlaylistTransfer}
+                                  onHomeClick={handleHomeClick} />
             } />      
           <Route path="*" element={<Navigate to="/home" />}/>
         </Routes>

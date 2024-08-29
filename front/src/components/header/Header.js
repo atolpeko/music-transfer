@@ -1,6 +1,6 @@
 import './Header.css';
 
-const Header = ({ homeUrl, aboutUrl, contactUrl, supportUrl }) => {
+const Header = ({ homeUrl, contactUrl }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light header">
       <div className="d-flex align-items-center justify-content-center">
@@ -19,13 +19,7 @@ const Header = ({ homeUrl, aboutUrl, contactUrl, supportUrl }) => {
             id="navbarSupportedContent">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
-              <a className="nav-link" href={aboutUrl}>About</a>
-            </li>
-            <li className="nav-item">
               <a className="nav-link" href={contactUrl}>Contact</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href={supportUrl}>Support</a>
             </li>
           </ul>
         </div>

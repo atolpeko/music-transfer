@@ -1,15 +1,3 @@
-.transfer-title {
-  font-family: Franklin Gothic Medium;
-  font-size: 2.3rem;
-  text-align: center;
-}
-
-.transfer-spinner-text {
-  font-family: Franklin Gothic Medium;
-  font-size: 2.3rem;
-  text-align: center;
-}
-
 .transfer-fail-text {
   font-family: Franklin Gothic Medium;
   font-size: 1.55rem;
@@ -49,8 +37,4 @@
   position: fixed;
   border-radius: 5%;
   overflow: auto; 
-}
-
-.spinner {
-  align-self: center;
 }
