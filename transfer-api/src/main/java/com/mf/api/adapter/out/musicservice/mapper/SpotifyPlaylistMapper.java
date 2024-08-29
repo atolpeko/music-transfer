@@ -19,6 +19,10 @@ public class SpotifyPlaylistMapper {
 	private String extractImageUrl(LinkedHashMap data) {
 		try {
 			var images = (List) Objects.requireNonNull(data.get("images"));
+			if (images.isEmpty()) {
+				return  null;
+			}
+
 			var image = (LinkedHashMap) Objects.requireNonNull(images.get(0));
 			return (String) image.get("url");
 		} catch (NullPointerException e) {

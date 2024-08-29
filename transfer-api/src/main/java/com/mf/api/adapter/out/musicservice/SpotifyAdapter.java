@@ -188,6 +188,30 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 
 	@Override
 	public void addToPlaylist(OAuth2Token token, String playlistId, List<Track> tracks) {
+		addToPlaylist(token, playlistId, tracks, 50);
+	}
+
+	private void addToPlaylist(
+		OAuth2Token token,
+		String playlistId,
+		List<Track> tracks,
+		int batchSize
+	) {
+		if (tracks == null || tracks.isEmpty()) {
+			return;
+		}
+
+		int end = Math.min(batchSize, tracks.size());
+		var batch = tracks.subList(0, end);
+		add(batch, playlistId, token);
+
+		if (tracks.size() > batchSize) {
+			tracks = tracks.subList(end, tracks.size());
+			addToPlaylist(token, playlistId, tracks, batchSize);;
+		}
+	}
+
+	private void add(List<Track> tracks, String playlistId, OAuth2Token token) {
 		try {
 			var url = getUrl(properties.playlistTracksUrl().replace("{id}", playlistId));
 			execRequest(
