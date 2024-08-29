@@ -7,6 +7,7 @@ import com.mf.auth.domain.service.SymmetricEncryptionService;
 import com.mf.auth.domain.service.TokenService;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.port.UUIDRepositoryPort;
+import com.mf.auth.port.exception.AuthException;
 import com.mf.auth.port.exception.DataAccessException;
 import com.mf.auth.port.exception.DataModificationException;
 import com.mf.auth.usecase.AuthUseCase;
@@ -100,8 +101,10 @@ public class AuthUseCaseImpl implements AuthUseCase {
 			log.debug("Obtaining OAUth2 token from {}", service);
 			var musicSvc = serviceMap.get(service);
 			return musicSvc.oauth2ExchangeCode(authCode);
-		} catch (Exception e) {
+		} catch (AuthException e) {
 			throw new AuthorizationException(e.getMessage(), e);
+		} catch (Exception e) {
+			throw new UseCaseException(e.getMessage(), e);
 		}
 	}
 

@@ -3,12 +3,14 @@ package com.mf.auth.adapter.out.musicservice;
 import com.mf.auth.adapter.properties.MusicServiceProperties;
 import com.mf.auth.domain.entity.OAuth2Token;
 import com.mf.auth.port.MusicServicePort;
+import com.mf.auth.port.exception.AuthException;
 import com.mf.auth.port.exception.MusicServiceException;
 import com.mf.queue.entity.Request;
 import com.mf.queue.service.RequestQueue;
 
 import java.util.Map;
 
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpEntity;
@@ -30,21 +32,23 @@ public abstract class StandardOauth2MusicService implements MusicServicePort {
 			var request = buildRequest(authCode);
 			requestQueue.submit(request);
 			var response = request.getResultWhenComplete();
-			var body = response.getBody();
+			var body = Objects.requireNonNull(response.getBody());
 			return new OAuth2Token(
 				(String) body.get("access_token"),
 				(String) body.get("refresh_token"),
 				(Integer) body.get("expires_in")
 			);
-
-			// TODO improve error handling
 		} catch (HttpClientErrorException e) {
-			var msg = (e.getStatusCode().is4xxClientError())
-				? "Authorization failed: %s".formatted(e.getMessage())
-				: "Service %s unavailable: %s".formatted(properties.name(), e.getMessage());
-			throw new MusicServiceException(msg, e.getCause());
+			var status = e.getStatusCode().value();
+			if (status == 401 || status == 403) {
+				var msg = "Authorization failed: %s".formatted(e.getMessage());
+				throw new AuthException(msg, e);
+			} else {
+				var msg = "Service %s unavailable: %s".formatted(properties.name(), e.getMessage());
+				throw new MusicServiceException(msg, e);
+			}
 		} catch (Exception e) {
-			var msg = "Authorization failed: " + e.getMessage();
+			var msg = "Service %s unavailable: %s".formatted(properties.name(), e.getMessage());
 			throw new MusicServiceException(msg, e);
 		}
 	}

@@ -1,5 +1,6 @@
 package com.mf.auth.port;
 
+import com.mf.auth.port.exception.AuthException;
 import com.mf.auth.port.exception.MusicServiceException;
 import com.mf.auth.domain.entity.OAuth2Token;
 
@@ -15,7 +16,8 @@ public interface MusicServicePort {
 	 *
 	 * @return OAuth2 access token
 	 *
-	 * @throws MusicServiceException   if OAuth2 authorization fails
+	 * @throws AuthException          if OAuth2 authorization fails
+	 * @throws MusicServiceException  if any other music service error occurs
 	 */
 	OAuth2Token oauth2ExchangeCode(String authCode);
 }

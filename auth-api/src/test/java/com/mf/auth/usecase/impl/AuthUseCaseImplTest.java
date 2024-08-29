@@ -29,6 +29,7 @@ import com.mf.auth.domain.service.TokenService;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.port.MusicServicePort;
 import com.mf.auth.port.UUIDRepositoryPort;
+import com.mf.auth.port.exception.AuthException;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
 import com.mf.auth.usecase.valueobject.ServiceMap;
@@ -174,6 +175,20 @@ class AuthUseCaseImplTest {
 		when(jwtRepository.findValidByValue(JWT.getValue()))
 			.thenReturn(Optional.of(JWT));
 		when(jwtService.isValid(JWT.getValue())).thenReturn(false);
+
+		assertThrows(AuthorizationException.class,
+			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));
+	}
+
+	@Test
+	void testAuthThrowsExceptionIfAuthorizationFailsI() {
+		when(uuidRepository.findValidByValue(UUID.getValue()))
+			.thenReturn(Optional.of(UUID));
+		when(jwtRepository.findValidByValue(JWT.getValue()))
+			.thenReturn(Optional.of(JWT));
+		when(jwtService.isValid(JWT.getValue())).thenReturn(true);
+		when(musicService.oauth2ExchangeCode(AUTH_CODE))
+			.thenThrow(AuthException.class);
 
 		assertThrows(AuthorizationException.class,
 			() -> target.auth(UUID.getValue(), JWT.getValue(), SERVICE_1, AUTH_CODE));
