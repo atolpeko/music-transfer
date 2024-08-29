@@ -14,9 +14,11 @@ public class RequestQueue {
      * Submit the specified request for execution.
      *
      * @param request  request to submit
+     *
+     * @throws InterruptedException if interrupted while waiting
      */
-    public void submit(Request<?, ?> request) {
-        queue.add(request);
+    public void submit(Request<?, ?> request) throws InterruptedException {
+        queue.put(request);
     }
 
     /**
