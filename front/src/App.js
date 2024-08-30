@@ -4,7 +4,6 @@ import { fetchServices } from './api/ServiceApi';
 import { getAuthUrl, getNextAuthUrl, exchangeToken } from './api/AuthApi';
 import { fetchTracks, fetchPlaylists, transferTracks, transferPlaylist } from './api/TransferApi';
 
-import ErrorBoundary from './ErrorBoundary';
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
 import HomePage from './components/home/HomePage';
@@ -18,27 +17,41 @@ import ErrorPage from './components/error/ErrorPage';
 const App = () => {
   
   const getParam = param => new URLSearchParams(window.location.search).get(param);
-  
-  const getServiceParam = service => {
+  const getJwt = () => sessionStorage.getItem('jwt');
+  const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
+
+  const getSourceParam = (service, token) => {
     const param = getParam(service);
-    if (param) {
-      return JSON.parse(atob(param));
+    if (!param) {
+      return null;
+    } else if (!token) {
+      removeParams('source');
+      return null;
     }
+
+    return JSON.parse(atob(param));
+  }
+
+  const getTargetParam = () => {
+    const param = getParam('target');
+    if (!param) {
+      return null;
+    } else if (!getParam('source')) {
+      removeParams('target');
+      return null;
+    }
+
+    return JSON.parse(atob(param));
   }
 
   const [token, setToken] = useState(getParam('accessToken'));  
-
-  const [services, setServices] = useState({ 
-    source: getServiceParam('source'),
-    target: getServiceParam('target')
-  });
-
   const [authenticating, setAuthenticating] = useState(true);
-  const [toTransfer, setToTransfer] = useState({ tracks: undefined, playlists: undefined });
-  const [error, setError] = useState(undefined);
-
-  const getJwt = () => sessionStorage.getItem('jwt');
-  const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
+  const [toTransfer, setToTransfer] = useState({ tracks: null, playlists: null });
+  const [error, setError] = useState(null);
+  const [services, setServices] = useState({ 
+    source: getSourceParam('source', token || getJwt()),
+    target: getTargetParam('target')
+  });
 
   useEffect(() => {
     if (token) {
@@ -51,16 +64,17 @@ const App = () => {
   const obtainJwt = () => {
     console.log('Exchanging access token');
     withErrorHandling(() => {
+      const service = (services.target) ? services.target : services.source;
       exchangeToken(token).then(res => { 
         setJwt(res.value);
-        removeTokenParam();
+        removeParams('accessToken');
         setToken(null);
         setAuthenticating(false);
-        const service = (services.target) ? services.target : services.source;
         console.log(`Authencticated into ${service.visibleName}`);
       })
       .catch(error => { 
-        setServices({ source: undefined, target: undefined });
+        setServices({ source: null, target: null });
+        removeParams('accessToken', service);
         setAuthenticating(false);
         setError(error);
       })
@@ -75,22 +89,18 @@ const App = () => {
     }
   }
 
-  const removeTokenParam = () => {
+  function removeParams() {
     const url = new URL(window.location.href);
-    url.searchParams.delete('accessToken');
+    for (let i = 0; i < arguments.length; i++) {
+      url.searchParams.delete(arguments[i]);
+    }
+
     window.history.pushState(null, '', url.toString());
   }
 
-  const handleStartClick = () => {
-    setError(undefined);
-    window.location = '/transfer';
-  }
-
-  const handleHomeClick = () => {
-    setError(undefined);
-    window.location = '/home';
-  }
-
+  const handleStartClick = () => window.location = '/transfer';
+  const handleHomeClick = () => window.location = '/home'
+  
   const loadServices = () => { 
     return withErrorHandling(() => {
       console.log('Fetching available services');
@@ -131,9 +141,9 @@ const App = () => {
   }
 
   const handleBackClick = () => {
-    setServices({ source: undefined, target: undefined });
-    setJwt(undefined);
-    setToken(undefined);
+    setServices({ source: null, target: null });
+    setJwt(null);
+    setToken(null);
   }
 
   const loadFromSource = async () => {
