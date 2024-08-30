@@ -151,6 +151,27 @@ class AuthorizationTest {
 	}
 
 	@ParameterizedTest
+	@MethodSource("provideArgumentsForRedirectUrlTest")
+	void testReturn400IfInvalidRedirectUrlProvided(
+		MusicService service,
+		String redirectUrl
+	) throws Exception {
+		mvc.perform(get(AUTH_URL)
+				.param("service", service.name())
+				.param("redirectUrl", redirectUrl)
+				.param("jwt", "jwt"))
+			.andDo(print())
+			.andExpect(status().is(400));
+	}
+
+	private static Stream<Arguments> provideArgumentsForRedirectUrlTest() {
+		return Stream.of(
+			Arguments.of(MusicService.SPOTIFY, "dfvdfef"),
+			Arguments.of(MusicService.YT_MUSIC, "fifjsl")
+		);
+	}
+
+	@ParameterizedTest
 	@MethodSource("provideArgumentsForJwtTest")
 	void testReturn401IfInvalidJwtProvided(
 		MusicService service,

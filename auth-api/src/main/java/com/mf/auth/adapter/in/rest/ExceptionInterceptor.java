@@ -9,6 +9,7 @@ import java.time.ZoneId;
 
 import javax.servlet.http.HttpServletRequest;
 
+import javax.validation.ConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
@@ -103,6 +104,21 @@ public class ExceptionInterceptor {
         var builder = new StringBuilder();
         e.getBindingResult().getAllErrors().forEach(error -> {
             var errorMsg = error.getDefaultMessage();
+            builder.append(errorMsg).append(", ");
+        });
+
+        builder.delete(builder.lastIndexOf(","), builder.length());
+        return handleException(builder.toString(), request, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleHibernateValidationException(
+        ConstraintViolationException e,
+        HttpServletRequest request
+    ) {
+        var builder = new StringBuilder();
+        e.getConstraintViolations().forEach(error -> {
+            var errorMsg = error.getMessage();
             builder.append(errorMsg).append(", ");
         });
 
