@@ -6,7 +6,12 @@ import './TransferPage.css';
 
 const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
 
-  const [sourceData, setSourceData] = useState({ tracks: [], playlists: [], loading: true });
+  const [sourceData, setSourceData] = useState({ 
+    tracks: [], 
+    playlists: [],
+    loading: true,
+    failed: false 
+  });
   const [modal, setModal] = useState({ show: false, entity: undefined });
   const [error, setError] = useState('');
 
@@ -17,11 +22,11 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
       setSourceData({
         tracks: data.tracks,
         playlists: data.playlists,
-        loading: false
+        loading: false,
+        failed: false
       });
-    }).catch(error => {
-      setError(`Failed to load data from ${source}: ${error}`)
-      setSourceData({ loading: false });
+    }).catch(() => {
+      setSourceData({ loading: false, failed: true });
     });
   }, []);
 
@@ -154,7 +159,9 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
     <div className="container center-container align-items-center justify-content-center">
       { sourceData.loading  
         ? <Spinner text={`Loading tracks and playlists from ${source}...`}/> 
-        : renderContent() 
+        : !sourceData.failed
+          ? renderContent() 
+          : <div/>
         }
     </div>
   );

@@ -1,5 +1,6 @@
-export const fetchServices = async () => {
-  const url = `${window.DOMAIN}${window.SERVICE_API}/services`;
-  return fetch(url, { method: 'GET' })
-		.then(response => response.json());
+import { execute } from "./ApiUtils";
+
+export const fetchServices = () => {
+  const url = `${window.SERVICE_API}/services`;
+  return execute(url, { method: 'GET' });
 }
