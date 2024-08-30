@@ -9,9 +9,11 @@ import static com.mf.auth.fixture.SymmetricEncryptionServiceFixture.VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.mf.auth.config.UnitTest;
+import com.mf.auth.domain.service.exception.InvalidKeyException;
 import com.mf.auth.domain.service.properties.ServiceProperties;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -50,5 +52,11 @@ class SymmetricEncryptionServiceImplTest {
 		var dec = target.decrypt(enc, KEY);
 
 		assertEquals(VALUE, dec);
+	}
+
+	@Test
+	void testThrowsExceptionIfInvalidKeyProvided() {
+		var enc = target.encrypt(VALUE, KEY);
+		assertThrows(InvalidKeyException.class, () -> target.decrypt(enc, "dfgfg"));
 	}
 }

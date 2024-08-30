@@ -55,11 +55,6 @@ public interface AuthAPI {
             response = ErrorResponse.class
         ),
         @ApiResponse(
-            code = 403,
-            message = "User didn't give permission to access his account",
-            response = ErrorResponse.class
-        ),
-        @ApiResponse(
             code = 500,
             message = "Response in case of an unknown internal error",
             response = ErrorResponse.class
