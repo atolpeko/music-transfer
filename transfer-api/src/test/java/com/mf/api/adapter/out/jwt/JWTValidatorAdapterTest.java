@@ -8,6 +8,7 @@ import static com.mf.api.fixture.JWTValidatorAdapterFixture.VALID_JWT;
 import static com.mf.api.fixture.JWTValidatorAdapterFixture.VALID_JWT_URL;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -16,8 +17,10 @@ import static org.mockito.Mockito.when;
 
 import com.mf.api.config.UnitTest;
 
+import com.mf.api.port.exception.RestException;
 import com.mf.queue.entity.Request;
 import com.mf.queue.service.RequestQueue;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +29,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @UnitTest
@@ -49,27 +54,36 @@ class JWTValidatorAdapterTest {
 		MockitoAnnotations.initMocks(this);
 		when(properties.domain()).thenReturn(DOMAIN);
 		when(properties.jwtValidationUrl()).thenReturn(URL);
+
 		doAnswer(invocation -> {
-			var request = (Request) invocation.getArgument(0);
+			var request = (Request<?, ?>) invocation.getArgument(0);
 			request.execute(restTemplate);
 			return null;
 		}).when(requestQueue).submit(any());
-
-		when(restTemplate.exchange(DOMAIN + VALID_JWT_URL, HttpMethod.GET, null, Void.class))
-			.thenReturn(ResponseEntity.status(200).build());
-		when(restTemplate.exchange(DOMAIN + INVALID_JWT_URL, HttpMethod.GET, null, Void.class))
-			.thenReturn(ResponseEntity.status(401).build());
 	}
 
 	@Test
 	void testPositiveValidation() {
+		when(restTemplate.exchange(DOMAIN + VALID_JWT_URL, HttpMethod.GET, null, Void.class))
+			.thenReturn(ResponseEntity.status(200).build());
+
 		var valid = target.isValid(VALID_JWT);
 		assertTrue(valid);
 	}
 
 	@Test
 	void testNegativeValidation() {
+		when(restTemplate.exchange(DOMAIN + INVALID_JWT_URL, HttpMethod.GET, null, Void.class))
+			.thenReturn(ResponseEntity.status(401).build());
+
 		var valid = target.isValid(INVALID_JWT);
 		assertFalse(valid);
+	}
+
+	@Test
+	void testThrowsExceptionWhenServiceUnavailableValidation() {
+		when(restTemplate.exchange(DOMAIN + VALID_JWT_URL, HttpMethod.GET, null, Void.class))
+			.thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertThrows(RestException.class, () -> target.isValid(VALID_JWT));
 	}
 }

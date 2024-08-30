@@ -9,7 +9,12 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.URL;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * <p>
  * All methods in this interface are designed to be used over HTTP.
  */
+@Validated
 @Api(tags = "Authentication API", protocols = "http")
 @RequestMapping(path = "/api/auth")
 public interface AuthAPI {
@@ -65,6 +71,8 @@ public interface AuthAPI {
         @ApiParam(value = "Music service to authenticate into", required = true)
         MusicService service,
 
+        @Valid
+        @URL(message = "Redirect URl should be valid")
         @RequestParam
         @ApiParam(value = "Redirect URL", required = true)
         String redirectUrl,

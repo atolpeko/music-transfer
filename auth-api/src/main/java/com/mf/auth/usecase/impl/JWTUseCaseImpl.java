@@ -4,6 +4,7 @@ import com.mf.auth.domain.entity.JWT;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.port.exception.DataAccessException;
+import com.mf.auth.port.exception.DataModificationException;
 import com.mf.auth.usecase.JWTUseCase;
 import com.mf.auth.usecase.exception.AuthorizationException;
 import com.mf.auth.usecase.exception.RepositoryAccessException;
@@ -35,10 +36,12 @@ public class JWTUseCaseImpl implements JWTUseCase {
             return jwt;
         } catch (UseCaseException e) {
             throw e;
-        } catch (DataAccessException e) {
-            throw new RepositoryAccessException("Failed to access DB", e);
+        } catch (DataAccessException | DataModificationException e) {
+            var msg = "Failed to access DB: %s".formatted(e.getMessage());
+            throw new RepositoryAccessException(msg, e);
         } catch (Exception e) {
-            throw new RepositoryAccessException("Failed to delete JWT", e);
+            var msg = "Service unavailable: %s".formatted(e.getMessage());
+            throw new UseCaseException(msg, e);
         }
     }
 
@@ -49,8 +52,11 @@ public class JWTUseCaseImpl implements JWTUseCase {
             return token
                 .map(t -> t.isValid() && jwtService.isValid(t.getValue()))
                 .orElse(false);
-        } catch (Exception e) {
+        } catch (DataAccessException | DataModificationException e) {
             throw new RepositoryAccessException("Failed to access DB", e);
+        } catch (Exception e) {
+            var msg = "Service unavailable: %s".formatted(e.getMessage());
+            throw new UseCaseException(msg, e);
         }
     }
 }
