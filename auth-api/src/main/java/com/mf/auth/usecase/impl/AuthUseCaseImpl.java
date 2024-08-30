@@ -80,10 +80,12 @@ public class AuthUseCaseImpl implements AuthUseCase {
 			return accessToken;
 		} catch (UseCaseException e) {
 			throw e;
-		} catch (DataModificationException e) {
-			throw new RepositoryAccessException("Failed to save JWT", e);
+		} catch (DataAccessException | DataModificationException e) {
+			var msg = "Failed to access DB: %s".formatted(e.getMessage());
+			throw new RepositoryAccessException(msg, e);
 		} catch (Exception e) {
-			throw new RepositoryAccessException("Failed to access DB", e);
+			var msg = "Service unavailable: %s".formatted(e.getMessage());
+			throw new UseCaseException(msg, e);
 		}
 	}
 
@@ -141,9 +143,11 @@ public class AuthUseCaseImpl implements AuthUseCase {
 		} catch (UseCaseException e) {
 			throw e;
 		} catch (DataModificationException e) {
-			throw new RepositoryAccessException("Failed to save JWT", e);
+			var msg = "Failed to access DB: %s".formatted(e.getMessage());
+			throw new RepositoryAccessException(msg, e);
 		} catch (Exception e) {
-			throw new RepositoryAccessException("Failed to access DB", e);
+			var msg = "Service unavailable: %s".formatted(e.getMessage());
+			throw new UseCaseException(msg, e);
 		}
 	}
 }
