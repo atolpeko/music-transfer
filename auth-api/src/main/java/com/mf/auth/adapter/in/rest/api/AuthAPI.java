@@ -71,7 +71,6 @@ public interface AuthAPI {
         @ApiParam(value = "Music service to authenticate into", required = true)
         MusicService service,
 
-
         @Valid
         @URL(message = "Redirect URl should be valid")
         @RequestParam
