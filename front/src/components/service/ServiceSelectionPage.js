@@ -9,8 +9,13 @@ const ServiceSelectionPage = ({ source, loadServices,
 
   const [entity, setEntity] = useState('Source');
   const [selected, setSelected] = useState('');
-  const [services, setServices] = useState({ source: [], target: [], loading: true });
   const [error, setError] = useState('');
+  const [services, setServices] = useState({ 
+    source: [], 
+    target: [], 
+    loading: true,
+    failed: false 
+  });
  
   useEffect(() => {
     loadServices().then(data => {
@@ -23,17 +28,17 @@ const ServiceSelectionPage = ({ source, loadServices,
       setServices({
         source: data.source,
         target: data.target,
-        loading: false
+        loading: false,
+        failed: false
       });
       
       if (source) {
         setEntity('Target');
       }
     })
-    .catch(loadError => {
-      setError(`Failed to load services: ${loadError}`);
-      setServices({ loading: false });
-    });
+    .catch(() => {
+      setServices({ failed: true, loading: false })
+    }); 
   }, []);
   
   const handleCardSelection = id => {
@@ -141,9 +146,12 @@ const ServiceSelectionPage = ({ source, loadServices,
 
   return (
     <div className="container center-container align-items-center justify-content-center">
-      { services.loading 
+      { services.loading
         ? <Spinner text='Loading services...' />
-        : renderContent() }
+        : !services.failed
+           ? renderContent() 
+           : <div/>
+      }
     </div>
   );
 }

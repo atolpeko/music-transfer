@@ -1,17 +1,26 @@
-export const redirectUrl = (service, redirectUrl) => {
-  var url = `${window.DOMAIN}${window.AUTH_API}/redirect`;
-  var redirect = encodeURIComponent(redirectUrl);
-  return `${url}?service=${service}&redirectUrl=${redirect}`;
+import { execute, ping } from './ApiUtils';
+
+export const getAuthUrl = (service, redirectUrl) => {
+  return getUrl(service, redirectUrl);
 }
 
-export const nextRedirectUrl = (service, redirectUrl, jwt) => {
-  var url = `${window.DOMAIN}${window.AUTH_API}/redirect`;
-  var redirect = encodeURIComponent(redirectUrl);
-  return `${url}?service=${service}&jwt=${jwt}&redirectUrl=${redirect}`;
+const getUrl = (service, redirectUrl) => { 
+  const redirect = encodeURIComponent(redirectUrl);
+  const url = `${window.AUTH_API}/redirect?service=${service}&redirectUrl=${redirect}`;
+  return ping(url);
+}
+
+export const getNextAuthUrl = async (service, redirectUrl, jwt) => {
+  try {
+    var url = await getUrl(service, redirectUrl);
+    return `${url}&jwt=${jwt}`;
+  } catch (e) {
+    return Promise.reject(e);
+  }
 }
 
 export const exchangeToken = async token => {
-  const url = `${window.DOMAIN}${window.AUTH_API}/token?accessToken=${token}`;
-  return fetch(url, { method: 'GET' })
-		.then(response => response.json());
+  const url = `${window.AUTH_API}/token?accessToken=${token}`;
+  const request = { method: 'GET' };
+  return execute(url, request);
 }
