@@ -1,6 +1,7 @@
 package com.mf.api.adapter.out.jwt;
 
 import com.mf.api.port.JWTValidatorPort;
+import com.mf.api.port.exception.RestException;
 import com.mf.queue.entity.Request;
 import com.mf.queue.service.RequestQueue;
 
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -23,9 +25,17 @@ public class JWTValidatorAdapter implements JWTValidatorPort {
 			requestQueue.submit(request);
 			var response = request.getResultWhenComplete();
 			return response.getStatusCode().is2xxSuccessful();
+		} catch (HttpClientErrorException e) {
+			var status = e.getStatusCode();
+			if (status.is4xxClientError()) {
+				return false;
+			} else {
+				var msg = "Service unavailable: %s".formatted(e.getMessage());
+				throw new RestException(msg, e);
+			}
 		} catch (Exception e) {
-			// TODO improve error handling
-			return false;
+			var msg = "Service unavailable: %s".formatted(e.getMessage());
+			throw new RestException(msg, e);
 		}
 	}
 
