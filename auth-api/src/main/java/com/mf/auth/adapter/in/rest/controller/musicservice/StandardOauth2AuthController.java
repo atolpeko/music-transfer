@@ -7,6 +7,7 @@ import com.mf.auth.adapter.in.rest.properties.RestProperties;
 import com.mf.auth.adapter.in.rest.service.EncodeStateService;
 import com.mf.auth.adapter.in.rest.valueobject.MusicService;
 import com.mf.auth.domain.entity.Token;
+import com.mf.auth.domain.service.exception.InvalidKeyException;
 import com.mf.auth.usecase.AuthUseCase;
 
 import lombok.RequiredArgsConstructor;
@@ -20,16 +21,19 @@ abstract class StandardOauth2AuthController {
 
 	private final MusicService service;
 	private final AuthUseCase authUseCase;
-	private final EncodeStateService encodeStateService;
+	private final EncodeStateService stateService;
 	private final RestProperties properties;
 
 	public String callback(String code, String error, String state) {
 		try {
 			if (error != null || code == null) {
-				throw new AuthorizationException(HttpStatus.FORBIDDEN, error);
+				var msg = (error != null)
+					? error
+					: "%s rejected authorization".formatted(service.name());
+				throw new AuthorizationException(HttpStatus.UNAUTHORIZED, msg);
 			}
 
-			var stateData = encodeStateService.decode(state);
+			var stateData = stateService.decode(state);
 			var uuid = authUseCase.decryptWithSecret(
 				stateData.getUuid(),
 				properties.uuidSecret()
@@ -41,8 +45,10 @@ abstract class StandardOauth2AuthController {
 				(stateData.getRedirectUrl().contains("?")) ? "&" : "?",
 				token.getValue()
 			);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e.getMessage(), e);
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (IllegalArgumentException | JsonProcessingException | InvalidKeyException e) {
+			throw new AuthorizationException(HttpStatus.UNAUTHORIZED, "Invalid state provided");
 		}
 	}
 

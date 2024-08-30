@@ -224,7 +224,7 @@ class AuthorizationTest {
 
 	@ParameterizedTest
 	@MethodSource("provideArgumentsForCallbackTest")
-	void testReturn403IfErrorProvided(
+	void testReturn401IfErrorProvided(
 		MusicService service,
 		String redirectUrl,
 		String callbackUrl
@@ -238,7 +238,41 @@ class AuthorizationTest {
 				.param("error", "ERROR")
 				.param("state", encodeStateService.encode(state)))
 			.andDo(print())
-			.andExpect(status().is(403));
+			.andExpect(status().is(401));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForCallbackTest")
+	void testReturn401IfNoCodeProvided(
+		MusicService service,
+		String redirectUrl,
+		String callbackUrl
+	) throws Exception {
+		var callback = performAuthRedirect(service, redirectUrl);
+		var state = encodeStateService.decode(
+			callback.substring(callback.indexOf("&state=") + 7)
+		);
+
+		mvc.perform(get(callbackUrl)
+				.param("state", encodeStateService.encode(state)))
+			.andDo(print())
+			.andExpect(status().is(401));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForCallbackTest")
+	void testReturn401IfInvalidStateProvided(
+		MusicService service,
+		String redirectUrl,
+		String callbackUrl,
+		String authCode
+	) throws Exception {
+		performAuthRedirect(service, redirectUrl);
+		mvc.perform(get(callbackUrl)
+				.param("code", authCode)
+				.param("state", "state"))
+			.andDo(print())
+			.andExpect(status().is(401));
 	}
 
 	@ParameterizedTest

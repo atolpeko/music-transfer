@@ -1,5 +1,6 @@
 package com.mf.auth.domain.service.impl;
 
+import com.mf.auth.domain.service.exception.InvalidKeyException;
 import com.mf.auth.domain.service.properties.ServiceProperties;
 import com.mf.auth.domain.service.SymmetricEncryptionService;
 
@@ -66,7 +67,7 @@ public class SymmetricEncryptionServiceImpl implements SymmetricEncryptionServic
 
 			return new String(decryptedData);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new InvalidKeyException(e);
 		}
 	}
 }

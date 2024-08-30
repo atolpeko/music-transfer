@@ -5,6 +5,7 @@ import com.mf.auth.domain.entity.Token;
 import com.mf.auth.domain.service.JWTService;
 import com.mf.auth.domain.service.SymmetricEncryptionService;
 import com.mf.auth.domain.service.TokenService;
+import com.mf.auth.domain.service.exception.InvalidKeyException;
 import com.mf.auth.port.JWTRepositoryPort;
 import com.mf.auth.port.UUIDRepositoryPort;
 import com.mf.auth.port.exception.AuthException;
@@ -61,7 +62,11 @@ public class AuthUseCaseImpl implements AuthUseCase {
 
 	@Override
 	public String decryptWithSecret(String toDecrypt, String secret) {
-		return encryptionService.decrypt(toDecrypt, secret);
+		try {
+			return encryptionService.decrypt(toDecrypt, secret);
+		} catch (InvalidKeyException e) {
+			throw new AuthorizationException(e.getMessage(), e);
+		}
 	}
 
 	@Override
