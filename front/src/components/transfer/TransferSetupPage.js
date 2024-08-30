@@ -12,7 +12,7 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
     loading: true,
     failed: false 
   });
-  const [modal, setModal] = useState({ show: false, entity: undefined });
+  const [modal, setModal] = useState({ show: false, entity: null });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
     window.onclick = event => {
       const modal = document.getElementById('transferModal'); 
       if (modal && event.target.id == modal.id)
-        setModal({ show: false, entity: undefined });
+        setModal({ show: false, entity: null });
     };
   }, []);
 
@@ -100,7 +100,7 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
         <div className="row justify-content-center section">
           { error 
             ? <p style= {{ color: 'red' }}> {error} </p>
-            : <div className="card transfer-info-card align-items-center justify-content-center
+            : <div className="transfer-info-card align-items-center justify-content-center
                 shadow-sm p-6 mb-5 bg-white rounded">
                 <h4 className="section">Found {sourceData.tracks.length} Liked Tracks
                   and {sourceData.playlists.length} Playlists</h4> 

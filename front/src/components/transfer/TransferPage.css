@@ -8,10 +8,13 @@
 
 .transfer-info-card {
   margin: 3%;
-  width: 60%;
-  padding: 4%;
+  padding-top: 3%;
+  padding-bottom: 5%;
+  padding-right: 10%;
+  padding-left: 10%;
   border-width: 0.5px;
   border-radius: 2%;
+  text-align: center;
 }
 
 .transfer-item-text {
