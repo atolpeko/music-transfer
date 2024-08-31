@@ -12,11 +12,84 @@ const TransferPage = ({ source, target, tracks, playlists,
     tracks: true,
     playlists: false
   });
-  const [trackTransferred, setTrackTransferred] = useState(0);
-  const [playlistsTransferred, setPlaylistsTransferred] = useState(0);
-  const [tracksFailed, setTracksFailed] = useState([]);
-  const [playlistsFailed, setPlaylistsFailed] = useState([]);
-  const [modal, setModal] = useState({ show: false, playlist: null });
+
+  const [transferred, setTransferred] = useState({
+    tracks: 0,
+    playlists: 0
+  });
+
+  const [failed, setFailed] = useState({
+    tracks: [],
+    playlists: []
+  });
+
+  const [modal, setModal] = useState({ 
+    show: false, 
+    playlist: null 
+  });
+
+  useEffect(() => {
+    const call = async () => {
+      await runTrackTransfer();
+      await runPlaylistTransfer();
+      console.log('Transfer complete');
+      console.log(transferred.tracks);
+    }
+
+    call();
+  }, []);
+
+  const runTrackTransfer = () => {
+    return transferTracks().then(res => {
+      console.log(res.transferred);
+      setTransferred({ 
+        ...transferred,
+        tracks: res.transferred 
+      });
+      setFailed(prev => ({
+        ...prev,
+        tracks: failed.tracks.concat(res.failedToTransfer)
+      }));
+      setLoading({ tracks: false, playlists: true });
+      return res;
+    }).catch(() => {
+      setFailed(prev => ({
+        ...prev,
+        tracks: failed.tracks.concat(tracks)
+      }));
+    });
+  }
+
+  const runPlaylistTransfer = async () => {
+    setFailed({ tracks: failed.tracks, playlists: [] });
+    let count = 0;
+    for (let i = 0; i < playlists.length; i++) {
+      const playlist = playlists[i];
+      try {
+        const res = await transferPlaylist(playlist);
+        if (res.transferred > 0) {
+          count += 1;
+        }
+        if (res.failedToTransfer) {
+          setFailed(prev => ({
+            ...prev,
+            playlists: failed.playlists.concat(playlist) 
+          }));
+        }
+      } catch (e) {
+        setFailed(prev => ({
+          ...prev,
+          playlists: failed.playlists.concat(playlist)
+        }));
+      }
+    }
+
+    setTransferred(prev => ({ 
+      ...prev,
+      playlists: count 
+    }));
+    setLoading({ tracks: false, playlists: false });
+  }
 
   useEffect(() => {
     window.onclick = event => {
@@ -26,50 +99,10 @@ const TransferPage = ({ source, target, tracks, playlists,
     };
   }, []);
 
-  useEffect(() => {
-    const call = async () => {
-      await runTrackTransfer();
-      runPlaylistTransfer();
-    }
-
-    call();
-  }, []);
-
-  const runTrackTransfer = () => {
-    return transferTracks().then(res => {
-      setTrackTransferred(res.transferred);
-      setTracksFailed(tracksFailed.concat(res.failedToTransfer));
-      setLoading({ tracks: false, playlists: true });
-      return res;
-    }).catch(() => {
-      setTracksFailed(tracksFailed.concat(tracks));
-    });
-  }
-
-  const runPlaylistTransfer = async () => {
-    setPlaylistsFailed([]);
-    let transferred = 0;
-    for (let i = 0; i < playlists.length; i++) {
-      const playlist = playlists[i];
-      try {
-        const res = await transferPlaylist(playlist);
-        if (res.transferred > 0) {
-          transferred += 1;
-        }
-        if (res.failedToTransfer) {
-          setPlaylistsFailed(playlistsFailed.concat(playlist));
-        }
-      } catch (e) {
-        setPlaylistsFailed(playlistsFailed.concat(playlist))
-      }
-    }
-
-    console.log(transferred);
-    setPlaylistsTransferred(transferred);
-    setLoading({ tracks: false, playlists: false });
-  }
-
-  const toggleModal = playlist => setModal({ show: !modal.show, playlist: playlist });
+  const toggleModal = playlist => setModal({ 
+    show: !modal.show, 
+    playlist: playlist 
+  });
 
   const handlePlaylistSelection = playlist => {
     if (playlist.tracks.length > 0) {
@@ -88,7 +121,7 @@ const TransferPage = ({ source, target, tracks, playlists,
         <div className="row align-items-center justify-content-center section">
           { getFirst3(tracks).map((track, i) => (
               <div className="col col-md-3" key={i}>
-                <SelectableCard id={`track-${i}`}
+                <SelectableCard id={`loading-track-${i}`}
                                 text={track.name}
                                 imageUrl={track.imageUrl} 
                                 disabled={true} />
@@ -118,7 +151,7 @@ const TransferPage = ({ source, target, tracks, playlists,
         <div className="row align-items-center justify-content-center section">
           { getFirst3(playlists).map((playlist, i) => (
               <div className="col col-md-3" key={i}>
-                <SelectableCard id={`playlist-${i}`}
+                <SelectableCard id={`loading-playlist-${i}`}
                                 text={playlist.name}
                                 imageUrl={playlist.imageUrl} 
                                 disabled={true} />
@@ -126,7 +159,8 @@ const TransferPage = ({ source, target, tracks, playlists,
             )) 
           } 
         </div>
-        <Spinner text={`Transferring ${playlists.length} Playlists with ${totalTracks} Tracks`}/> 
+        <Spinner text={`Transferring ${playlists.length} Playlists ` +
+          `with ${totalTracks} Tracks`}/> 
       </div>
     );
   }
@@ -134,7 +168,7 @@ const TransferPage = ({ source, target, tracks, playlists,
   const renderFailedTracks = () => {
     return modal.playlist.tracks.map((track, i) => (
       <div className="col col-md-3" key={i}>
-        <SelectableCard id={"track-" + i}
+        <SelectableCard id={`failed-track-${i}`}
                         text={track.name}
                         imageUrl={track.imageUrl}
                         disabled={true}/>
@@ -143,7 +177,7 @@ const TransferPage = ({ source, target, tracks, playlists,
   }
 
   const renderResult = () => {
-    const uniqueTracks = [...new Set(tracksFailed)];
+    const uniqueTracks = [...new Set(failed.tracks)];
     return (
       <div>
         <div className="row align-items-center justify-content-center section">
@@ -152,9 +186,10 @@ const TransferPage = ({ source, target, tracks, playlists,
           </h1>
         </div>
         <div className="row align-items-center justify-content-center section">
-          <h3>Transferred {trackTransferred} Tracks and {playlistsTransferred} Playlists</h3>
+          <h3>Transferred {transferred.tracks} Tracks and {transferred.playlists} Playlists</h3>
         </div>  
-        { playlistsFailed.length > 0  &&
+
+        { failed.playlists.length > 0  &&
           <div>
             <div className="row align-items-center justify-content-center section">
               <h4 className="transfer-fail-text">
@@ -162,9 +197,9 @@ const TransferPage = ({ source, target, tracks, playlists,
               </h4>
             </div>
             <div className="row align-items-center justify-content-center">
-              { playlistsFailed.map((playlist, i) => (
+              { failed.playlists.map((playlist, i) => (
                 <div className="col col-md-3" key={i}>
-                  <SelectableCard id={"failed-" + i}
+                  <SelectableCard id={`failed-playlist ${i}`}
                                   text={playlist.name}
                                   imageUrl={playlist.imageUrl}
                                   onSelect={() => handlePlaylistSelection(playlist)} />
@@ -179,8 +214,6 @@ const TransferPage = ({ source, target, tracks, playlists,
                  content={renderFailedTracks()} 
                  onClose={() => setModal({ show: false })}/> 
         }  
-        { modal.show && <div className="modal-backdrop fade show"/> }  
-
         { uniqueTracks.length > 0  &&
           <div>
             <div className="row justify-content-center section">
@@ -189,8 +222,8 @@ const TransferPage = ({ source, target, tracks, playlists,
             <div className="row align-items-center justify-content-center">
               { uniqueTracks.map((track, i) => (
                 <div className="col col-md-3" key={i}>
-                  <SelectableCard id={"track-" + i}
-                                  text={[track.name, <br key={i}/>, 'ID: ', track.id]}
+                  <SelectableCard id={`failed-track-${i}`}
+                                  text={track.name}
                                   imageUrl={track.imageUrl}
                                   disabled={true} />
                 </div>  

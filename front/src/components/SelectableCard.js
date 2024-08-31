@@ -8,7 +8,6 @@ const SelectableCard = ({ id, text, imageUrl, disabled,
 
   useEffect(() => {
     if (disabled) {
-      console.log(getThis());
       getThis().classList.remove('selectable-card_enabled');	
     }
     if (selected) {

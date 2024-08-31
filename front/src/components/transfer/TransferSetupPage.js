@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Spinner from '../spinner/Spinner';
 import SelectableCard from '../SelectableCard';
+import Modal from '../modal/Modal';
 
 import './TransferPage.css';
 
@@ -32,7 +33,7 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
 
   useEffect(() => {
     window.onclick = event => {
-      const modal = document.getElementById('transferModal'); 
+      const modal = document.getElementById('modal'); 
       if (modal && event.target.id == modal.id)
         setModal({ show: false, entity: null });
     };
@@ -54,12 +55,12 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
   }
 
   const handleTransferClick = () => {
-    const selectedTracks = sourceData.tracks.filter(track => track.selected == true);
-    const selectedPlaylists = sourceData.playlists.filter(playlist => playlist.selected == true);
-    if (selectedTracks.length == 0) {
+    const tracks = sourceData.tracks.filter(track => track.selected == true);
+    const playlists = sourceData.playlists.filter(playlist => playlist.selected == true);
+    if (tracks.length == 0) {
       setError('Select at least one track');
     } else {
-      onTransferClick(selectedTracks, selectedPlaylists);
+      onTransferClick(tracks, playlists);
     }
   }
 
@@ -98,59 +99,34 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
           </h1>
         </div>
         <div className="row justify-content-center section">
-          { error 
-            ? <p style= {{ color: 'red' }}> {error} </p>
-            : <div className="transfer-info-card align-items-center justify-content-center
-                shadow-sm p-6 mb-5 bg-white rounded">
-                <h4 className="section">Found {sourceData.tracks.length} Liked Tracks
-                  and {sourceData.playlists.length} Playlists</h4> 
-                <div className="row align-items-center justify-content-center section">
-                  <button className="transfer-page-button"
-                          onClick={ () => toggleModal('Tracks') }>
-                    View Tracks
-                  </button>
-                  <button className="transfer-page-button"
-                          onClick={() => toggleModal('Playlists') }>
-                    View Playlists
-                  </button>
-                  <button className="transfer-page-button transfer-page-run-button"
-                          onClick={handleTransferClick}>
-                    Transfer
-                  </button>
-                </div>
-                <div className="row justify-content-center error-section"> 
-                  { error && <p style= {{ color: 'red' }}> {error} </p> }
-                </div> 
-              </div>   
-          }
-        </div>   
-        { modal.show && (
-          <div id='transferModal' className="modal transfer-modal d-block" role="dialog">
-            <div className="modal-dialog modal-lg" role="document">
-              <div className="modal-content">
-                <div className="modal-header justify-content-center">
-                  <h4 className="modal-title">Select {modal.entity} to Transfer</h4>
-                </div>
-                <div className="modal-body">
-                  <div className="row align-items-center justify-content-center">
-                    { modal.entity == 'Tracks'  
-                      ? renderTracks() 
-                      : renderPlaylists() 
-                    }
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" 
-                          onClick={toggleModal}>
-                    Close
-                  </button>
-                </div>
+          <div className="transfer-info-card align-items-center justify-content-center
+            shadow-sm p-6 mb-5 bg-white rounded">
+            <h4 className="section">Found {sourceData.tracks.length} Liked Tracks
+              and {sourceData.playlists.length} Playlists</h4> 
+              <div className="row align-items-center justify-content-center section">
+                <button className="transfer-page-button"
+                        onClick={ () => toggleModal('Tracks') }>
+                  View Tracks
+                </button>
+                <button className="transfer-page-button"
+                        onClick={() => toggleModal('Playlists') }>
+                  View Playlists
+                </button>
+                 <button className="transfer-page-button transfer-page-run-button"
+                        onClick={handleTransferClick}>
+                  Transfer
+                </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        { modal.show && <div className="modal-backdrop fade show"/> }  
+              <div className="row justify-content-center error-section"> 
+                { error && <p style= {{ color: 'red' }}> {error} </p> }
+              </div> 
+            </div>   
+        </div>   
+        { modal.show && ( 
+          <Modal title={`Select ${modal.entity} to Transfer`} 
+                 content={modal.entity == 'Tracks'  ? renderTracks() : renderPlaylists() }
+                 onClose={toggleModal} />)
+        }
       </div>
     );
   }

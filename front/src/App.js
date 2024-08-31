@@ -204,8 +204,8 @@ const App = () => {
 
   const runPlaylistTransfer = playlist => {
     return withServerDownHandling(() => {
-      console.log('Transferring playlist ' + playlist.id + ' from ' 
-        + services.source.visibleName + ' to ' + services.target.visibleName);
+      console.log(`Transferring playlist ${playlist.id} from `  
+        + `${services.source.visibleName} to ${services.target.visibleName}`);
         return transferPlaylist(
         services.source.internalName, 
         services.target.internalName,
