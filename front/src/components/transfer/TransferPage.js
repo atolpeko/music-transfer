@@ -135,7 +135,7 @@ const TransferPage = ({ source, target, tracks, playlists,
     return modal.playlist.tracks.map((track, i) => (
       <div className="col col-md-3" key={i}>
         <SelectableCard id={"track-" + i}
-                        text={[track.name, <br key={i}/>, 'ID: ', track.id]}
+                        text={track.name}
                         imageUrl={track.imageUrl}
                         disabled={true}/>
       </div>  
@@ -165,7 +165,7 @@ const TransferPage = ({ source, target, tracks, playlists,
               { playlistsFailed.map((playlist, i) => (
                 <div className="col col-md-3" key={i}>
                   <SelectableCard id={"failed-" + i}
-                                  text={[playlist.name, <br key={i}/>, 'ID: ', playlist.id]}
+                                  text={playlist.name}
                                   imageUrl={playlist.imageUrl}
                                   onSelect={() => handlePlaylistSelection(playlist)} />
                 </div>  

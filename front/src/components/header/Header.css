@@ -4,3 +4,8 @@
   align-items: center;
   font-size: large;
 }
+
+.navbar-brand {
+  margin-left: 10%;
+}
+
