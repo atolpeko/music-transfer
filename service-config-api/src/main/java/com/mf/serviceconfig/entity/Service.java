@@ -10,4 +10,5 @@ public class Service {
 	private String visibleName;
 	private String internalName;
 	private String logoUrl;
+	private String homeUrl;
 }
