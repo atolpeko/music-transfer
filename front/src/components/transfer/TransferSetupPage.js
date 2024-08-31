@@ -134,7 +134,7 @@ const TransferSetupPage = ({ source, target, load, onTransferClick }) => {
   return (
     <div className="container center-container align-items-center justify-content-center">
       { sourceData.loading  
-        ? <Spinner text={`Loading tracks and playlists from ${source}...`}/> 
+        ? <Spinner text={`Loading Tracks and Playlists from ${source}...`}/> 
         : !sourceData.failed
           ? renderContent() 
           : <div/>

@@ -232,7 +232,7 @@ const App = () => {
               (error)
                 ? <ErrorPage error={error} onHomeClick={handleHomeClick} />
                 : (authenticating)
-                  ? <Spinner text='Waiting for authorization...' /> 
+                  ? <Spinner text='Waiting for Authorization...' /> 
                   : (!services.source || !services.target)
                     ? <ServiceSelectionPage source={services.source}
                                             loadServices={loadServices}
