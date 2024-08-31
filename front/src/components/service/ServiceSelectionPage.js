@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import SelectableCard from '../SelectableCard';
+import SelectableCard from '../selectableCard/SelectableCard';
 import Spinner from '../spinner/Spinner';
 
 import './ServiceSelectionPage.css';

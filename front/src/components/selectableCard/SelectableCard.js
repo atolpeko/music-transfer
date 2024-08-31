@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import './SelectableCard.css';
 
 const SelectableCard = ({ id, text, imageUrl, disabled, 
   reversedSelection, selected, onSelect }) => {

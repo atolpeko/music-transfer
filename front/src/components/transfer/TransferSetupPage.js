@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Spinner from '../spinner/Spinner';
-import SelectableCard from '../SelectableCard';
+import SelectableCard from '../selectableCard/SelectableCard';
 import Modal from '../modal/Modal';
 
 import './TransferPage.css';
