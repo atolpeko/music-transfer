@@ -64,6 +64,7 @@ public class ServiceLoader {
 			.visibleName(config.get("visibleName"))
 			.internalName(config.get("internalName"))
 			.logoUrl(config.get("logoUrl"))
+			.homeUrl(config.get("homeUrl"))
 			.build();
 	}
 }
