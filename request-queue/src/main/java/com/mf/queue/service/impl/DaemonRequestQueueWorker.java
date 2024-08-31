@@ -2,6 +2,7 @@ package com.mf.queue.service.impl;
 
 import com.mf.queue.entity.Request;
 import com.mf.queue.exception.InvalidUrlException;
+import com.mf.queue.exception.RequestTimeoutException;
 import com.mf.queue.service.RateLimiter;
 import com.mf.queue.service.RequestQueue;
 import com.mf.queue.service.RequestQueueWorker;
@@ -78,13 +79,15 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
             Request<?, ?> request = null;
             try {
                 request = queue.take();
-                if (rateLimiter.allowed(request)) {
-                    log.debug("Executing request to {}", request.getUrl());
-                    request.execute(restTemplate);
+                if (!request.actual()) {
+                    var msg = "Request timed out";
+                    fail(request, new RequestTimeoutException(request.getUrl(), msg), msg);
+                } else if (rateLimiter.allowed(request)) {
+                    request.execute(restTemplate, queue);
                 } else {
                     log.debug("Rate limit for requests to {} exceeded. Waiting for {} seconds",
                         service, waitSeconds);
-                    Thread.sleep(waitSeconds * 1000);
+                    Thread.sleep(waitSeconds * 1000L);
                     queue.submitFirst(request);
                 }
             } catch (InterruptedException e) {
@@ -92,8 +95,7 @@ public class DaemonRequestQueueWorker implements RequestQueueWorker {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                var msg = "Exception while processing request for %s: %s"
-                    .formatted(service, e);
+                var msg = "Exception while processing request for %s: %s".formatted(service, e);
                 fail(request, e, msg);
             }
         }
