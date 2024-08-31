@@ -8,10 +8,13 @@
 
 .transfer-info-card {
   margin: 3%;
-  width: 60%;
-  padding: 4%;
+  padding-top: 3%;
+  padding-bottom: 5%;
+  padding-right: 10%;
+  padding-left: 10%;
   border-width: 0.5px;
   border-radius: 2%;
+  text-align: center;
 }
 
 .transfer-item-text {
@@ -33,8 +36,15 @@
   background-color: rgb(160, 3, 3);
 }
 
-.transfer-modal {
-  position: fixed;
-  border-radius: 5%;
-  overflow: auto; 
+.transfer-target-card > .selectable-card {
+  border: none;
+}
+
+.listen-section {
+  margin-top: 2%;
+  margin-bottom: 3%;
+}
+
+.transfer-home-button {
+  margin-bottom: 3%;
 }

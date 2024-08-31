@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import SelectableCard from '../SelectableCard';
+import SelectableCard from '../selectableCard/SelectableCard';
 import Spinner from '../spinner/Spinner';
 
 import './ServiceSelectionPage.css';
@@ -102,7 +102,7 @@ const ServiceSelectionPage = ({ source, loadServices,
       return service.available == true &&
         <div className="col col-md-3" key={i}>
           <SelectableCard key={i}
-                          id={"service-card-" + i}
+                          id={`service-card-${i}`}
                           text={service.visibleName}
                           imageUrl={service.logoUrl} 
                           onSelect={handleCardSelection} />

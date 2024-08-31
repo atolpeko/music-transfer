@@ -1,8 +1,8 @@
 {
   "name": "front",
-  "version": "1.0.0",
+  "version": "1.0.0-SNAPSOT",
   "private": true,
-  "homepage": "transfer",
+  "homepage": "home",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
