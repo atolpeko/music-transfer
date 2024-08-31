@@ -215,6 +215,10 @@ const App = () => {
     })
   }
 
+  const handleListenNowClick = () => {
+    window.location.href = services.target.homeUrl;
+  }
+
   return (
     <BrowserRouter>
       <div className="d-flex flex-column vh-100">
@@ -244,13 +248,14 @@ const App = () => {
                                           target={services.target.visibleName}
                                           load={loadFromSource}
                                           onTransferClick={handleTransferClick} />
-                      : <TransferPage source={services.source.visibleName}
-                                      target={services.target.visibleName} 
+                      : <TransferPage source={services.source}
+                                      target={services.target} 
                                       tracks={toTransfer.tracks}
                                       playlists={toTransfer.playlists}
                                       transferTracks={runTracksTransfer}
                                       transferPlaylist={runPlaylistTransfer}
-                                      onHomeClick={handleHomeClick} />
+                                      onHomeClick={handleHomeClick}
+                                      onListenNowClick={handleListenNowClick} />
               } />      
             <Route path="*" element={<Navigate to="/home" />}/>
           </Routes>

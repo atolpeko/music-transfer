@@ -36,10 +36,13 @@
   background-color: rgb(160, 3, 3);
 }
 
-.transfer-modal {
-  position: fixed;
-  border-radius: 5%;
-  overflow: auto; 
+.transfer-target-card > .selectable-card {
+  border: none;
+}
+
+.listen-section {
+  margin-top: 2%;
+  margin-bottom: 3%;
 }
 
 .transfer-home-button {

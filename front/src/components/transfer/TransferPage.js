@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import SelectableCard from '../SelectableCard';
+import SelectableCard from '../selectableCard/SelectableCard';
 import Spinner from '../spinner/Spinner';
 import Modal from '../modal/Modal';
 
 import './TransferPage.css';
 
 const TransferPage = ({ source, target, tracks, playlists,
-   transferTracks, transferPlaylist, onHomeClick }) => {
+   transferTracks, transferPlaylist, onListenNowClick, onHomeClick }) => {
 
   const [loading, setLoading] = useState({
     tracks: true,
@@ -115,7 +115,7 @@ const TransferPage = ({ source, target, tracks, playlists,
       <div>
         <div className="row justify-content-center section">
           <h1 className="page-title">
-            Transferring the Library from {source} to {target}     
+            Transferring the Library from {source.visibleName} to {target.visibleName}     
           </h1>
         </div>
         <div className="row align-items-center justify-content-center section">
@@ -145,7 +145,7 @@ const TransferPage = ({ source, target, tracks, playlists,
       <div>
         <div className="row justify-content-center section">
           <h1 className="page-title">
-            Transferring the Library from {source} to {target}     
+            Transferring the Library from {source.visibleName} to {target.visibleName}     
           </h1>
         </div>
         <div className="row align-items-center justify-content-center section">
@@ -182,13 +182,25 @@ const TransferPage = ({ source, target, tracks, playlists,
       <div>
         <div className="row align-items-center justify-content-center section">
           <h1 className="page-title">
-            {source} to {target} Transfer Result
+            {source.visibleName} to {target.visibleName} Transfer Result
           </h1>
         </div>
         <div className="row align-items-center justify-content-center section">
           <h3>Transferred {transferred.tracks} Tracks and {transferred.playlists} Playlists</h3>
         </div>  
 
+        { (transferred.tracks != 0 || transferred.playlists != 0) && 
+          <div className="row justify-content-center listen-section">
+            <div className="col col-md-3">
+              <div className="transfer-target-card">
+                <SelectableCard id={'target'}
+                                text={'Listen now!'}
+                                imageUrl={target.logoUrl}
+                                onSelect={onListenNowClick} />
+              </div>
+            </div>
+          </div>
+        }
         { failed.playlists.length > 0  &&
           <div>
             <div className="row align-items-center justify-content-center section">
