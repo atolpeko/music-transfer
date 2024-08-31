@@ -142,6 +142,7 @@ const App = () => {
 
   const handleBackClick = () => {
     setServices({ source: null, target: null });
+    removeParams('source', 'target');
     setJwt(null);
     setToken(null);
   }
@@ -168,8 +169,8 @@ const App = () => {
   }
 
   const handleTransferClick = (tracks, playlists) => {
-    console.log('Selected ' + tracks.length + ' tracks ' + 
-      'and ' + playlists.length + ' playlists to transfer');
+    console.log(`Selected ${tracks.length} tracks and ${playlists.length}` + 
+      ' playlists to transfer');
     setToTransfer({
       tracks: tracks,
       playlists: playlists
@@ -177,43 +178,41 @@ const App = () => {
   }
 
   const runTracksTransfer = () => {
-    return withErrorHandling(() => {
-      console.log('Transferring tracks from ' + services.source.visibleName +
-      ' to ' + services.target.visibleName);
+    return withServerDownHandling(() => {
+      console.log(`Transferring tracks from  ${services.source.visibleName} ` +
+        `to ${services.target.visibleName}`);
       return transferTracks(
         services.source.internalName, 
         services.target.internalName,
         toTransfer.tracks,
         getJwt()
       );
-    });
+    })
   }
 
-  const runPlaylistTransfer = () => {
-    return withErrorHandling(async () => {
-      console.log('Transferring playlists from ' + services.source.visibleName +
-        ' to ' + services.target.visibleName);
-      let results = []; 
-      let failed = []; 
-      for (let i = 0; i < toTransfer.playlists.length; i++) {
-        const result = await transferPlaylist(
-          services.source.internalName, 
-          services.target.internalName,
-          toTransfer.playlists[i],
-          getJwt()
-        );
-
-        results.push(result);
-        if (result.failed) {
-          failed.push(result.failed.tracks);
-        }
-      } 
-
-      return {
-        transferred: results.length,
-        failedToTransfer: failed
+  const withServerDownHandling = async func => {
+    try {
+      return await func();
+    } catch (e) {
+      if (e == 'Server is unavailable') {
+        setError(e);
+      } else {
+        return Promise.reject(e);
       }
-    });
+    }
+  }
+
+  const runPlaylistTransfer = playlist => {
+    return withServerDownHandling(() => {
+      console.log('Transferring playlist ' + playlist.id + ' from ' 
+        + services.source.visibleName + ' to ' + services.target.visibleName);
+        return transferPlaylist(
+        services.source.internalName, 
+        services.target.internalName,
+        playlist,
+        getJwt()
+      );
+    })
   }
 
   return (
@@ -247,8 +246,10 @@ const App = () => {
                                           onTransferClick={handleTransferClick} />
                       : <TransferPage source={services.source.visibleName}
                                       target={services.target.visibleName} 
+                                      tracks={toTransfer.tracks}
+                                      playlists={toTransfer.playlists}
                                       transferTracks={runTracksTransfer}
-                                      transferPlaylists={runPlaylistTransfer}
+                                      transferPlaylist={runPlaylistTransfer}
                                       onHomeClick={handleHomeClick} />
               } />      
             <Route path="*" element={<Navigate to="/home" />}/>

@@ -62,23 +62,26 @@ select {
   margin-bottom: 0%;
 }
 
-.item-card {
+.selectable-card {
 	margin: 3%;
   padding: 4%;
   border-radius: 13%;
-  cursor: pointer;
 }
 
-.item-card:hover {
+.selectable-card_enabled {
+	cursor: pointer;
+}
+
+.selectable-card_enabled:hover {
 	transform: scale(1.05);
 }
 
-.item-card.selected {
+.selectable-card_enabled.selected {
   border: 1px solid #007bff;
 	transform: scale(0.95);
 }
 
-.item-card-text {
+.selectable-card-text {
   font-size: 1.2rem;
   font-style: italic;
   font-weight: lighter;
@@ -86,7 +89,7 @@ select {
   padding-top: 10%;
 }
 
-.item-card-img {
+.selectable-card-img {
   align-self: center;
   width: 40%;
   height: 40%;

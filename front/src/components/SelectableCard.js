@@ -1,20 +1,27 @@
 import { useEffect } from 'react';
 
-const SelectableCard = ({ id, text, imageUrl, reversedSelection, selected, onSelect }) => {
+const SelectableCard = ({ id, text, imageUrl, disabled, 
+  reversedSelection, selected, onSelect }) => {
+
+  const getThis = () => document.getElementById(id);
+  const getAll = () => document.querySelectorAll('.selectable-card');
 
   useEffect(() => {
-    if (selected && selected == true) {
-		  document.getElementById(id).classList.add('selected');
+    if (disabled) {
+      console.log(getThis());
+      getThis().classList.remove('selectable-card_enabled');	
+    }
+    if (selected) {
+		  getThis().classList.add('selected');
 	  }
   }, []);
 
   const handleSelection = id => {
-    if (!reversedSelection || reversedSelection == false) {    
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => card.classList.remove('selected'));	
+    if (!reversedSelection) {    
+      getAll().forEach(card => card.classList.remove('selected'));	
     } 
 
-    const card = document.getElementById(id);
+    const card = getThis();
     const selected = card.classList.contains('selected');
     if (selected) {
       card.classList.remove('selected');
@@ -28,12 +35,14 @@ const SelectableCard = ({ id, text, imageUrl, reversedSelection, selected, onSel
   }
 
   return (
-    <div id={id} className="card item-card" onClick={ () => handleSelection(id) }>
+    <div id={id}
+         className="card selectable-card selectable-card_enabled" 
+         onClick={() => handleSelection(id)}>
       <img src={imageUrl} 
            alt={text}
            onClick={ () => handleSelection(id) }
-           className="card-img-top item-card-img" />
-      <h4 className="card-title item-card-text">{text}</h4>
+           className="card-img-top selectable-card-img" />
+      <h4 className="card-title selectable-card-text">{text}</h4>
     </div>
   );
 }
