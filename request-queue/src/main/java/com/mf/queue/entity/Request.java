@@ -1,7 +1,6 @@
 package com.mf.queue.entity;
 
 import com.mf.queue.exception.InvalidUrlException;
-import com.mf.queue.service.RequestQueue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Request to execute. Use getResultWhenComplete() to access result when it's ready.
@@ -39,6 +37,11 @@ public class Request<T, K> {
 	 * Default request timeout.
 	 */
 	public static final int DEFAULT_TIMEOUT_SECONDS = 3 * 1000;
+
+	/**
+	 * Default retry waiting timeout.
+	 */
+	public static final int DEFAULT_RETRY_WAIT_SECONDS = 2 * 1000;
 
 	@Getter
 	private final String url;
@@ -61,9 +64,14 @@ public class Request<T, K> {
 	@Getter
 	private final int retryTimes;
 
-	private final CompletableFuture<ResponseEntity<K>> result;
-	private final AtomicInteger retryCount;
+	@Getter
+	private final int retryWaitSeconds;
+
+	@Getter
 	private final long startTimeMillis;
+
+	private final AtomicInteger retryCount;
+	private final CompletableFuture<ResponseEntity<K>> result;
 
 	@Builder
 	public Request(
@@ -73,7 +81,8 @@ public class Request<T, K> {
 		Class<K> responseType,
 		int timeoutSeconds,
 		boolean retryIfFails,
-		int retryTimes
+		int retryTimes,
+		int retryWaitSeconds
 	) {
 		this.url = url;
 		this.method = method;
@@ -81,7 +90,12 @@ public class Request<T, K> {
 		this.responseType = responseType;
 		this.retryIfFails = retryIfFails;
 		this.retryTimes = retryTimes;
-		this.timeoutSeconds = (timeoutSeconds == 0) ? DEFAULT_TIMEOUT_SECONDS : timeoutSeconds;
+		this.retryWaitSeconds = (retryWaitSeconds == 0)
+			? DEFAULT_RETRY_WAIT_SECONDS
+			: retryWaitSeconds;
+		this.timeoutSeconds = (timeoutSeconds == 0)
+			? DEFAULT_TIMEOUT_SECONDS
+			: timeoutSeconds;
 
 		result = new CompletableFuture<>();
 		retryCount = new AtomicInteger(0);
@@ -99,7 +113,8 @@ public class Request<T, K> {
 		try {
 			return new URL(url).getHost();
 		} catch (MalformedURLException e) {
-			throw new InvalidUrlException(url, e.getMessage(), e);
+			var msg = "Invalid request URL: " + url;
+			throw new InvalidUrlException(this, msg, e);
 		}
 	}
 
@@ -130,28 +145,12 @@ public class Request<T, K> {
 	}
 
 	/**
-	 * Execute this request and fill response future.
-	 * Will retry if retryIfFails is set to true.
+	 * Complete this request.
 	 *
-	 * @param restTemplate request executor
+	 * @param response  response
 	 */
-	public void execute(
-		RestTemplate restTemplate,
-		RequestQueue requestQueue
-	) {
-		try {
-			log.debug("Executing request to {}", url);
-			var response = restTemplate.exchange(url, method, entity, responseType);
-			result.complete(response);
-		} catch (Exception e) {
-			if (!retryIfFails || retryCount.get() == retryTimes) {
-				result.completeExceptionally(e);
-			} else {
-				log.debug("Request to {} failed. Will retry. Reason: {}", url, e.getMessage());
-				retryCount.incrementAndGet();
-				requestQueue.submitFirst(this);
-			}
-		}
+	public void complete(ResponseEntity<K> response) {
+		result.complete(response);
 	}
 
 	/**
@@ -171,5 +170,21 @@ public class Request<T, K> {
 	public boolean actual() {
 		var expected = startTimeMillis + timeoutSeconds * 1000L;
 		return expected > System.currentTimeMillis();
+	}
+
+	/**
+	 * Get this request retry count.
+	 *
+	 * @return retry count
+	 */
+	public int retriedTimes() {
+		return retryCount.get();
+	}
+
+	/**
+	 * Increment this request count.
+	 */
+	public void retried() {
+		retryCount.incrementAndGet();
 	}
 }

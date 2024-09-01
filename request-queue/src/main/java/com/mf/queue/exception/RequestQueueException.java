@@ -1,24 +1,25 @@
 package com.mf.queue.exception;
 
+import com.mf.queue.entity.Request;
 import lombok.Getter;
 
 @Getter
 public class RequestQueueException extends RuntimeException {
 
-    private final String url;
+    private final Request<?, ?> request;
 
-    public RequestQueueException(String url) {
+    public RequestQueueException(Request<?, ?> request) {
         super();
-        this.url = url;
+        this.request = request;
     }
 
-    public RequestQueueException(String url, String message) {
+    public RequestQueueException(Request<?, ?> request, String message) {
         super(message);
-        this.url = url;
+        this.request = request;
     }
 
-    public RequestQueueException(String url, String message, Throwable cause) {
+    public RequestQueueException(Request<?, ?> request, String message, Throwable cause) {
         super(message, cause);
-        this.url = url;
+        this.request = request;
     }
 }

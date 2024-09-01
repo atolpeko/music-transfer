@@ -1,6 +1,9 @@
 package com.mf.queue.service;
 
 import com.mf.queue.entity.Request;
+import com.mf.queue.exception.RequestQueueException;
+import com.mf.queue.valueobject.RequestContext;
+
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
@@ -8,26 +11,42 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class RequestQueue {
 
-    private final LinkedBlockingDeque<Request<?, ?>> queue = new LinkedBlockingDeque<>();
+    private final LinkedBlockingDeque<RequestContext> queue = new LinkedBlockingDeque<>();
 
     /**
-     * Submit the specified request for execution.
+     * Submit the specified request for immediate execution.
      *
      * @param request  request to submit
-     *
-     * @throws InterruptedException if interrupted while waiting
      */
-    public void submit(Request<?, ?> request) throws InterruptedException {
-        queue.put(request);
+    public void submit(Request<?, ?> request) {
+        try {
+            var context = RequestContext.builder()
+                .request(request)
+                .timeoutSeconds(0)
+                .build();
+            queue.put(context);
+        } catch (InterruptedException e) {
+            request.fail(new RequestQueueException(request, "Thread interrupted", e));
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
-     * Submit the specified request for execution as the first one.
+     * Schedule the specified request for execution.
      *
-     * @param request  request to submit
+     * @param request  request to schedule
      */
-    public void submitFirst(Request<?, ?> request) {
-        queue.addFirst(request);
+    public void schedule(Request<?, ?> request, int timeoutSeconds) {
+        try {
+            var context = RequestContext.builder()
+                .request(request)
+                .timeoutSeconds(timeoutSeconds)
+                .build();
+            queue.put(context);
+        } catch (InterruptedException e) {
+            request.fail(new RequestQueueException(request, "Thread interrupted", e));
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -35,9 +54,9 @@ public class RequestQueue {
      *
      * @return request
      *
-     * @throws InterruptedException if interrupted while waiting
+     * @throws InterruptedException if interrupted while waiting for available request
      */
-     public Request<?, ?> take() throws InterruptedException {
+     public RequestContext take() throws InterruptedException {
          return queue.take();
      }
 }

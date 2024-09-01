@@ -1,19 +1,20 @@
 package com.mf.queue.exception;
 
+import com.mf.queue.entity.Request;
 import lombok.Getter;
 
 @Getter
 public class RequestTimeoutException extends RequestQueueException {
 
-    public RequestTimeoutException(String url) {
-        super(url);
+    public RequestTimeoutException(Request<?, ?> request) {
+        super(request);
     }
 
-    public RequestTimeoutException(String url, String message) {
-        super(url, message);
+    public RequestTimeoutException(Request<?, ?> request, String message) {
+        super(request, message);
     }
 
-    public RequestTimeoutException(String url, String message, Throwable cause) {
-        super(url, message, cause);
+    public RequestTimeoutException(Request<?, ?> request, String message, Throwable cause) {
+        super(request, message, cause);
     }
 }
