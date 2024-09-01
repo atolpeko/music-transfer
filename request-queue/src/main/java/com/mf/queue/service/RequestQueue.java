@@ -22,7 +22,7 @@ public class RequestQueue {
         try {
             var context = RequestContext.builder()
                 .request(request)
-                .timeoutSeconds(0)
+                .timeoutMillis(0)
                 .build();
             queue.put(context);
         } catch (InterruptedException e) {
@@ -36,11 +36,11 @@ public class RequestQueue {
      *
      * @param request  request to schedule
      */
-    public void schedule(Request<?, ?> request, int timeoutSeconds) {
+    public void schedule(Request<?, ?> request, int timeoutMillis) {
         try {
             var context = RequestContext.builder()
                 .request(request)
-                .timeoutSeconds(timeoutSeconds)
+                .timeoutMillis(timeoutMillis)
                 .build();
             queue.put(context);
         } catch (InterruptedException e) {

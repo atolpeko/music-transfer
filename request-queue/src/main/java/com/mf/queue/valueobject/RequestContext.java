@@ -10,5 +10,5 @@ import lombok.Getter;
 public class RequestContext {
 
 	private final Request<?, ?> request;
-	private final int timeoutSeconds;
+	private final int timeoutMillis;
 }

@@ -1,7 +1,6 @@
 package com.mf.queue.service.impl;
 
 import com.mf.queue.entity.Request;
-import com.mf.queue.exception.InvalidUrlException;
 import com.mf.queue.exception.RequestQueueException;
 import com.mf.queue.exception.RequestTimeoutException;
 import com.mf.queue.service.RateLimiter;
@@ -50,8 +49,8 @@ public class DaemonRequestQueueWorker extends Thread implements RequestQueueWork
                 } else if (rateLimiter.allowed(request)) {
                     executorService.schedule(
                         () -> execute(context),
-                        context.getTimeoutSeconds(),
-                        TimeUnit.SECONDS
+                        context.getTimeoutMillis(),
+                        TimeUnit.MILLISECONDS
                     );
                 } else {
                     log.debug("Rate limit for requests to {} exceeded. Scheduling with {} seconds delay",
@@ -63,8 +62,6 @@ public class DaemonRequestQueueWorker extends Thread implements RequestQueueWork
                 log.info("Stopping request queue");
                 Thread.currentThread().interrupt();
                 break;
-            } catch (InvalidUrlException e) {
-                fail(e);
             } catch (Exception e) {
                 var msg = "Exception while processing request: %s".formatted(e.getMessage());
                 fail(new RequestQueueException(request, msg, e));
@@ -99,7 +96,7 @@ public class DaemonRequestQueueWorker extends Thread implements RequestQueueWork
                 log.debug("Request to {} failed. Will retry. Reason: {}",
                     request.getUrl(), e.getMessage());
                 request.retried();
-                requestQueue.schedule(request, request.getRetryWaitSeconds());
+                requestQueue.schedule(request, request.getRetryWaitMillis());
             }
         }
     }

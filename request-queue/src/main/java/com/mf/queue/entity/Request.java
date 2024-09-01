@@ -36,12 +36,12 @@ public class Request<T, K> {
 	/**
 	 * Default request timeout.
 	 */
-	public static final int DEFAULT_TIMEOUT_SECONDS = 3 * 1000;
+	public static final int DEFAULT_TIMEOUT_MILLIS = 3 * 1000;
 
 	/**
 	 * Default retry waiting timeout.
 	 */
-	public static final int DEFAULT_RETRY_WAIT_SECONDS = 2 * 1000;
+	public static final int DEFAULT_RETRY_WAIT_MILLIS = 2 * 1000;
 
 	@Getter
 	private final String url;
@@ -56,7 +56,7 @@ public class Request<T, K> {
 	private final Class<K> responseType;
 
 	@Getter
-	private final int timeoutSeconds;
+	private final int timeoutMillis;
 
 	@Getter
 	private final boolean retryIfFails;
@@ -65,7 +65,7 @@ public class Request<T, K> {
 	private final int retryTimes;
 
 	@Getter
-	private final int retryWaitSeconds;
+	private final int retryWaitMillis;
 
 	@Getter
 	private final long startTimeMillis;
@@ -79,10 +79,10 @@ public class Request<T, K> {
 		HttpMethod method,
 		HttpEntity<T> entity,
 		Class<K> responseType,
-		int timeoutSeconds,
+		int timeoutMillis,
 		boolean retryIfFails,
 		int retryTimes,
-		int retryWaitSeconds
+		int retryWaitMillis
 	) {
 		this.url = url;
 		this.method = method;
@@ -90,12 +90,12 @@ public class Request<T, K> {
 		this.responseType = responseType;
 		this.retryIfFails = retryIfFails;
 		this.retryTimes = retryTimes;
-		this.retryWaitSeconds = (retryWaitSeconds == 0)
-			? DEFAULT_RETRY_WAIT_SECONDS
-			: retryWaitSeconds;
-		this.timeoutSeconds = (timeoutSeconds == 0)
-			? DEFAULT_TIMEOUT_SECONDS
-			: timeoutSeconds;
+		this.retryWaitMillis = (retryWaitMillis == 0)
+			? DEFAULT_RETRY_WAIT_MILLIS
+			: retryWaitMillis;
+		this.timeoutMillis = (timeoutMillis == 0)
+			? DEFAULT_TIMEOUT_MILLIS
+			: timeoutMillis;
 
 		result = new CompletableFuture<>();
 		retryCount = new AtomicInteger(0);
@@ -168,8 +168,7 @@ public class Request<T, K> {
 	 * @return true if this request is still actual or false otherwise.
 	 */
 	public boolean actual() {
-		var expected = startTimeMillis + timeoutSeconds * 1000L;
-		return expected > System.currentTimeMillis();
+		return startTimeMillis + timeoutMillis > System.currentTimeMillis();
 	}
 
 	/**
