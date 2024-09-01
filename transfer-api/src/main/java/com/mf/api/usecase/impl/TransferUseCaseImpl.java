@@ -6,6 +6,7 @@ import com.mf.api.domain.entity.Track;
 import com.mf.api.port.MusicServicePort;
 import com.mf.api.port.exception.AccessException;
 import com.mf.api.port.exception.IllegalRequestException;
+import com.mf.api.port.exception.MusicServiceException;
 import com.mf.api.usecase.TransferUseCase;
 import com.mf.api.usecase.exception.AuthorizationException;
 import com.mf.api.usecase.exception.InvalidRequestException;
@@ -19,6 +20,7 @@ import com.mf.api.util.Page;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,7 +35,7 @@ public class TransferUseCaseImpl implements TransferUseCase {
 
     @Override
     public TransferResult<List<Track>> transferTracks(TransferRequest<List<Track>> request) {
-        try {
+        Callable<TransferResult<List<Track>>> callable = () -> {
             var context = TransferContext.<List<Track>>builder()
                 .source(request.getSource())
                 .target(request.getTarget())
@@ -41,19 +43,10 @@ public class TransferUseCaseImpl implements TransferUseCase {
                 .service(getService(request.getTarget()))
                 .token(getToken(request.getTokenMap(), request.getTarget()))
                 .build();
-
             return trackTransferExecutor.transfer(context);
-        } catch (UseCaseException e) {
-            throw e;
-        } catch (AccessException e) {
-            throw new AuthorizationException(e.getMessage(), e);
-        } catch (IllegalRequestException e) {
-            throw new InvalidRequestException("Invalid request");
-        } catch (UnsupportedOperationException e) {
-            throw new InvalidRequestException("Operation is not supported");
-        } catch (Exception e) {
-            throw new UseCaseException("Service unavailable", e);
-        }
+        };
+
+        return withExceptionHandling(callable);
     }
 
     private MusicServicePort getService(String service) {
@@ -66,9 +59,27 @@ public class TransferUseCaseImpl implements TransferUseCase {
             .orElseThrow(() -> new AuthorizationException("No auth token for " + service));
     }
 
+    private <T> T withExceptionHandling(Callable<T> callable) {
+        try {
+            return callable.call();
+        } catch (UseCaseException e) {
+            throw e;
+        } catch (AccessException e) {
+            throw new AuthorizationException(e.getMessage(), e);
+        } catch (IllegalRequestException e) {
+            throw new InvalidRequestException(e.getMessage(), e);
+        } catch (UnsupportedOperationException e) {
+            throw new InvalidRequestException("Operation is not supported");
+        } catch (MusicServiceException e) {
+            throw new UseCaseException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new UseCaseException("Service unavailable", e);
+        }
+    }
+
     @Override
     public TransferResult<Playlist> transferPlaylist(TransferRequest<Playlist> request) {
-        try {
+       Callable<TransferResult<Playlist>> callable = () -> {
             var context = TransferContext.<Playlist>builder()
                 .source(request.getSource())
                 .target(request.getTarget())
@@ -78,17 +89,9 @@ public class TransferUseCaseImpl implements TransferUseCase {
                 .build();
 
             return playlistTransferExecutor.transfer(context);
-        } catch (UseCaseException e) {
-            throw e;
-        } catch (AccessException e) {
-            throw new AuthorizationException(e.getMessage(), e);
-        } catch (IllegalRequestException e) {
-            throw new InvalidRequestException("Invalid request");
-        } catch (UnsupportedOperationException e) {
-            throw new InvalidRequestException("Operation is not supported");
-        } catch (Exception e) {
-            throw new UseCaseException("Service unavailable", e);
-        }
+        };
+
+       return withExceptionHandling(callable);
     }
 
     @Override
@@ -97,21 +100,13 @@ public class TransferUseCaseImpl implements TransferUseCase {
         TokenMap tokenMap,
         String next
     ) {
-        try {
+        Callable<Page<Track>> callable = () -> {
             var svc = getService(service);
             var token = getToken(tokenMap, service);
             return svc.likedTracks(token, next);
-        } catch (UseCaseException e) {
-            throw e;
-        } catch (AccessException e) {
-            throw new AuthorizationException(e.getMessage(), e);
-        } catch (IllegalRequestException e) {
-            throw new InvalidRequestException("Invalid request");
-        } catch (UnsupportedOperationException e) {
-            throw new InvalidRequestException("Operation is not supported");
-        } catch (Exception e) {
-            throw new UseCaseException("Service unavailable", e);
-        }
+        };
+
+        return withExceptionHandling(callable);
     }
 
     @Override
@@ -120,21 +115,13 @@ public class TransferUseCaseImpl implements TransferUseCase {
         TokenMap tokenMap,
         String next
     ) {
-        try {
+        Callable<Page<Playlist>> callable = () -> {
             var svc = getService(service);
             var token = getToken(tokenMap, service);
             return svc.playlists(token, next);
-        } catch (UseCaseException e) {
-            throw e;
-        } catch (AccessException e) {
-            throw new AuthorizationException(e.getMessage(), e);
-        } catch (IllegalRequestException e) {
-            throw new InvalidRequestException("Invalid request");
-        } catch (UnsupportedOperationException e) {
-            throw new InvalidRequestException("Operation is not supported");
-        } catch (Exception e) {
-            throw new UseCaseException("Service unavailable", e);
-        }
+        };
+
+        return withExceptionHandling(callable);
     }
 
     @Override
@@ -144,20 +131,12 @@ public class TransferUseCaseImpl implements TransferUseCase {
         String playlistId,
         String next
     ) {
-        try {
+        Callable<Page<Track>> callable = () -> {
             var svc = getService(service);
             var token = getToken(tokenMap, service);
             return svc.playlistTracks(token, playlistId, next);
-        } catch (UseCaseException e) {
-            throw e;
-        } catch (AccessException e) {
-            throw new AuthorizationException(e.getMessage(), e);
-        } catch (IllegalRequestException e) {
-            throw new InvalidRequestException("Invalid request");
-        } catch (UnsupportedOperationException e) {
-            throw new InvalidRequestException("Operation is not supported");
-        } catch (Exception e) {
-            throw new UseCaseException("Service unavailable", e);
-        }
+        };
+
+        return withExceptionHandling(callable);
     }
 }
