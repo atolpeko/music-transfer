@@ -42,8 +42,9 @@ public class ExceptionInterceptor {
         HttpServletRequest request,
         HttpStatus status
     ) {
+        var method = request.getMethod();
         var path = request.getServletPath();
-        log.error("Request for {} error: {}", path, msg);
+        log.error("{} request for {} error: {}", method, path, msg);
         var timestamp = LocalDateTime.now()
             .atZone(ZoneId.systemDefault())
             .toInstant()
