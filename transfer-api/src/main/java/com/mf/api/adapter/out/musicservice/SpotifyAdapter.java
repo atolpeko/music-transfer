@@ -77,7 +77,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			HttpMethod.PUT,
 			token,
 			trackMapper.idsToJson(track),
-			Void.class
+			Void.class,
+			true
 		);
 	}
 
@@ -88,7 +89,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			HttpMethod.PUT,
 			token,
 			trackMapper.idsToJson(tracks),
-			Void.class
+			Void.class,
+			true
 		);
 	}
 
@@ -145,7 +147,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			HttpMethod.POST,
 			token,
 			playlistMapper.mapToJson(playlist),
-			LinkedHashMap.class
+			LinkedHashMap.class,
+			true
 		);
 
 		var body = Objects.requireNonNull(response.getBody());
@@ -158,7 +161,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			HttpMethod.GET,
 			token,
 			null,
-			LinkedHashMap.class
+			LinkedHashMap.class,
+			true
 		);
 
 		var body = Objects.requireNonNull(response.getBody());
@@ -197,7 +201,8 @@ public class SpotifyAdapter extends BaseMusicServiceAdapter {
 			HttpMethod.POST,
 			token,
 			trackMapper.urisToJson(tracks),
-			Void.class
+			Void.class,
+			true
 		);
 	}
 }
