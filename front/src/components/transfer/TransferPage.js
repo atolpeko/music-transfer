@@ -33,7 +33,6 @@ const TransferPage = ({ source, target, tracks, playlists,
       await runTrackTransfer();
       await runPlaylistTransfer();
       console.log('Transfer complete');
-      console.log(transferred.tracks);
     }
 
     call();
@@ -41,11 +40,10 @@ const TransferPage = ({ source, target, tracks, playlists,
 
   const runTrackTransfer = () => {
     return transferTracks().then(res => {
-      console.log(res.transferred);
-      setTransferred({ 
-        ...transferred,
+      setTransferred(prev => ({ 
+        ...prev,
         tracks: res.transferred 
-      });
+      }));
       setFailed(prev => ({
         ...prev,
         tracks: failed.tracks.concat(res.failedToTransfer)
@@ -55,7 +53,7 @@ const TransferPage = ({ source, target, tracks, playlists,
     }).catch(() => {
       setFailed(prev => ({
         ...prev,
-        tracks: failed.tracks.concat(tracks)
+        tracks: prev.tracks.concat(tracks)
       }));
     });
   }
@@ -79,7 +77,7 @@ const TransferPage = ({ source, target, tracks, playlists,
       } catch (e) {
         setFailed(prev => ({
           ...prev,
-          playlists: failed.playlists.concat(playlist)
+          playlists: prev.playlists.concat(playlist)
         }));
       }
     }
