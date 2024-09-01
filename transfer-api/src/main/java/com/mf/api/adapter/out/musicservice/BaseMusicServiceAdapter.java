@@ -111,7 +111,7 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 			.responseType(responseType)
 			.retryIfFails(retry)
 			.retryTimes(2)
-			.timeoutSeconds(5 * 1000)
+			.timeoutMillis(3 * 60 * 1000)
 			.build();
 	}
 
@@ -134,7 +134,7 @@ public abstract class BaseMusicServiceAdapter implements MusicServicePort {
 			.responseType(responseType)
 			.retryIfFails(retry)
 			.retryTimes(2)
-			.timeoutSeconds(5 * 1000)
+			.timeoutMillis(3 * 60 * 1000)
 			.build();
 	}
 }

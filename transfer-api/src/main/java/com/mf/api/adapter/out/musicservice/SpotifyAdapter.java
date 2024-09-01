@@ -1,8 +1,8 @@
 package com.mf.api.adapter.out.musicservice;
 
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyPaginationMapper;
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyPlaylistMapper;
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyTrackMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyPaginationMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyPlaylistMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyTrackMapper;
 import com.mf.api.adapter.out.musicservice.properties.SpotifyProperties;
 import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.domain.entity.Playlist;
