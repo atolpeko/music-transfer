@@ -34,9 +34,6 @@ service:
       likedTracks: /mock/ytmusic/videos
       playlists: /mock/ytmusic/playlists
       playlistTracks: /mock/ytmusic/playlistItems
-retry:
-  attempts: 2
-  windowSeconds: 2
 logging:
   level:
     requestQueue: DEBUG

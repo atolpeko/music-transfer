@@ -21,7 +21,7 @@ public class RequestQueueConfig {
 		return new RequestQueue();
 	}
 
-	@Bean(initMethod = "start", destroyMethod = "stop")
+	@Bean(initMethod = "start", destroyMethod = "kill")
 	public RequestQueueWorker requestQueueWorker(
 		RequestQueue queue,
 		RestTemplate restTemplate,

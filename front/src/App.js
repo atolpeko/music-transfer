@@ -17,8 +17,6 @@ import ErrorPage from './components/error/ErrorPage';
 const App = () => {
   
   const getParam = param => new URLSearchParams(window.location.search).get(param);
-  const getJwt = () => sessionStorage.getItem('jwt');
-  const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
 
   const getSourceParam = (service, token) => {
     const param = getParam(service);
@@ -44,10 +42,39 @@ const App = () => {
     return JSON.parse(atob(param));
   }
 
+  const getJwt = () => sessionStorage.getItem('jwt');
+  const setJwt = jwt => sessionStorage.setItem('jwt', jwt);
+
+  const getSourceTracks = () => {
+    const saved = sessionStorage.getItem('tracks');
+    return saved ? JSON.parse(saved) : null;
+  };
+
+  const getSourcePlaylists = () => {
+    const saved = sessionStorage.getItem('playlists');
+    return saved ? JSON.parse(saved) : null;
+  };
+
+  const setSourceTracks = tracks => {
+    const json = JSON.stringify(tracks);
+    sessionStorage.setItem('tracks', json);
+  };
+
+  const setSourcePlaylists = playlists => {
+    const json = JSON.stringify(playlists);
+    sessionStorage.setItem('playlists', json);
+  };
+
+  const clearSourceData = () => {
+    sessionStorage.removeItem('tracks');
+    sessionStorage.removeItem('playlists');
+  }
+
   const [token, setToken] = useState(getParam('accessToken'));  
   const [authenticating, setAuthenticating] = useState(true);
-  const [toTransfer, setToTransfer] = useState({ tracks: null, playlists: null });
+  const [toTransfer, setToTransfer] = useState({ tracks: null, playlists: null });  
   const [error, setError] = useState(null);
+  
   const [services, setServices] = useState({ 
     source: getSourceParam('source', token || getJwt()),
     target: getTargetParam('target')
@@ -98,8 +125,15 @@ const App = () => {
     window.history.pushState(null, '', url.toString());
   }
 
-  const handleStartClick = () => window.location = '/transfer';
-  const handleHomeClick = () => window.location = '/home'
+  const handleStartClick = () => { 
+    clearSourceData();
+    window.location = '/transfer';
+  }
+
+  const handleHomeClick = () => {
+    clearSourceData();
+    window.location = '/home';
+  }
   
   const loadServices = () => { 
     return withErrorHandling(() => {
@@ -148,23 +182,30 @@ const App = () => {
   }
 
   const loadFromSource = async () => {
+    const tracks = getSourceTracks();
+    const playlists = getSourcePlaylists();
+
     return {
-      tracks: await loadTracks(),
-      playlists: await loadPlaylists()
+      tracks: tracks ? tracks : await loadTracks(),
+      playlists: playlists ? playlists :await loadPlaylists()
     }
   }
 
   const loadTracks = () => {
-    return withErrorHandling(() => {
+    return withErrorHandling(async () => {
       console.log(`Loading tracks from ${services.source.visibleName}`);
-      return fetchTracks(services.source.internalName, getJwt());
+      const tracks = await fetchTracks(services.source.internalName, getJwt());
+      setSourceTracks(tracks);
+      return tracks;
     });
   }
 
   const loadPlaylists = () => {
-    return withErrorHandling(() => {
+    return withErrorHandling(async () => {
       console.log(`Loading playlists from ${services.source.visibleName}`);
-      return fetchPlaylists(services.source.internalName, getJwt());
+      const playlists = await fetchPlaylists(services.source.internalName, getJwt());
+      setSourcePlaylists(playlists);
+      return playlists;
     });
   }
 
@@ -178,15 +219,29 @@ const App = () => {
   }
 
   const runTracksTransfer = () => {
-    return withServerDownHandling(() => {
+    return withServerDownHandling(async () => {
       console.log(`Transferring tracks from  ${services.source.visibleName} ` +
         `to ${services.target.visibleName}`);
-      return transferTracks(
-        services.source.internalName, 
-        services.target.internalName,
-        toTransfer.tracks,
-        getJwt()
-      );
+      const chunks = splitToChunks(toTransfer.tracks, 25);
+      let result = {
+        transferred: 0,
+        failedToTransfer: []
+      }
+      for (let i = 0; i < chunks.length; i++) {
+        const res = await transferTracks(
+          services.source.internalName, 
+          services.target.internalName,
+          chunks[i],
+          getJwt()
+        );
+        
+        result = {
+          transferred: result.transferred + res.transferred,
+          failedToTransfer: result.failedToTransfer.concat(res.failedToTransfer)
+        }
+      }
+
+      return result;
     })
   }
 
@@ -202,6 +257,16 @@ const App = () => {
     }
   }
 
+  const splitToChunks = (array, chunkSize) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      const chunk = array.slice(i, i + chunkSize);
+      chunks.push(chunk);
+    }
+
+    return chunks;
+  }
+
   const runPlaylistTransfer = playlist => {
     return withServerDownHandling(() => {
       console.log(`Transferring playlist ${playlist.id} from `  
@@ -215,9 +280,7 @@ const App = () => {
     })
   }
 
-  const handleListenNowClick = () => {
-    window.location.href = services.target.homeUrl;
-  }
+  const handleListenNowClick = () => window.location.href = services.target.homeUrl;
 
   return (
     <BrowserRouter>
@@ -245,9 +308,9 @@ const App = () => {
                                             onBackClick={handleBackClick} />  
                     : (!toTransfer.tracks && !toTransfer.playlists) 
                       ? <TransferSetupPage source={services.source.visibleName}
-                                          target={services.target.visibleName}
-                                          load={loadFromSource}
-                                          onTransferClick={handleTransferClick} />
+                                           target={services.target.visibleName}
+                                           load={loadFromSource}
+                                           onTransferClick={handleTransferClick} />
                       : <TransferPage source={services.source}
                                       target={services.target} 
                                       tracks={toTransfer.tracks}

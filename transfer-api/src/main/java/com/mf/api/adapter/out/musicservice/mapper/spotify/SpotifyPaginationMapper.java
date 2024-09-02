@@ -1,4 +1,4 @@
-package com.mf.api.adapter.out.musicservice.mapper;
+package com.mf.api.adapter.out.musicservice.mapper.spotify;
 
 import java.util.LinkedHashMap;
 

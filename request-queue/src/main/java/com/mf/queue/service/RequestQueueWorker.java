@@ -14,5 +14,5 @@ public interface RequestQueueWorker {
     /**
      * Stop this worker.
      */
-    void stop();
+    void kill();
 }

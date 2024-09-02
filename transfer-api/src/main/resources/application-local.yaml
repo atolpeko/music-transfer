@@ -13,7 +13,7 @@ service:
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
   tokenPrefix: msvc_
   requestQueue:
-    requestsPerWindow: 200
+    requestsPerWindow: 100
     requestWindowSeconds: 30
     waitSeconds: 5
   spotify:
@@ -36,9 +36,6 @@ service:
       likedTracks: /youtube/v3/videos
       playlists: /youtube/v3/playlists
       playlistTracks: /youtube/v3/playlistItems
-retry:
-  attempts: 4
-  windowSeconds: 2
 logging:
   level:
     requestQueue: INFO

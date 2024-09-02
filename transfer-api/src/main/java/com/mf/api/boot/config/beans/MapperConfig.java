@@ -1,11 +1,11 @@
 package com.mf.api.boot.config.beans;
 
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyPaginationMapper;
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyPlaylistMapper;
-import com.mf.api.adapter.out.musicservice.mapper.SpotifyTrackMapper;
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicPaginationMapper;
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicPlaylistMapper;
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicTrackMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyPaginationMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyPlaylistMapper;
+import com.mf.api.adapter.out.musicservice.mapper.spotify.SpotifyTrackMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicPaginationMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicPlaylistMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicTrackMapper;
 import com.mf.api.domain.service.mapper.OAuth2TokenMapper;
 
 import org.springframework.context.annotation.Bean;

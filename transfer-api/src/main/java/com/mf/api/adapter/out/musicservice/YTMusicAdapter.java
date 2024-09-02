@@ -1,8 +1,8 @@
 package com.mf.api.adapter.out.musicservice;
 
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicPaginationMapper;
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicPlaylistMapper;
-import com.mf.api.adapter.out.musicservice.mapper.YTMusicTrackMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicPaginationMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicPlaylistMapper;
+import com.mf.api.adapter.out.musicservice.mapper.ytmusic.YTMusicTrackMapper;
 import com.mf.api.adapter.out.musicservice.properties.DefaultMusicServiceProperties;
 import com.mf.api.domain.entity.OAuth2Token;
 import com.mf.api.domain.entity.Playlist;

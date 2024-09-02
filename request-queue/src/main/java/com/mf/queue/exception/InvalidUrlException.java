@@ -1,24 +1,20 @@
 package com.mf.queue.exception;
 
+import com.mf.queue.entity.Request;
 import lombok.Getter;
 
 @Getter
-public class InvalidUrlException extends RuntimeException {
+public class InvalidUrlException extends RequestQueueException {
 
-    private final String url;
-
-    public InvalidUrlException(String url) {
-        super();
-        this.url = url;
+    public InvalidUrlException(Request<?, ?> request) {
+        super(request);
     }
 
-    public InvalidUrlException(String url, String message) {
-        super(message);
-        this.url = url;
+    public InvalidUrlException(Request<?, ?> request, String message) {
+        super(request, message);
     }
 
-    public InvalidUrlException(String url, String message, Throwable cause) {
-        super(message, cause);
-        this.url = url;
+    public InvalidUrlException(Request<?, ?> request, String message, Throwable cause) {
+        super(request, message, cause);
     }
 }

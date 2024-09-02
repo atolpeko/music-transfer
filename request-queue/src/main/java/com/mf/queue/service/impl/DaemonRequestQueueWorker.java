@@ -1,108 +1,123 @@
 package com.mf.queue.service.impl;
 
 import com.mf.queue.entity.Request;
-import com.mf.queue.exception.InvalidUrlException;
+import com.mf.queue.exception.RequestQueueException;
+import com.mf.queue.exception.RequestTimeoutException;
 import com.mf.queue.service.RateLimiter;
 import com.mf.queue.service.RequestQueue;
 import com.mf.queue.service.RequestQueueWorker;
+import com.mf.queue.valueobject.RequestContext;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Log4j2
-@Builder
 @RequiredArgsConstructor
-public class DaemonRequestQueueWorker implements RequestQueueWorker {
-
-    private final Map<String, RequestQueue> serviceQueues = new HashMap<>();
-    private final Map<String, Thread> serviceThreads = new HashMap<>();
+public class DaemonRequestQueueWorker extends Thread implements RequestQueueWorker {
 
     private final RequestQueue requestQueue;
     private final RateLimiter rateLimiter;
     private final RestTemplate restTemplate;
     private final int waitSeconds;
+    private final ScheduledExecutorService executorService =
+        Executors.newScheduledThreadPool(8, new RequestQueueThreadFactory());
 
     @Override
     public void start() {
-        Runnable task = () -> {
-            log.info("Starting request queue");
-            while (!Thread.currentThread().isInterrupted()) {
-                Request<?, ?> request = null;
-                try {
-                    request = requestQueue.take();
-                    var service = request.getHost();
-                    var queue = serviceQueues.computeIfAbsent(service, key -> new RequestQueue());
-
-                    if (!serviceThreads.containsKey(service)) {
-                        var thread = new Thread(() -> runProcessing(service, queue));
-                        thread.start();
-                        serviceThreads.put(service, thread);
-                    }
-
-                    queue.submit(request);
-                } catch (InterruptedException e) {
-                    log.info("Stopping request queue");
-                    Thread.currentThread().interrupt();
-                    break;
-                } catch (InvalidUrlException e) {
-                    var msg = "Invalid request provided: %s".formatted(e.getUrl());
-                    fail(request, e, msg);
-                } catch (Exception e) {
-                    var msg = "Exception while processing requests: %s".formatted(e.getMessage());
-                    fail(request, e, msg);
-                }
-            }
-        };
-
-        var thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        super.setName("request-queue-worker");
+        super.setDaemon(true);
+        super.start();
     }
 
-    private void fail(Request<?, ?> request, Exception exception, String msg) {
-        log.error(msg);
+    @Override
+    public void run() {
+        log.info("Starting request queue");
+        while (!Thread.currentThread().isInterrupted()) {
+            Request<?, ?> request = null;
+            try {
+                var context = requestQueue.take();
+                request = context.getRequest();
+                if (!request.actual()) {
+                    fail(new RequestTimeoutException(request, "Request timed out"));
+                } else if (rateLimiter.allowed(request)) {
+                    executorService.schedule(
+                        () -> execute(context),
+                        context.getTimeoutMillis(),
+                        TimeUnit.MILLISECONDS
+                    );
+                } else {
+                    scheduleWithRateLimit(context);
+                }
+            } catch (InterruptedException e) {
+                fail(new RequestQueueException(request, "Request queue stopped"));
+                log.info("Stopping request queue");
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
+                var msg = "Exception while processing request: %s".formatted(e.getMessage());
+                fail(new RequestQueueException(request, msg, e));
+            }
+        }
+    }
+
+    private void fail(RequestQueueException exception) {
+        log.error(exception.getMessage());
+        var request = exception.getRequest();
         if (request != null) {
             request.fail(exception);
         }
     }
 
-    private void runProcessing(String service, RequestQueue queue) {
-        log.info("Starting a new request queue for service: {}", service);
-        while (!Thread.currentThread().isInterrupted()) {
-            Request<?, ?> request = null;
-            try {
-                request = queue.take();
-                if (rateLimiter.allowed(request)) {
-                    log.debug("Executing request to {}", request.getUrl());
-                    request.execute(restTemplate);
-                } else {
-                    log.debug("Rate limit for requests to {} exceeded. Waiting for {} seconds",
-                        service, waitSeconds);
-                    Thread.sleep(waitSeconds * 1000);
-                    queue.submitFirst(request);
-                }
-            } catch (InterruptedException e) {
-                log.info("Stopping request {} queue", service);
-                Thread.currentThread().interrupt();
-                break;
-            } catch (Exception e) {
-                var msg = "Exception while processing request for %s: %s"
-                    .formatted(service, e);
-                fail(request, e, msg);
+    void execute(RequestContext context)  {
+        var request = context.getRequest();
+        try {
+            log.debug("Executing request to {}", request.getUrl());
+            var response = (ResponseEntity) restTemplate.exchange(
+                request.getUrl(),
+                request.getMethod(),
+                request.getEntity(),
+                request.getResponseType()
+            );
+
+            request.complete(response);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 429) {
+                scheduleWithRateLimit(context);
+            } else {
+                handleException(request, e);
             }
+        } catch (Exception e) {
+            handleException(request, e);
+        }
+    }
+
+    private void scheduleWithRateLimit(RequestContext context) {
+        log.debug("Rate limit for requests to {} exceeded. Scheduling with {} seconds delay",
+            context.getRequest().getHost(), waitSeconds);
+        executorService.schedule(() -> execute(context), waitSeconds, TimeUnit.SECONDS);
+    }
+
+    private void handleException(Request<?, ?> request, Exception e) {
+        if (!request.isRetryIfFails() || request.retriedTimes() == request.getRetryTimes()) {
+            request.fail(e);
+        } else {
+            log.debug("Request to {} failed. Will retry. Reason: {}",
+                request.getUrl(), e.getMessage());
+            request.retried();
+            requestQueue.schedule(request, request.getRetryWaitMillis());
         }
     }
 
     @Override
-    public void stop() {
-        log.info("Stopping request queue");
-        serviceThreads.values().forEach(Thread::interrupt);
-        Thread.currentThread().interrupt();
+    public void kill() {
+      super.interrupt();
     }
 }

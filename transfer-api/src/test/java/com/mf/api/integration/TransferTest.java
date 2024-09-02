@@ -15,8 +15,10 @@ import static com.mf.api.fixture.TransferFixture.MALFORMED_TOKEN;
 import static com.mf.api.fixture.TransferFixture.PLAYLISTS_URL;
 import static com.mf.api.fixture.TransferFixture.TRACKS_URL;
 import static com.mf.api.fixture.TransferFixture.VALID_TOKEN;
+import static com.mf.api.fixture.TransferFixture.noTracksJson;
 import static com.mf.api.fixture.TransferFixture.playlistJson;
 import static com.mf.api.fixture.TransferFixture.tokens;
+import static com.mf.api.fixture.TransferFixture.tooManyTracksJson;
 import static com.mf.api.fixture.TransferFixture.tracksJson;
 
 import static org.mockito.Mockito.when;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mf.api.config.IntegrationTest;
 import com.mf.api.domain.service.JWTService;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -134,6 +137,38 @@ class TransferTest {
 				.header("Authorization", VALID_TOKEN))
 			.andDo(print())
 			.andExpect(status().is(400));
+	}
+
+	@ParameterizedTest
+	@MethodSource("provideArgumentsForTrackValidationTests")
+	void testReturns400IfInvalidTracksProvided(
+		String url,
+		String source,
+		String target,
+		String token,
+		String jwt,
+		String json
+	) throws Exception {
+		when(jwtService.extractTokens(jwt)).thenReturn(tokens(source, target));
+		mvc.perform(post(url)
+				.param("source", source)
+				.param("target", target)
+				.content(json)
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", token))
+			.andDo(print())
+			.andExpect(status().is4xxClientError())
+			.andReturn()
+			.getResponse();
+	}
+
+	static Stream<Arguments> provideArgumentsForTrackValidationTests() {
+		return Stream.of(
+			Arguments.of(TRACKS_URL, YT_MUSIC.name(), SPOTIFY.name(),
+				VALID_TOKEN, JWT, noTracksJson()),
+			Arguments.of(TRACKS_URL, YT_MUSIC.name(), SPOTIFY.name(),
+				VALID_TOKEN, JWT, tooManyTracksJson())
+		);
 	}
 
 	@ParameterizedTest

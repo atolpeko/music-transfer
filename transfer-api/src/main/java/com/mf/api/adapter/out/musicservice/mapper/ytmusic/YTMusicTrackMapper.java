@@ -1,4 +1,4 @@
-package com.mf.api.adapter.out.musicservice.mapper;
+package com.mf.api.adapter.out.musicservice.mapper.ytmusic;
 
 import com.mf.api.domain.entity.Track;
 

@@ -6,11 +6,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -19,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Request to execute. Use getResultWhenComplete() to access result when it's ready.
@@ -27,25 +28,79 @@ import org.springframework.web.client.RestTemplate;
  * @param <T> request entity type
  * @param <K> response entity type
  */
-@Builder
+@Log4j2
 @ToString
 @EqualsAndHashCode
 public class Request<T, K> {
 
-	@Getter
-	private String url;
+	/**
+	 * Default request timeout.
+	 */
+	public static final int DEFAULT_TIMEOUT_MILLIS = 3 * 1000;
+
+	/**
+	 * Default retry waiting timeout.
+	 */
+	public static final int DEFAULT_RETRY_WAIT_MILLIS = 2 * 1000;
 
 	@Getter
-	private HttpMethod method;
+	private final String url;
 
 	@Getter
-	private HttpEntity<T> entity;
+	private final HttpMethod method;
 
 	@Getter
-	private Class<K> responseType;
+	private final HttpEntity<T> entity;
 
-	@Builder.Default
-	private final CompletableFuture<ResponseEntity<K>> result = new CompletableFuture<>();
+	@Getter
+	private final Class<K> responseType;
+
+	@Getter
+	private final int timeoutMillis;
+
+	@Getter
+	private final boolean retryIfFails;
+
+	@Getter
+	private final int retryTimes;
+
+	@Getter
+	private final int retryWaitMillis;
+
+	@Getter
+	private final long startTimeMillis;
+
+	private final AtomicInteger retryCount;
+	private final CompletableFuture<ResponseEntity<K>> result;
+
+	@Builder
+	public Request(
+		String url,
+		HttpMethod method,
+		HttpEntity<T> entity,
+		Class<K> responseType,
+		int timeoutMillis,
+		boolean retryIfFails,
+		int retryTimes,
+		int retryWaitMillis
+	) {
+		this.url = url;
+		this.method = method;
+		this.entity = entity;
+		this.responseType = responseType;
+		this.retryIfFails = retryIfFails;
+		this.retryTimes = retryTimes;
+		this.retryWaitMillis = (retryWaitMillis == 0)
+			? DEFAULT_RETRY_WAIT_MILLIS
+			: retryWaitMillis;
+		this.timeoutMillis = (timeoutMillis == 0)
+			? DEFAULT_TIMEOUT_MILLIS
+			: timeoutMillis;
+
+		result = new CompletableFuture<>();
+		retryCount = new AtomicInteger(0);
+		startTimeMillis = System.currentTimeMillis();
+	}
 
 	/**
 	 * Get request's host.
@@ -58,28 +113,22 @@ public class Request<T, K> {
 		try {
 			return new URL(url).getHost();
 		} catch (MalformedURLException e) {
-			throw new InvalidUrlException(url, e.getMessage(), e);
-		}
-	}
-
-	/**
-	 * Execute this request and fill response future.
-	 *
-	 * @param restTemplate request executor
-	 */
-	public void execute(RestTemplate restTemplate) {
-		try {
-			var response = restTemplate.exchange(url, method, entity, responseType);
-			result.complete(response);
-		} catch (Exception e) {
-			result.completeExceptionally(e);
+			var msg = "Invalid request URL: " + url;
+			throw new InvalidUrlException(this, msg, e);
 		}
 	}
 
 	/**
 	 * Returns the result when complete.
 	 *
-	 * @return result
+	 * @return completed result
+	 *
+	 * @throws HttpClientErrorException        if this request fails with an HTTP 4xx
+	 * @throws RestClientException             if this request fails because of some other server error
+	 * @throws HttpMessageConversionException  if fails to parse request body
+	 * @throws InvalidMediaTypeException       if fails to parse request body
+	 * @throws CompletionException             if this request fails with any other
+	 *                                         exception not listed here
 	 */
 	public ResponseEntity<K> getResultWhenComplete() {
 		try {
@@ -103,11 +152,45 @@ public class Request<T, K> {
 	}
 
 	/**
+	 * Complete this request.
+	 *
+	 * @param response  response
+	 */
+	public void complete(ResponseEntity<K> response) {
+		result.complete(response);
+	}
+
+	/**
 	 * Complete this request with exception.
 	 *
 	 * @param e  exception
 	 */
 	public void fail(Exception e) {
 		result.completeExceptionally(e);
+	}
+
+	/**
+	 * Return true if this request is still actual or false otherwise.
+	 *
+	 * @return true if this request is still actual or false otherwise.
+	 */
+	public boolean actual() {
+		return startTimeMillis + timeoutMillis > System.currentTimeMillis();
+	}
+
+	/**
+	 * Get this request retry count.
+	 *
+	 * @return retry count
+	 */
+	public int retriedTimes() {
+		return retryCount.get();
+	}
+
+	/**
+	 * Increment this request count.
+	 */
+	public void retried() {
+		retryCount.incrementAndGet();
 	}
 }

@@ -70,12 +70,17 @@ public interface TransferAPI {
     );
 
     @PostMapping("/tracks")
-    @ApiOperation("Transfer tracks")
+    @ApiOperation("Transfer tracks. Limit - 25 tracks at once.")
     @ApiResponses(value = {
         @ApiResponse(
             code = 200,
             message = "Successfully transferred tracks",
             response = TransferResultRestEntity.class
+        ),
+        @ApiResponse(
+            code = 400,
+            message = "Invalid tracks number: 0 or more than 25",
+            response = ErrorResponse.class
         ),
         @ApiResponse(
             code = 401,
