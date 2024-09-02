@@ -219,15 +219,29 @@ const App = () => {
   }
 
   const runTracksTransfer = () => {
-    return withServerDownHandling(() => {
+    return withServerDownHandling(async () => {
       console.log(`Transferring tracks from  ${services.source.visibleName} ` +
         `to ${services.target.visibleName}`);
-      return transferTracks(
-        services.source.internalName, 
-        services.target.internalName,
-        toTransfer.tracks,
-        getJwt()
-      );
+      const chunks = splitToChunks(toTransfer.tracks, 25);
+      let result = {
+        transferred: 0,
+        failedToTransfer: []
+      }
+      for (let i = 0; i < chunks.length; i++) {
+        const res = await transferTracks(
+          services.source.internalName, 
+          services.target.internalName,
+          chunks[i],
+          getJwt()
+        );
+        
+        result = {
+          transferred: result.transferred + res.transferred,
+          failedToTransfer: result.failedToTransfer.concat(res.failedToTransfer)
+        }
+      }
+
+      return result;
     })
   }
 
@@ -241,6 +255,16 @@ const App = () => {
         return Promise.reject(e);
       }
     }
+  }
+
+  const splitToChunks = (array, chunkSize) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      const chunk = array.slice(i, i + chunkSize);
+      chunks.push(chunk);
+    }
+
+    return chunks;
   }
 
   const runPlaylistTransfer = playlist => {
