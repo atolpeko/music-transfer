@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpringServiceProperties {
 
-    @Value("${service.configLocation}")
+    @Value("${service.config.location}")
     private String configLocation;
 }
