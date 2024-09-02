@@ -29,6 +29,17 @@ const TransferPage = ({ source, target, tracks, playlists,
   });
 
   useEffect(() => {
+    const unloadCallback = event => {
+      event.preventDefault();
+      event.returnValue = "";
+      return "";
+    };
+  
+    window.addEventListener("beforeunload", unloadCallback);
+    return () => window.removeEventListener("beforeunload", unloadCallback);
+  }, []);
+
+  useEffect(() => {
     const call = async () => {
       await runTrackTransfer();
       await runPlaylistTransfer();
@@ -180,13 +191,11 @@ const TransferPage = ({ source, target, tracks, playlists,
       <div>
         <div className="row align-items-center justify-content-center section">
           <h1 className="page-title">
-            {source.visibleName} to {target.visibleName} Transfer Result
+            Transferred {transferred.tracks} Tracks and {transferred.playlists} Playlists 
+            <br/> 
+            From {source.visibleName} to {target.visibleName}
           </h1>
         </div>
-        <div className="row align-items-center justify-content-center section">
-          <h3>Transferred {transferred.tracks} Tracks and {transferred.playlists} Playlists</h3>
-        </div>  
-
         { (transferred.tracks != 0 || transferred.playlists != 0) && 
           <div className="row justify-content-center listen-section">
             <div className="col col-md-3">
