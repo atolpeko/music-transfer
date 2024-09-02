@@ -122,6 +122,13 @@ public class Request<T, K> {
 	 * Returns the result when complete.
 	 *
 	 * @return completed result
+	 *
+	 * @throws HttpClientErrorException        if this request fails with an HTTP 4xx
+	 * @throws RestClientException             if this request fails because of some other server error
+	 * @throws HttpMessageConversionException  if fails to parse request body
+	 * @throws InvalidMediaTypeException       if fails to parse request body
+	 * @throws CompletionException             if this request fails with any other
+	 *                                         exception not listed here
 	 */
 	public ResponseEntity<K> getResultWhenComplete() {
 		try {

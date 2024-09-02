@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Log4j2
@@ -53,9 +54,7 @@ public class DaemonRequestQueueWorker extends Thread implements RequestQueueWork
                         TimeUnit.MILLISECONDS
                     );
                 } else {
-                    log.debug("Rate limit for requests to {} exceeded. Scheduling with {} seconds delay",
-                        request.getHost(), waitSeconds);
-                    executorService.schedule(() -> execute(context), waitSeconds, TimeUnit.SECONDS);
+                    scheduleWithRateLimit(context);
                 }
             } catch (InterruptedException e) {
                 fail(new RequestQueueException(request, "Request queue stopped"));
@@ -89,15 +88,31 @@ public class DaemonRequestQueueWorker extends Thread implements RequestQueueWork
             );
 
             request.complete(response);
-        } catch (Exception e) {
-            if (!request.isRetryIfFails() || request.retriedTimes() == request.getRetryTimes()) {
-                request.fail(e);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 429) {
+                scheduleWithRateLimit(context);
             } else {
-                log.debug("Request to {} failed. Will retry. Reason: {}",
-                    request.getUrl(), e.getMessage());
-                request.retried();
-                requestQueue.schedule(request, request.getRetryWaitMillis());
+                handleException(request, e);
             }
+        } catch (Exception e) {
+            handleException(request, e);
+        }
+    }
+
+    private void scheduleWithRateLimit(RequestContext context) {
+        log.debug("Rate limit for requests to {} exceeded. Scheduling with {} seconds delay",
+            context.getRequest().getHost(), waitSeconds);
+        executorService.schedule(() -> execute(context), waitSeconds, TimeUnit.SECONDS);
+    }
+
+    private void handleException(Request<?, ?> request, Exception e) {
+        if (!request.isRetryIfFails() || request.retriedTimes() == request.getRetryTimes()) {
+            request.fail(e);
+        } else {
+            log.debug("Request to {} failed. Will retry. Reason: {}",
+                request.getUrl(), e.getMessage());
+            request.retried();
+            requestQueue.schedule(request, request.getRetryWaitMillis());
         }
     }
 
