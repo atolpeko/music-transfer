@@ -74,17 +74,33 @@ public class TransferFixture {
              {
                 "tracks": [ %s ]
              }
-             """.formatted(tracks());
+             """.formatted(tracks(10));
     }
 
-    private static String tracks() {
-        return IntStream.range(0, 2)
+    public static String tooManyTracksJson() {
+        return """
+             {
+                "tracks": [ %s ]
+             }
+             """.formatted(tracks(50));
+    }
+
+    public static String noTracksJson() {
+        return """
+             {
+                "tracks": [ ]
+             }
+             """;
+    }
+
+    private static String tracks(int count) {
+        return IntStream.range(0, count)
             .mapToObj(i -> TRACK_JSON.formatted("id" + i, "n" + i, "a" + i, "ar" + i))
             .reduce((s1, s2) -> String.join(", ", s1, s2))
             .orElseThrow();
     }
 
     public static String playlistJson() {
-        return PLAYLIST_JSON.formatted(tracks());
+        return PLAYLIST_JSON.formatted(tracks(10));
     }
 }

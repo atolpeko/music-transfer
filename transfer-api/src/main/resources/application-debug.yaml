@@ -13,7 +13,7 @@ service:
   jwtSecret: secretsecretsecretsecretsecretsecretsecret
   tokenPrefix: msvc_
   requestQueue:
-    requestsPerWindow: 200
+    requestsPerWindow: 100
     requestWindowSeconds: 30
     waitSeconds: 5
   spotify:

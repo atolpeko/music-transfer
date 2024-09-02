@@ -5,7 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import lombok.Data;
 
@@ -18,5 +20,7 @@ public class TracksRestEntity {
 
 	@ApiModelProperty("Tracks")
 	@NotNull(message = "Tracks are required")
+	@NotEmpty(message = "Tracks are required")
+	@Size(max = 25, message = "Maximum tracks allowed - 25")
 	private List<TrackRestEntity> tracks;
 }
